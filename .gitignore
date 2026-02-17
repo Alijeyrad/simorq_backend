@@ -1,0 +1,79 @@
+# Binaries
+simorq
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Configuration files (keep examples)
+config.yaml
+config.json
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+/tmp/
+*.tmp
+*.log
+build-errors.log
+
+# Database
+*.db
+*.sqlite
+
+# LLMs
+.claude
+plan.md
+
+# Buf and Proto-related files
+
+# Generated code directories
+gen/
+*_pb.go
+*_pb.gw.go
+*_pb.validate.go
+
+# Buf cache
+.buf.work/
+
+# Buf module cache
+buf.lock
+
+# Protobuf compiled binaries
+*.pb.o
+*.pb
+
+# Build outputs
+dist/
+build/
+*.o
+*.a
+*.so
+
+# Go
+vendor/
+go.sum.bak
+go.mod.bak
+
+# Docker
+.docker/
