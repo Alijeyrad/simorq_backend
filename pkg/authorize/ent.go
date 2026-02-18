@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 
 	psqlwatcher "github.com/IguteChung/casbin-psql-watcher"
-	casbin "github.com/casbin/casbin/v2"
+	casbin "github.com/casbin/casbin/v3"
 	entadapter "github.com/casbin/ent-adapter"
 )
 

@@ -1,0 +1,33 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/simorq_backend ."
+  entrypoint = "./tmp/simorq_backend"
+  args_bin = ["--config", "config.yaml", "http", "start"]
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "vendor", "scripts"]
+  exclude_file = []
+  exclude_regex = ["_test\\.go$"]
+  exclude_unchanged = false
+  follow_symlink = false
+  delay = 500             # ms to wait before rebuild after a change
+  stop_on_error = true
+  kill_delay = "0s"
+  send_interrupt = false
+  rerun = false
+  rerun_delay = 500
+
+[log]
+  time = false
+  main_only = false
+  silent = false
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true

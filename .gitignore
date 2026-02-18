@@ -1,5 +1,6 @@
 # Binaries
 simorq
+simorq_backend
 *.exe
 *.exe~
 *.dll
@@ -33,6 +34,7 @@ Thumbs.db
 
 # Temporary files
 /tmp/
+tmp/
 *.tmp
 *.log
 build-errors.log

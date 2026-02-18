@@ -134,6 +134,133 @@ func (_u *UserUpdate) ClearEmail() *UserUpdate {
 	return _u
 }
 
+// SetNationalID sets the "national_id" field.
+func (_u *UserUpdate) SetNationalID(v string) *UserUpdate {
+	_u.mutation.SetNationalID(v)
+	return _u
+}
+
+// SetNillableNationalID sets the "national_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNationalID(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetNationalID(*v)
+	}
+	return _u
+}
+
+// ClearNationalID clears the value of the "national_id" field.
+func (_u *UserUpdate) ClearNationalID() *UserUpdate {
+	_u.mutation.ClearNationalID()
+	return _u
+}
+
+// SetNationalIDHash sets the "national_id_hash" field.
+func (_u *UserUpdate) SetNationalIDHash(v string) *UserUpdate {
+	_u.mutation.SetNationalIDHash(v)
+	return _u
+}
+
+// SetNillableNationalIDHash sets the "national_id_hash" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNationalIDHash(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetNationalIDHash(*v)
+	}
+	return _u
+}
+
+// ClearNationalIDHash clears the value of the "national_id_hash" field.
+func (_u *UserUpdate) ClearNationalIDHash() *UserUpdate {
+	_u.mutation.ClearNationalIDHash()
+	return _u
+}
+
+// SetGender sets the "gender" field.
+func (_u *UserUpdate) SetGender(v string) *UserUpdate {
+	_u.mutation.SetGender(v)
+	return _u
+}
+
+// SetNillableGender sets the "gender" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableGender(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetGender(*v)
+	}
+	return _u
+}
+
+// ClearGender clears the value of the "gender" field.
+func (_u *UserUpdate) ClearGender() *UserUpdate {
+	_u.mutation.ClearGender()
+	return _u
+}
+
+// SetMaritalStatus sets the "marital_status" field.
+func (_u *UserUpdate) SetMaritalStatus(v string) *UserUpdate {
+	_u.mutation.SetMaritalStatus(v)
+	return _u
+}
+
+// SetNillableMaritalStatus sets the "marital_status" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableMaritalStatus(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetMaritalStatus(*v)
+	}
+	return _u
+}
+
+// ClearMaritalStatus clears the value of the "marital_status" field.
+func (_u *UserUpdate) ClearMaritalStatus() *UserUpdate {
+	_u.mutation.ClearMaritalStatus()
+	return _u
+}
+
+// SetBirthYear sets the "birth_year" field.
+func (_u *UserUpdate) SetBirthYear(v int) *UserUpdate {
+	_u.mutation.ResetBirthYear()
+	_u.mutation.SetBirthYear(v)
+	return _u
+}
+
+// SetNillableBirthYear sets the "birth_year" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableBirthYear(v *int) *UserUpdate {
+	if v != nil {
+		_u.SetBirthYear(*v)
+	}
+	return _u
+}
+
+// AddBirthYear adds value to the "birth_year" field.
+func (_u *UserUpdate) AddBirthYear(v int) *UserUpdate {
+	_u.mutation.AddBirthYear(v)
+	return _u
+}
+
+// ClearBirthYear clears the value of the "birth_year" field.
+func (_u *UserUpdate) ClearBirthYear() *UserUpdate {
+	_u.mutation.ClearBirthYear()
+	return _u
+}
+
+// SetAvatarKey sets the "avatar_key" field.
+func (_u *UserUpdate) SetAvatarKey(v string) *UserUpdate {
+	_u.mutation.SetAvatarKey(v)
+	return _u
+}
+
+// SetNillableAvatarKey sets the "avatar_key" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableAvatarKey(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetAvatarKey(*v)
+	}
+	return _u
+}
+
+// ClearAvatarKey clears the value of the "avatar_key" field.
+func (_u *UserUpdate) ClearAvatarKey() *UserUpdate {
+	_u.mutation.ClearAvatarKey()
+	return _u
+}
+
 // SetPasswordHash sets the "password_hash" field.
 func (_u *UserUpdate) SetPasswordHash(v string) *UserUpdate {
 	_u.mutation.SetPasswordHash(v)
@@ -414,6 +541,31 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`repo: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.NationalID(); ok {
+		if err := user.NationalIDValidator(v); err != nil {
+			return &ValidationError{Name: "national_id", err: fmt.Errorf(`repo: validator failed for field "User.national_id": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.NationalIDHash(); ok {
+		if err := user.NationalIDHashValidator(v); err != nil {
+			return &ValidationError{Name: "national_id_hash", err: fmt.Errorf(`repo: validator failed for field "User.national_id_hash": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Gender(); ok {
+		if err := user.GenderValidator(v); err != nil {
+			return &ValidationError{Name: "gender", err: fmt.Errorf(`repo: validator failed for field "User.gender": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.MaritalStatus(); ok {
+		if err := user.MaritalStatusValidator(v); err != nil {
+			return &ValidationError{Name: "marital_status", err: fmt.Errorf(`repo: validator failed for field "User.marital_status": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.AvatarKey(); ok {
+		if err := user.AvatarKeyValidator(v); err != nil {
+			return &ValidationError{Name: "avatar_key", err: fmt.Errorf(`repo: validator failed for field "User.avatar_key": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := user.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`repo: validator failed for field "User.status": %w`, err)}
@@ -471,6 +623,45 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.EmailCleared() {
 		_spec.ClearField(user.FieldEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.NationalID(); ok {
+		_spec.SetField(user.FieldNationalID, field.TypeString, value)
+	}
+	if _u.mutation.NationalIDCleared() {
+		_spec.ClearField(user.FieldNationalID, field.TypeString)
+	}
+	if value, ok := _u.mutation.NationalIDHash(); ok {
+		_spec.SetField(user.FieldNationalIDHash, field.TypeString, value)
+	}
+	if _u.mutation.NationalIDHashCleared() {
+		_spec.ClearField(user.FieldNationalIDHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.Gender(); ok {
+		_spec.SetField(user.FieldGender, field.TypeString, value)
+	}
+	if _u.mutation.GenderCleared() {
+		_spec.ClearField(user.FieldGender, field.TypeString)
+	}
+	if value, ok := _u.mutation.MaritalStatus(); ok {
+		_spec.SetField(user.FieldMaritalStatus, field.TypeString, value)
+	}
+	if _u.mutation.MaritalStatusCleared() {
+		_spec.ClearField(user.FieldMaritalStatus, field.TypeString)
+	}
+	if value, ok := _u.mutation.BirthYear(); ok {
+		_spec.SetField(user.FieldBirthYear, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBirthYear(); ok {
+		_spec.AddField(user.FieldBirthYear, field.TypeInt, value)
+	}
+	if _u.mutation.BirthYearCleared() {
+		_spec.ClearField(user.FieldBirthYear, field.TypeInt)
+	}
+	if value, ok := _u.mutation.AvatarKey(); ok {
+		_spec.SetField(user.FieldAvatarKey, field.TypeString, value)
+	}
+	if _u.mutation.AvatarKeyCleared() {
+		_spec.ClearField(user.FieldAvatarKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
@@ -655,6 +846,133 @@ func (_u *UserUpdateOne) SetNillableEmail(v *string) *UserUpdateOne {
 // ClearEmail clears the value of the "email" field.
 func (_u *UserUpdateOne) ClearEmail() *UserUpdateOne {
 	_u.mutation.ClearEmail()
+	return _u
+}
+
+// SetNationalID sets the "national_id" field.
+func (_u *UserUpdateOne) SetNationalID(v string) *UserUpdateOne {
+	_u.mutation.SetNationalID(v)
+	return _u
+}
+
+// SetNillableNationalID sets the "national_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNationalID(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetNationalID(*v)
+	}
+	return _u
+}
+
+// ClearNationalID clears the value of the "national_id" field.
+func (_u *UserUpdateOne) ClearNationalID() *UserUpdateOne {
+	_u.mutation.ClearNationalID()
+	return _u
+}
+
+// SetNationalIDHash sets the "national_id_hash" field.
+func (_u *UserUpdateOne) SetNationalIDHash(v string) *UserUpdateOne {
+	_u.mutation.SetNationalIDHash(v)
+	return _u
+}
+
+// SetNillableNationalIDHash sets the "national_id_hash" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNationalIDHash(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetNationalIDHash(*v)
+	}
+	return _u
+}
+
+// ClearNationalIDHash clears the value of the "national_id_hash" field.
+func (_u *UserUpdateOne) ClearNationalIDHash() *UserUpdateOne {
+	_u.mutation.ClearNationalIDHash()
+	return _u
+}
+
+// SetGender sets the "gender" field.
+func (_u *UserUpdateOne) SetGender(v string) *UserUpdateOne {
+	_u.mutation.SetGender(v)
+	return _u
+}
+
+// SetNillableGender sets the "gender" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableGender(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetGender(*v)
+	}
+	return _u
+}
+
+// ClearGender clears the value of the "gender" field.
+func (_u *UserUpdateOne) ClearGender() *UserUpdateOne {
+	_u.mutation.ClearGender()
+	return _u
+}
+
+// SetMaritalStatus sets the "marital_status" field.
+func (_u *UserUpdateOne) SetMaritalStatus(v string) *UserUpdateOne {
+	_u.mutation.SetMaritalStatus(v)
+	return _u
+}
+
+// SetNillableMaritalStatus sets the "marital_status" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableMaritalStatus(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetMaritalStatus(*v)
+	}
+	return _u
+}
+
+// ClearMaritalStatus clears the value of the "marital_status" field.
+func (_u *UserUpdateOne) ClearMaritalStatus() *UserUpdateOne {
+	_u.mutation.ClearMaritalStatus()
+	return _u
+}
+
+// SetBirthYear sets the "birth_year" field.
+func (_u *UserUpdateOne) SetBirthYear(v int) *UserUpdateOne {
+	_u.mutation.ResetBirthYear()
+	_u.mutation.SetBirthYear(v)
+	return _u
+}
+
+// SetNillableBirthYear sets the "birth_year" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableBirthYear(v *int) *UserUpdateOne {
+	if v != nil {
+		_u.SetBirthYear(*v)
+	}
+	return _u
+}
+
+// AddBirthYear adds value to the "birth_year" field.
+func (_u *UserUpdateOne) AddBirthYear(v int) *UserUpdateOne {
+	_u.mutation.AddBirthYear(v)
+	return _u
+}
+
+// ClearBirthYear clears the value of the "birth_year" field.
+func (_u *UserUpdateOne) ClearBirthYear() *UserUpdateOne {
+	_u.mutation.ClearBirthYear()
+	return _u
+}
+
+// SetAvatarKey sets the "avatar_key" field.
+func (_u *UserUpdateOne) SetAvatarKey(v string) *UserUpdateOne {
+	_u.mutation.SetAvatarKey(v)
+	return _u
+}
+
+// SetNillableAvatarKey sets the "avatar_key" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableAvatarKey(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetAvatarKey(*v)
+	}
+	return _u
+}
+
+// ClearAvatarKey clears the value of the "avatar_key" field.
+func (_u *UserUpdateOne) ClearAvatarKey() *UserUpdateOne {
+	_u.mutation.ClearAvatarKey()
 	return _u
 }
 
@@ -951,6 +1269,31 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`repo: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.NationalID(); ok {
+		if err := user.NationalIDValidator(v); err != nil {
+			return &ValidationError{Name: "national_id", err: fmt.Errorf(`repo: validator failed for field "User.national_id": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.NationalIDHash(); ok {
+		if err := user.NationalIDHashValidator(v); err != nil {
+			return &ValidationError{Name: "national_id_hash", err: fmt.Errorf(`repo: validator failed for field "User.national_id_hash": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Gender(); ok {
+		if err := user.GenderValidator(v); err != nil {
+			return &ValidationError{Name: "gender", err: fmt.Errorf(`repo: validator failed for field "User.gender": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.MaritalStatus(); ok {
+		if err := user.MaritalStatusValidator(v); err != nil {
+			return &ValidationError{Name: "marital_status", err: fmt.Errorf(`repo: validator failed for field "User.marital_status": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.AvatarKey(); ok {
+		if err := user.AvatarKeyValidator(v); err != nil {
+			return &ValidationError{Name: "avatar_key", err: fmt.Errorf(`repo: validator failed for field "User.avatar_key": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := user.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`repo: validator failed for field "User.status": %w`, err)}
@@ -1025,6 +1368,45 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.EmailCleared() {
 		_spec.ClearField(user.FieldEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.NationalID(); ok {
+		_spec.SetField(user.FieldNationalID, field.TypeString, value)
+	}
+	if _u.mutation.NationalIDCleared() {
+		_spec.ClearField(user.FieldNationalID, field.TypeString)
+	}
+	if value, ok := _u.mutation.NationalIDHash(); ok {
+		_spec.SetField(user.FieldNationalIDHash, field.TypeString, value)
+	}
+	if _u.mutation.NationalIDHashCleared() {
+		_spec.ClearField(user.FieldNationalIDHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.Gender(); ok {
+		_spec.SetField(user.FieldGender, field.TypeString, value)
+	}
+	if _u.mutation.GenderCleared() {
+		_spec.ClearField(user.FieldGender, field.TypeString)
+	}
+	if value, ok := _u.mutation.MaritalStatus(); ok {
+		_spec.SetField(user.FieldMaritalStatus, field.TypeString, value)
+	}
+	if _u.mutation.MaritalStatusCleared() {
+		_spec.ClearField(user.FieldMaritalStatus, field.TypeString)
+	}
+	if value, ok := _u.mutation.BirthYear(); ok {
+		_spec.SetField(user.FieldBirthYear, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBirthYear(); ok {
+		_spec.AddField(user.FieldBirthYear, field.TypeInt, value)
+	}
+	if _u.mutation.BirthYearCleared() {
+		_spec.ClearField(user.FieldBirthYear, field.TypeInt)
+	}
+	if value, ok := _u.mutation.AvatarKey(); ok {
+		_spec.SetField(user.FieldAvatarKey, field.TypeString, value)
+	}
+	if _u.mutation.AvatarKeyCleared() {
+		_spec.ClearField(user.FieldAvatarKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)

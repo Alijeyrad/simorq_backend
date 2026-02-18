@@ -29,6 +29,18 @@ const (
 	FieldPhone = "phone"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldNationalID holds the string denoting the national_id field in the database.
+	FieldNationalID = "national_id"
+	// FieldNationalIDHash holds the string denoting the national_id_hash field in the database.
+	FieldNationalIDHash = "national_id_hash"
+	// FieldGender holds the string denoting the gender field in the database.
+	FieldGender = "gender"
+	// FieldMaritalStatus holds the string denoting the marital_status field in the database.
+	FieldMaritalStatus = "marital_status"
+	// FieldBirthYear holds the string denoting the birth_year field in the database.
+	FieldBirthYear = "birth_year"
+	// FieldAvatarKey holds the string denoting the avatar_key field in the database.
+	FieldAvatarKey = "avatar_key"
 	// FieldPasswordHash holds the string denoting the password_hash field in the database.
 	FieldPasswordHash = "password_hash"
 	// FieldMustChangePassword holds the string denoting the must_change_password field in the database.
@@ -69,6 +81,12 @@ var Columns = []string{
 	FieldLastName,
 	FieldPhone,
 	FieldEmail,
+	FieldNationalID,
+	FieldNationalIDHash,
+	FieldGender,
+	FieldMaritalStatus,
+	FieldBirthYear,
+	FieldAvatarKey,
 	FieldPasswordHash,
 	FieldMustChangePassword,
 	FieldStatus,
@@ -109,6 +127,16 @@ var (
 	PhoneValidator func(string) error
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
+	// NationalIDValidator is a validator for the "national_id" field. It is called by the builders before save.
+	NationalIDValidator func(string) error
+	// NationalIDHashValidator is a validator for the "national_id_hash" field. It is called by the builders before save.
+	NationalIDHashValidator func(string) error
+	// GenderValidator is a validator for the "gender" field. It is called by the builders before save.
+	GenderValidator func(string) error
+	// MaritalStatusValidator is a validator for the "marital_status" field. It is called by the builders before save.
+	MaritalStatusValidator func(string) error
+	// AvatarKeyValidator is a validator for the "avatar_key" field. It is called by the builders before save.
+	AvatarKeyValidator func(string) error
 	// DefaultMustChangePassword holds the default value on creation for the "must_change_password" field.
 	DefaultMustChangePassword bool
 	// DefaultPhoneVerified holds the default value on creation for the "phone_verified" field.
@@ -196,6 +224,36 @@ func ByPhone(opts ...sql.OrderTermOption) OrderOption {
 // ByEmail orders the results by the email field.
 func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmail, opts...).ToFunc()
+}
+
+// ByNationalID orders the results by the national_id field.
+func ByNationalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNationalID, opts...).ToFunc()
+}
+
+// ByNationalIDHash orders the results by the national_id_hash field.
+func ByNationalIDHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNationalIDHash, opts...).ToFunc()
+}
+
+// ByGender orders the results by the gender field.
+func ByGender(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGender, opts...).ToFunc()
+}
+
+// ByMaritalStatus orders the results by the marital_status field.
+func ByMaritalStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMaritalStatus, opts...).ToFunc()
+}
+
+// ByBirthYear orders the results by the birth_year field.
+func ByBirthYear(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBirthYear, opts...).ToFunc()
+}
+
+// ByAvatarKey orders the results by the avatar_key field.
+func ByAvatarKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAvatarKey, opts...).ToFunc()
 }
 
 // ByPasswordHash orders the results by the password_hash field.

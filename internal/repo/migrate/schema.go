@@ -8,6 +8,112 @@ import (
 )
 
 var (
+	// ClinicsColumns holds the columns for the "clinics" table.
+	ClinicsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "name", Type: field.TypeString, Size: 255},
+		{Name: "slug", Type: field.TypeString, Unique: true, Size: 100},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "logo_key", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "phone", Type: field.TypeString, Nullable: true, Size: 20},
+		{Name: "address", Type: field.TypeString, Nullable: true},
+		{Name: "city", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "province", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "is_verified", Type: field.TypeBool, Default: false},
+	}
+	// ClinicsTable holds the schema information for the "clinics" table.
+	ClinicsTable = &schema.Table{
+		Name:       "clinics",
+		Columns:    ClinicsColumns,
+		PrimaryKey: []*schema.Column{ClinicsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "clinic_slug",
+				Unique:  false,
+				Columns: []*schema.Column{ClinicsColumns[5]},
+			},
+		},
+	}
+	// ClinicMembersColumns holds the columns for the "clinic_members" table.
+	ClinicMembersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"owner", "admin", "therapist", "intern"}},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "joined_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// ClinicMembersTable holds the schema information for the "clinic_members" table.
+	ClinicMembersTable = &schema.Table{
+		Name:       "clinic_members",
+		Columns:    ClinicMembersColumns,
+		PrimaryKey: []*schema.Column{ClinicMembersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "clinic_members_clinics_members",
+				Columns:    []*schema.Column{ClinicMembersColumns[4]},
+				RefColumns: []*schema.Column{ClinicsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "clinic_members_users_user",
+				Columns:    []*schema.Column{ClinicMembersColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "clinicmember_clinic_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{ClinicMembersColumns[4], ClinicMembersColumns[5]},
+			},
+			{
+				Name:    "clinicmember_clinic_id",
+				Unique:  false,
+				Columns: []*schema.Column{ClinicMembersColumns[4]},
+			},
+			{
+				Name:    "clinicmember_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{ClinicMembersColumns[5]},
+			},
+		},
+	}
+	// ClinicSettingsColumns holds the columns for the "clinic_settings" table.
+	ClinicSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "reservation_fee_amount", Type: field.TypeInt64, Default: 0},
+		{Name: "reservation_fee_percent", Type: field.TypeInt, Default: 0},
+		{Name: "cancellation_window_hours", Type: field.TypeInt, Default: 24},
+		{Name: "cancellation_fee_amount", Type: field.TypeInt64, Default: 0},
+		{Name: "cancellation_fee_percent", Type: field.TypeInt, Default: 0},
+		{Name: "allow_client_self_book", Type: field.TypeBool, Default: true},
+		{Name: "default_session_duration_min", Type: field.TypeInt, Default: 60},
+		{Name: "default_session_price", Type: field.TypeInt64, Default: 0},
+		{Name: "working_hours", Type: field.TypeJSON, Nullable: true},
+		{Name: "clinic_id", Type: field.TypeUUID, Unique: true},
+	}
+	// ClinicSettingsTable holds the schema information for the "clinic_settings" table.
+	ClinicSettingsTable = &schema.Table{
+		Name:       "clinic_settings",
+		Columns:    ClinicSettingsColumns,
+		PrimaryKey: []*schema.Column{ClinicSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "clinic_settings_clinics_settings",
+				Columns:    []*schema.Column{ClinicSettingsColumns[12]},
+				RefColumns: []*schema.Column{ClinicsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -18,6 +124,12 @@ var (
 		{Name: "last_name", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "phone", Type: field.TypeString, Unique: true, Nullable: true, Size: 20},
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true, Size: 255},
+		{Name: "national_id", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "national_id_hash", Type: field.TypeString, Unique: true, Nullable: true, Size: 64},
+		{Name: "gender", Type: field.TypeString, Nullable: true, Size: 10},
+		{Name: "marital_status", Type: field.TypeString, Nullable: true, Size: 20},
+		{Name: "birth_year", Type: field.TypeInt, Nullable: true},
+		{Name: "avatar_key", Type: field.TypeString, Nullable: true, Size: 500},
 		{Name: "password_hash", Type: field.TypeString, Nullable: true},
 		{Name: "must_change_password", Type: field.TypeBool, Default: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"ACTIVE", "SUSPENDED"}, Default: "ACTIVE"},
@@ -37,12 +149,72 @@ var (
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "user_phone",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[6]},
+			},
+			{
+				Name:    "user_national_id_hash",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[9]},
+			},
+		},
+	}
+	// UserSessionsColumns holds the columns for the "user_sessions" table.
+	UserSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "session_id", Type: field.TypeString, Unique: true, Size: 36},
+		{Name: "refresh_token_hash", Type: field.TypeString, Nullable: true, Size: 64},
+		{Name: "user_agent", Type: field.TypeString, Nullable: true},
+		{Name: "ip_address", Type: field.TypeString, Nullable: true, Size: 45},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// UserSessionsTable holds the schema information for the "user_sessions" table.
+	UserSessionsTable = &schema.Table{
+		Name:       "user_sessions",
+		Columns:    UserSessionsColumns,
+		PrimaryKey: []*schema.Column{UserSessionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_sessions_users_user",
+				Columns:    []*schema.Column{UserSessionsColumns[10]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "usersession_session_id",
+				Unique:  false,
+				Columns: []*schema.Column{UserSessionsColumns[3]},
+			},
+			{
+				Name:    "usersession_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{UserSessionsColumns[10]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ClinicsTable,
+		ClinicMembersTable,
+		ClinicSettingsTable,
 		UsersTable,
+		UserSessionsTable,
 	}
 )
 
 func init() {
+	ClinicMembersTable.ForeignKeys[0].RefTable = ClinicsTable
+	ClinicMembersTable.ForeignKeys[1].RefTable = UsersTable
+	ClinicSettingsTable.ForeignKeys[0].RefTable = ClinicsTable
+	UserSessionsTable.ForeignKeys[0].RefTable = UsersTable
 }

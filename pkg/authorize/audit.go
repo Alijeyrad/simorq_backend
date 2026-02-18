@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	casbin "github.com/casbin/casbin/v2"
+	casbin "github.com/casbin/casbin/v3"
 )
 
 // AuditedAuthorization wraps an IAuthorization implementation with audit logging.

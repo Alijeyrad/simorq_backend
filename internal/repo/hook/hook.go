@@ -9,6 +9,42 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
 )
 
+// The ClinicFunc type is an adapter to allow the use of ordinary
+// function as Clinic mutator.
+type ClinicFunc func(context.Context, *repo.ClinicMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ClinicFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.ClinicMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ClinicMutation", m)
+}
+
+// The ClinicMemberFunc type is an adapter to allow the use of ordinary
+// function as ClinicMember mutator.
+type ClinicMemberFunc func(context.Context, *repo.ClinicMemberMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ClinicMemberFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.ClinicMemberMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ClinicMemberMutation", m)
+}
+
+// The ClinicSettingsFunc type is an adapter to allow the use of ordinary
+// function as ClinicSettings mutator.
+type ClinicSettingsFunc func(context.Context, *repo.ClinicSettingsMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ClinicSettingsFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.ClinicSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ClinicSettingsMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *repo.UserMutation) (repo.Value, error)
@@ -19,6 +55,18 @@ func (f UserFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, erro
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.UserMutation", m)
+}
+
+// The UserSessionFunc type is an adapter to allow the use of ordinary
+// function as UserSession mutator.
+type UserSessionFunc func(context.Context, *repo.UserSessionMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserSessionFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.UserSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.UserSessionMutation", m)
 }
 
 // Condition is a hook condition function.

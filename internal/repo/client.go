@@ -15,7 +15,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
 )
 
 // Client is the client that holds all ent builders.
@@ -23,8 +28,16 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Clinic is the client for interacting with the Clinic builders.
+	Clinic *ClinicClient
+	// ClinicMember is the client for interacting with the ClinicMember builders.
+	ClinicMember *ClinicMemberClient
+	// ClinicSettings is the client for interacting with the ClinicSettings builders.
+	ClinicSettings *ClinicSettingsClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserSession is the client for interacting with the UserSession builders.
+	UserSession *UserSessionClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -36,7 +49,11 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Clinic = NewClinicClient(c.config)
+	c.ClinicMember = NewClinicMemberClient(c.config)
+	c.ClinicSettings = NewClinicSettingsClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserSession = NewUserSessionClient(c.config)
 }
 
 type (
@@ -127,9 +144,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		Clinic:         NewClinicClient(cfg),
+		ClinicMember:   NewClinicMemberClient(cfg),
+		ClinicSettings: NewClinicSettingsClient(cfg),
+		User:           NewUserClient(cfg),
+		UserSession:    NewUserSessionClient(cfg),
 	}, nil
 }
 
@@ -147,16 +168,20 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		Clinic:         NewClinicClient(cfg),
+		ClinicMember:   NewClinicMemberClient(cfg),
+		ClinicSettings: NewClinicSettingsClient(cfg),
+		User:           NewUserClient(cfg),
+		UserSession:    NewUserSessionClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		Clinic.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -178,22 +203,517 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Clinic.Use(hooks...)
+	c.ClinicMember.Use(hooks...)
+	c.ClinicSettings.Use(hooks...)
 	c.User.Use(hooks...)
+	c.UserSession.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Clinic.Intercept(interceptors...)
+	c.ClinicMember.Intercept(interceptors...)
+	c.ClinicSettings.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
+	c.UserSession.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ClinicMutation:
+		return c.Clinic.mutate(ctx, m)
+	case *ClinicMemberMutation:
+		return c.ClinicMember.mutate(ctx, m)
+	case *ClinicSettingsMutation:
+		return c.ClinicSettings.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserSessionMutation:
+		return c.UserSession.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("repo: unknown mutation type %T", m)
+	}
+}
+
+// ClinicClient is a client for the Clinic schema.
+type ClinicClient struct {
+	config
+}
+
+// NewClinicClient returns a client for the Clinic from the given config.
+func NewClinicClient(c config) *ClinicClient {
+	return &ClinicClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `clinic.Hooks(f(g(h())))`.
+func (c *ClinicClient) Use(hooks ...Hook) {
+	c.hooks.Clinic = append(c.hooks.Clinic, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `clinic.Intercept(f(g(h())))`.
+func (c *ClinicClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Clinic = append(c.inters.Clinic, interceptors...)
+}
+
+// Create returns a builder for creating a Clinic entity.
+func (c *ClinicClient) Create() *ClinicCreate {
+	mutation := newClinicMutation(c.config, OpCreate)
+	return &ClinicCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Clinic entities.
+func (c *ClinicClient) CreateBulk(builders ...*ClinicCreate) *ClinicCreateBulk {
+	return &ClinicCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ClinicClient) MapCreateBulk(slice any, setFunc func(*ClinicCreate, int)) *ClinicCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ClinicCreateBulk{err: fmt.Errorf("calling to ClinicClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ClinicCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ClinicCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Clinic.
+func (c *ClinicClient) Update() *ClinicUpdate {
+	mutation := newClinicMutation(c.config, OpUpdate)
+	return &ClinicUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ClinicClient) UpdateOne(_m *Clinic) *ClinicUpdateOne {
+	mutation := newClinicMutation(c.config, OpUpdateOne, withClinic(_m))
+	return &ClinicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ClinicClient) UpdateOneID(id uuid.UUID) *ClinicUpdateOne {
+	mutation := newClinicMutation(c.config, OpUpdateOne, withClinicID(id))
+	return &ClinicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Clinic.
+func (c *ClinicClient) Delete() *ClinicDelete {
+	mutation := newClinicMutation(c.config, OpDelete)
+	return &ClinicDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ClinicClient) DeleteOne(_m *Clinic) *ClinicDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ClinicClient) DeleteOneID(id uuid.UUID) *ClinicDeleteOne {
+	builder := c.Delete().Where(clinic.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ClinicDeleteOne{builder}
+}
+
+// Query returns a query builder for Clinic.
+func (c *ClinicClient) Query() *ClinicQuery {
+	return &ClinicQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeClinic},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Clinic entity by its id.
+func (c *ClinicClient) Get(ctx context.Context, id uuid.UUID) (*Clinic, error) {
+	return c.Query().Where(clinic.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ClinicClient) GetX(ctx context.Context, id uuid.UUID) *Clinic {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryMembers queries the members edge of a Clinic.
+func (c *ClinicClient) QueryMembers(_m *Clinic) *ClinicMemberQuery {
+	query := (&ClinicMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinic.Table, clinic.FieldID, id),
+			sqlgraph.To(clinicmember.Table, clinicmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, clinic.MembersTable, clinic.MembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySettings queries the settings edge of a Clinic.
+func (c *ClinicClient) QuerySettings(_m *Clinic) *ClinicSettingsQuery {
+	query := (&ClinicSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinic.Table, clinic.FieldID, id),
+			sqlgraph.To(clinicsettings.Table, clinicsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, clinic.SettingsTable, clinic.SettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ClinicClient) Hooks() []Hook {
+	return c.hooks.Clinic
+}
+
+// Interceptors returns the client interceptors.
+func (c *ClinicClient) Interceptors() []Interceptor {
+	return c.inters.Clinic
+}
+
+func (c *ClinicClient) mutate(ctx context.Context, m *ClinicMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ClinicCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ClinicUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ClinicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ClinicDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown Clinic mutation op: %q", m.Op())
+	}
+}
+
+// ClinicMemberClient is a client for the ClinicMember schema.
+type ClinicMemberClient struct {
+	config
+}
+
+// NewClinicMemberClient returns a client for the ClinicMember from the given config.
+func NewClinicMemberClient(c config) *ClinicMemberClient {
+	return &ClinicMemberClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `clinicmember.Hooks(f(g(h())))`.
+func (c *ClinicMemberClient) Use(hooks ...Hook) {
+	c.hooks.ClinicMember = append(c.hooks.ClinicMember, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `clinicmember.Intercept(f(g(h())))`.
+func (c *ClinicMemberClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ClinicMember = append(c.inters.ClinicMember, interceptors...)
+}
+
+// Create returns a builder for creating a ClinicMember entity.
+func (c *ClinicMemberClient) Create() *ClinicMemberCreate {
+	mutation := newClinicMemberMutation(c.config, OpCreate)
+	return &ClinicMemberCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ClinicMember entities.
+func (c *ClinicMemberClient) CreateBulk(builders ...*ClinicMemberCreate) *ClinicMemberCreateBulk {
+	return &ClinicMemberCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ClinicMemberClient) MapCreateBulk(slice any, setFunc func(*ClinicMemberCreate, int)) *ClinicMemberCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ClinicMemberCreateBulk{err: fmt.Errorf("calling to ClinicMemberClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ClinicMemberCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ClinicMemberCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ClinicMember.
+func (c *ClinicMemberClient) Update() *ClinicMemberUpdate {
+	mutation := newClinicMemberMutation(c.config, OpUpdate)
+	return &ClinicMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ClinicMemberClient) UpdateOne(_m *ClinicMember) *ClinicMemberUpdateOne {
+	mutation := newClinicMemberMutation(c.config, OpUpdateOne, withClinicMember(_m))
+	return &ClinicMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ClinicMemberClient) UpdateOneID(id uuid.UUID) *ClinicMemberUpdateOne {
+	mutation := newClinicMemberMutation(c.config, OpUpdateOne, withClinicMemberID(id))
+	return &ClinicMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ClinicMember.
+func (c *ClinicMemberClient) Delete() *ClinicMemberDelete {
+	mutation := newClinicMemberMutation(c.config, OpDelete)
+	return &ClinicMemberDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ClinicMemberClient) DeleteOne(_m *ClinicMember) *ClinicMemberDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ClinicMemberClient) DeleteOneID(id uuid.UUID) *ClinicMemberDeleteOne {
+	builder := c.Delete().Where(clinicmember.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ClinicMemberDeleteOne{builder}
+}
+
+// Query returns a query builder for ClinicMember.
+func (c *ClinicMemberClient) Query() *ClinicMemberQuery {
+	return &ClinicMemberQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeClinicMember},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ClinicMember entity by its id.
+func (c *ClinicMemberClient) Get(ctx context.Context, id uuid.UUID) (*ClinicMember, error) {
+	return c.Query().Where(clinicmember.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ClinicMemberClient) GetX(ctx context.Context, id uuid.UUID) *ClinicMember {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryClinic queries the clinic edge of a ClinicMember.
+func (c *ClinicMemberClient) QueryClinic(_m *ClinicMember) *ClinicQuery {
+	query := (&ClinicClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinicmember.Table, clinicmember.FieldID, id),
+			sqlgraph.To(clinic.Table, clinic.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, clinicmember.ClinicTable, clinicmember.ClinicColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a ClinicMember.
+func (c *ClinicMemberClient) QueryUser(_m *ClinicMember) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinicmember.Table, clinicmember.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, clinicmember.UserTable, clinicmember.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ClinicMemberClient) Hooks() []Hook {
+	return c.hooks.ClinicMember
+}
+
+// Interceptors returns the client interceptors.
+func (c *ClinicMemberClient) Interceptors() []Interceptor {
+	return c.inters.ClinicMember
+}
+
+func (c *ClinicMemberClient) mutate(ctx context.Context, m *ClinicMemberMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ClinicMemberCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ClinicMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ClinicMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ClinicMemberDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown ClinicMember mutation op: %q", m.Op())
+	}
+}
+
+// ClinicSettingsClient is a client for the ClinicSettings schema.
+type ClinicSettingsClient struct {
+	config
+}
+
+// NewClinicSettingsClient returns a client for the ClinicSettings from the given config.
+func NewClinicSettingsClient(c config) *ClinicSettingsClient {
+	return &ClinicSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `clinicsettings.Hooks(f(g(h())))`.
+func (c *ClinicSettingsClient) Use(hooks ...Hook) {
+	c.hooks.ClinicSettings = append(c.hooks.ClinicSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `clinicsettings.Intercept(f(g(h())))`.
+func (c *ClinicSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ClinicSettings = append(c.inters.ClinicSettings, interceptors...)
+}
+
+// Create returns a builder for creating a ClinicSettings entity.
+func (c *ClinicSettingsClient) Create() *ClinicSettingsCreate {
+	mutation := newClinicSettingsMutation(c.config, OpCreate)
+	return &ClinicSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ClinicSettings entities.
+func (c *ClinicSettingsClient) CreateBulk(builders ...*ClinicSettingsCreate) *ClinicSettingsCreateBulk {
+	return &ClinicSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ClinicSettingsClient) MapCreateBulk(slice any, setFunc func(*ClinicSettingsCreate, int)) *ClinicSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ClinicSettingsCreateBulk{err: fmt.Errorf("calling to ClinicSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ClinicSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ClinicSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ClinicSettings.
+func (c *ClinicSettingsClient) Update() *ClinicSettingsUpdate {
+	mutation := newClinicSettingsMutation(c.config, OpUpdate)
+	return &ClinicSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ClinicSettingsClient) UpdateOne(_m *ClinicSettings) *ClinicSettingsUpdateOne {
+	mutation := newClinicSettingsMutation(c.config, OpUpdateOne, withClinicSettings(_m))
+	return &ClinicSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ClinicSettingsClient) UpdateOneID(id uuid.UUID) *ClinicSettingsUpdateOne {
+	mutation := newClinicSettingsMutation(c.config, OpUpdateOne, withClinicSettingsID(id))
+	return &ClinicSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ClinicSettings.
+func (c *ClinicSettingsClient) Delete() *ClinicSettingsDelete {
+	mutation := newClinicSettingsMutation(c.config, OpDelete)
+	return &ClinicSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ClinicSettingsClient) DeleteOne(_m *ClinicSettings) *ClinicSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ClinicSettingsClient) DeleteOneID(id uuid.UUID) *ClinicSettingsDeleteOne {
+	builder := c.Delete().Where(clinicsettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ClinicSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for ClinicSettings.
+func (c *ClinicSettingsClient) Query() *ClinicSettingsQuery {
+	return &ClinicSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeClinicSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ClinicSettings entity by its id.
+func (c *ClinicSettingsClient) Get(ctx context.Context, id uuid.UUID) (*ClinicSettings, error) {
+	return c.Query().Where(clinicsettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ClinicSettingsClient) GetX(ctx context.Context, id uuid.UUID) *ClinicSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryClinic queries the clinic edge of a ClinicSettings.
+func (c *ClinicSettingsClient) QueryClinic(_m *ClinicSettings) *ClinicQuery {
+	query := (&ClinicClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinicsettings.Table, clinicsettings.FieldID, id),
+			sqlgraph.To(clinic.Table, clinic.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, clinicsettings.ClinicTable, clinicsettings.ClinicColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ClinicSettingsClient) Hooks() []Hook {
+	return c.hooks.ClinicSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *ClinicSettingsClient) Interceptors() []Interceptor {
+	return c.inters.ClinicSettings
+}
+
+func (c *ClinicSettingsClient) mutate(ctx context.Context, m *ClinicSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ClinicSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ClinicSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ClinicSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ClinicSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown ClinicSettings mutation op: %q", m.Op())
 	}
 }
 
@@ -330,12 +850,161 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// UserSessionClient is a client for the UserSession schema.
+type UserSessionClient struct {
+	config
+}
+
+// NewUserSessionClient returns a client for the UserSession from the given config.
+func NewUserSessionClient(c config) *UserSessionClient {
+	return &UserSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usersession.Hooks(f(g(h())))`.
+func (c *UserSessionClient) Use(hooks ...Hook) {
+	c.hooks.UserSession = append(c.hooks.UserSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usersession.Intercept(f(g(h())))`.
+func (c *UserSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserSession = append(c.inters.UserSession, interceptors...)
+}
+
+// Create returns a builder for creating a UserSession entity.
+func (c *UserSessionClient) Create() *UserSessionCreate {
+	mutation := newUserSessionMutation(c.config, OpCreate)
+	return &UserSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserSession entities.
+func (c *UserSessionClient) CreateBulk(builders ...*UserSessionCreate) *UserSessionCreateBulk {
+	return &UserSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserSessionClient) MapCreateBulk(slice any, setFunc func(*UserSessionCreate, int)) *UserSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserSessionCreateBulk{err: fmt.Errorf("calling to UserSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserSession.
+func (c *UserSessionClient) Update() *UserSessionUpdate {
+	mutation := newUserSessionMutation(c.config, OpUpdate)
+	return &UserSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserSessionClient) UpdateOne(_m *UserSession) *UserSessionUpdateOne {
+	mutation := newUserSessionMutation(c.config, OpUpdateOne, withUserSession(_m))
+	return &UserSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserSessionClient) UpdateOneID(id uuid.UUID) *UserSessionUpdateOne {
+	mutation := newUserSessionMutation(c.config, OpUpdateOne, withUserSessionID(id))
+	return &UserSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserSession.
+func (c *UserSessionClient) Delete() *UserSessionDelete {
+	mutation := newUserSessionMutation(c.config, OpDelete)
+	return &UserSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserSessionClient) DeleteOne(_m *UserSession) *UserSessionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserSessionClient) DeleteOneID(id uuid.UUID) *UserSessionDeleteOne {
+	builder := c.Delete().Where(usersession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for UserSession.
+func (c *UserSessionClient) Query() *UserSessionQuery {
+	return &UserSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserSession entity by its id.
+func (c *UserSessionClient) Get(ctx context.Context, id uuid.UUID) (*UserSession, error) {
+	return c.Query().Where(usersession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserSessionClient) GetX(ctx context.Context, id uuid.UUID) *UserSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a UserSession.
+func (c *UserSessionClient) QueryUser(_m *UserSession) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usersession.Table, usersession.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, usersession.UserTable, usersession.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserSessionClient) Hooks() []Hook {
+	return c.hooks.UserSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserSessionClient) Interceptors() []Interceptor {
+	return c.inters.UserSession
+}
+
+func (c *UserSessionClient) mutate(ctx context.Context, m *UserSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown UserSession mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		User []ent.Hook
+		Clinic, ClinicMember, ClinicSettings, User, UserSession []ent.Hook
 	}
 	inters struct {
-		User []ent.Interceptor
+		Clinic, ClinicMember, ClinicSettings, User, UserSession []ent.Interceptor
 	}
 )

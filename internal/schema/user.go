@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 type User struct {
@@ -40,6 +41,44 @@ func (User) Fields() []ent.Field {
 			Unique().
 			MaxLen(255),
 
+		// National ID stored AES-256-GCM encrypted; nullable because clients
+		// may register via phone only and fill national_id later.
+		field.String("national_id").
+			Optional().
+			Nillable().
+			MaxLen(500).
+			Sensitive().
+			Comment("AES-256-GCM encrypted national ID (کد ملی)"),
+
+		// SHA-256 hex of raw national_id for fast uniqueness lookups.
+		field.String("national_id_hash").
+			Optional().
+			Nillable().
+			Unique().
+			MaxLen(64).
+			Comment("SHA-256 hex of national_id for indexed lookup"),
+
+		field.String("gender").
+			Optional().
+			Nillable().
+			MaxLen(10),
+
+		field.String("marital_status").
+			Optional().
+			Nillable().
+			MaxLen(20),
+
+		// Jalali (Shamsi) birth year, e.g. 1370
+		field.Int("birth_year").
+			Optional().
+			Nillable(),
+
+		// S3 key for the user's avatar image
+		field.String("avatar_key").
+			Optional().
+			Nillable().
+			MaxLen(500),
+
 		field.String("password_hash").
 			Optional().
 			Nillable().
@@ -58,7 +97,7 @@ func (User) Fields() []ent.Field {
 		field.Bool("twofa_phone_enabled").Default(false),
 		field.Bool("twofa_email_enabled").Default(false),
 
-		// audit
+		// Audit
 		field.Time("last_login_at").
 			Optional().
 			Nillable(),
@@ -87,7 +126,10 @@ func (User) Fields() []ent.Field {
 }
 
 func (User) Indexes() []ent.Index {
-	return []ent.Index{}
+	return []ent.Index{
+		index.Fields("phone"),
+		index.Fields("national_id_hash"),
+	}
 }
 
 func (User) Edges() []ent.Edge {

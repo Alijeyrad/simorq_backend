@@ -1,0 +1,68 @@
+services:
+
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: simorq_db
+    ports:
+      - "5432:5432"
+    volumes:
+      # postgres:18+ stores data under /var/lib/postgresql/<version>/main
+      - postgres-data:/var/lib/postgresql
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount entire project for hot reload
+      - .:/app
+      # Cache the Go module cache across rebuilds
+      - go-pkg:/go/pkg
+    environment:
+      - GOPROXY=https://proxy.golang.org,direct
+      # Override config.yaml connection strings for Docker networking
+      - SIMORQ_DATABASE_HOST=postgres
+      - SIMORQ_DATABASE_PORT=5432
+      - SIMORQ_CONTEXT_DATABASE_HOST=postgres
+      - SIMORQ_CONTEXT_DATABASE_PORT=5432
+      - SIMORQ_CASBIN_DATABASE_HOST=postgres
+      - SIMORQ_CASBIN_DATABASE_PORT=5432
+      - SIMORQ_REDIS_ADDR=redis:6379
+    working_dir: /app
+
+volumes:
+  postgres-data:
+  redis-data:
+  go-pkg:

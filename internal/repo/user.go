@@ -33,6 +33,18 @@ type User struct {
 	Phone *string `json:"phone,omitempty"`
 	// Email holds the value of the "email" field.
 	Email *string `json:"email,omitempty"`
+	// AES-256-GCM encrypted national ID (کد ملی)
+	NationalID *string `json:"-"`
+	// SHA-256 hex of national_id for indexed lookup
+	NationalIDHash *string `json:"national_id_hash,omitempty"`
+	// Gender holds the value of the "gender" field.
+	Gender *string `json:"gender,omitempty"`
+	// MaritalStatus holds the value of the "marital_status" field.
+	MaritalStatus *string `json:"marital_status,omitempty"`
+	// BirthYear holds the value of the "birth_year" field.
+	BirthYear *int `json:"birth_year,omitempty"`
+	// AvatarKey holds the value of the "avatar_key" field.
+	AvatarKey *string `json:"avatar_key,omitempty"`
 	// PasswordHash holds the value of the "password_hash" field.
 	PasswordHash *string `json:"-"`
 	// MustChangePassword holds the value of the "must_change_password" field.
@@ -71,9 +83,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case user.FieldMustChangePassword, user.FieldPhoneVerified, user.FieldEmailVerified, user.FieldTwofaPhoneEnabled, user.FieldTwofaEmailEnabled:
 			values[i] = new(sql.NullBool)
-		case user.FieldFailedLoginAttempts:
+		case user.FieldBirthYear, user.FieldFailedLoginAttempts:
 			values[i] = new(sql.NullInt64)
-		case user.FieldFirstName, user.FieldLastName, user.FieldPhone, user.FieldEmail, user.FieldPasswordHash, user.FieldStatus:
+		case user.FieldFirstName, user.FieldLastName, user.FieldPhone, user.FieldEmail, user.FieldNationalID, user.FieldNationalIDHash, user.FieldGender, user.FieldMaritalStatus, user.FieldAvatarKey, user.FieldPasswordHash, user.FieldStatus:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldDeletedAt, user.FieldLastLoginAt, user.FieldLockedUntil, user.FieldLastFailedLoginAt, user.FieldSuspendedAt:
 			values[i] = new(sql.NullTime)
@@ -146,6 +158,48 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Email = new(string)
 				*_m.Email = value.String
+			}
+		case user.FieldNationalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field national_id", values[i])
+			} else if value.Valid {
+				_m.NationalID = new(string)
+				*_m.NationalID = value.String
+			}
+		case user.FieldNationalIDHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field national_id_hash", values[i])
+			} else if value.Valid {
+				_m.NationalIDHash = new(string)
+				*_m.NationalIDHash = value.String
+			}
+		case user.FieldGender:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field gender", values[i])
+			} else if value.Valid {
+				_m.Gender = new(string)
+				*_m.Gender = value.String
+			}
+		case user.FieldMaritalStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field marital_status", values[i])
+			} else if value.Valid {
+				_m.MaritalStatus = new(string)
+				*_m.MaritalStatus = value.String
+			}
+		case user.FieldBirthYear:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field birth_year", values[i])
+			} else if value.Valid {
+				_m.BirthYear = new(int)
+				*_m.BirthYear = int(value.Int64)
+			}
+		case user.FieldAvatarKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field avatar_key", values[i])
+			} else if value.Valid {
+				_m.AvatarKey = new(string)
+				*_m.AvatarKey = value.String
 			}
 		case user.FieldPasswordHash:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -296,6 +350,33 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	if v := _m.Email; v != nil {
 		builder.WriteString("email=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("national_id=<sensitive>")
+	builder.WriteString(", ")
+	if v := _m.NationalIDHash; v != nil {
+		builder.WriteString("national_id_hash=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.Gender; v != nil {
+		builder.WriteString("gender=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MaritalStatus; v != nil {
+		builder.WriteString("marital_status=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.BirthYear; v != nil {
+		builder.WriteString("birth_year=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.AvatarKey; v != nil {
+		builder.WriteString("avatar_key=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

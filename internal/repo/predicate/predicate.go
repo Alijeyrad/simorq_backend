@@ -6,5 +6,17 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Clinic is the predicate function for clinic builders.
+type Clinic func(*sql.Selector)
+
+// ClinicMember is the predicate function for clinicmember builders.
+type ClinicMember func(*sql.Selector)
+
+// ClinicSettings is the predicate function for clinicsettings builders.
+type ClinicSettings func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// UserSession is the predicate function for usersession builders.
+type UserSession func(*sql.Selector)

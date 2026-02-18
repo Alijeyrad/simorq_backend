@@ -119,6 +119,90 @@ func (_c *UserCreate) SetNillableEmail(v *string) *UserCreate {
 	return _c
 }
 
+// SetNationalID sets the "national_id" field.
+func (_c *UserCreate) SetNationalID(v string) *UserCreate {
+	_c.mutation.SetNationalID(v)
+	return _c
+}
+
+// SetNillableNationalID sets the "national_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNationalID(v *string) *UserCreate {
+	if v != nil {
+		_c.SetNationalID(*v)
+	}
+	return _c
+}
+
+// SetNationalIDHash sets the "national_id_hash" field.
+func (_c *UserCreate) SetNationalIDHash(v string) *UserCreate {
+	_c.mutation.SetNationalIDHash(v)
+	return _c
+}
+
+// SetNillableNationalIDHash sets the "national_id_hash" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNationalIDHash(v *string) *UserCreate {
+	if v != nil {
+		_c.SetNationalIDHash(*v)
+	}
+	return _c
+}
+
+// SetGender sets the "gender" field.
+func (_c *UserCreate) SetGender(v string) *UserCreate {
+	_c.mutation.SetGender(v)
+	return _c
+}
+
+// SetNillableGender sets the "gender" field if the given value is not nil.
+func (_c *UserCreate) SetNillableGender(v *string) *UserCreate {
+	if v != nil {
+		_c.SetGender(*v)
+	}
+	return _c
+}
+
+// SetMaritalStatus sets the "marital_status" field.
+func (_c *UserCreate) SetMaritalStatus(v string) *UserCreate {
+	_c.mutation.SetMaritalStatus(v)
+	return _c
+}
+
+// SetNillableMaritalStatus sets the "marital_status" field if the given value is not nil.
+func (_c *UserCreate) SetNillableMaritalStatus(v *string) *UserCreate {
+	if v != nil {
+		_c.SetMaritalStatus(*v)
+	}
+	return _c
+}
+
+// SetBirthYear sets the "birth_year" field.
+func (_c *UserCreate) SetBirthYear(v int) *UserCreate {
+	_c.mutation.SetBirthYear(v)
+	return _c
+}
+
+// SetNillableBirthYear sets the "birth_year" field if the given value is not nil.
+func (_c *UserCreate) SetNillableBirthYear(v *int) *UserCreate {
+	if v != nil {
+		_c.SetBirthYear(*v)
+	}
+	return _c
+}
+
+// SetAvatarKey sets the "avatar_key" field.
+func (_c *UserCreate) SetAvatarKey(v string) *UserCreate {
+	_c.mutation.SetAvatarKey(v)
+	return _c
+}
+
+// SetNillableAvatarKey sets the "avatar_key" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAvatarKey(v *string) *UserCreate {
+	if v != nil {
+		_c.SetAvatarKey(*v)
+	}
+	return _c
+}
+
 // SetPasswordHash sets the "password_hash" field.
 func (_c *UserCreate) SetPasswordHash(v string) *UserCreate {
 	_c.mutation.SetPasswordHash(v)
@@ -416,6 +500,31 @@ func (_c *UserCreate) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`repo: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.NationalID(); ok {
+		if err := user.NationalIDValidator(v); err != nil {
+			return &ValidationError{Name: "national_id", err: fmt.Errorf(`repo: validator failed for field "User.national_id": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.NationalIDHash(); ok {
+		if err := user.NationalIDHashValidator(v); err != nil {
+			return &ValidationError{Name: "national_id_hash", err: fmt.Errorf(`repo: validator failed for field "User.national_id_hash": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.Gender(); ok {
+		if err := user.GenderValidator(v); err != nil {
+			return &ValidationError{Name: "gender", err: fmt.Errorf(`repo: validator failed for field "User.gender": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.MaritalStatus(); ok {
+		if err := user.MaritalStatusValidator(v); err != nil {
+			return &ValidationError{Name: "marital_status", err: fmt.Errorf(`repo: validator failed for field "User.marital_status": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.AvatarKey(); ok {
+		if err := user.AvatarKeyValidator(v); err != nil {
+			return &ValidationError{Name: "avatar_key", err: fmt.Errorf(`repo: validator failed for field "User.avatar_key": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.MustChangePassword(); !ok {
 		return &ValidationError{Name: "must_change_password", err: errors.New(`repo: missing required field "User.must_change_password"`)}
 	}
@@ -509,6 +618,30 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = &value
+	}
+	if value, ok := _c.mutation.NationalID(); ok {
+		_spec.SetField(user.FieldNationalID, field.TypeString, value)
+		_node.NationalID = &value
+	}
+	if value, ok := _c.mutation.NationalIDHash(); ok {
+		_spec.SetField(user.FieldNationalIDHash, field.TypeString, value)
+		_node.NationalIDHash = &value
+	}
+	if value, ok := _c.mutation.Gender(); ok {
+		_spec.SetField(user.FieldGender, field.TypeString, value)
+		_node.Gender = &value
+	}
+	if value, ok := _c.mutation.MaritalStatus(); ok {
+		_spec.SetField(user.FieldMaritalStatus, field.TypeString, value)
+		_node.MaritalStatus = &value
+	}
+	if value, ok := _c.mutation.BirthYear(); ok {
+		_spec.SetField(user.FieldBirthYear, field.TypeInt, value)
+		_node.BirthYear = &value
+	}
+	if value, ok := _c.mutation.AvatarKey(); ok {
+		_spec.SetField(user.FieldAvatarKey, field.TypeString, value)
+		_node.AvatarKey = &value
 	}
 	if value, ok := _c.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)

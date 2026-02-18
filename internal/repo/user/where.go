@@ -90,6 +90,36 @@ func Email(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldEmail, v))
 }
 
+// NationalID applies equality check predicate on the "national_id" field. It's identical to NationalIDEQ.
+func NationalID(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNationalID, v))
+}
+
+// NationalIDHash applies equality check predicate on the "national_id_hash" field. It's identical to NationalIDHashEQ.
+func NationalIDHash(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNationalIDHash, v))
+}
+
+// Gender applies equality check predicate on the "gender" field. It's identical to GenderEQ.
+func Gender(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldGender, v))
+}
+
+// MaritalStatus applies equality check predicate on the "marital_status" field. It's identical to MaritalStatusEQ.
+func MaritalStatus(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldMaritalStatus, v))
+}
+
+// BirthYear applies equality check predicate on the "birth_year" field. It's identical to BirthYearEQ.
+func BirthYear(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldBirthYear, v))
+}
+
+// AvatarKey applies equality check predicate on the "avatar_key" field. It's identical to AvatarKeyEQ.
+func AvatarKey(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAvatarKey, v))
+}
+
 // PasswordHash applies equality check predicate on the "password_hash" field. It's identical to PasswordHashEQ.
 func PasswordHash(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordHash, v))
@@ -573,6 +603,431 @@ func EmailEqualFold(v string) predicate.User {
 // EmailContainsFold applies the ContainsFold predicate on the "email" field.
 func EmailContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldEmail, v))
+}
+
+// NationalIDEQ applies the EQ predicate on the "national_id" field.
+func NationalIDEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNationalID, v))
+}
+
+// NationalIDNEQ applies the NEQ predicate on the "national_id" field.
+func NationalIDNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNationalID, v))
+}
+
+// NationalIDIn applies the In predicate on the "national_id" field.
+func NationalIDIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldNationalID, vs...))
+}
+
+// NationalIDNotIn applies the NotIn predicate on the "national_id" field.
+func NationalIDNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldNationalID, vs...))
+}
+
+// NationalIDGT applies the GT predicate on the "national_id" field.
+func NationalIDGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldNationalID, v))
+}
+
+// NationalIDGTE applies the GTE predicate on the "national_id" field.
+func NationalIDGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldNationalID, v))
+}
+
+// NationalIDLT applies the LT predicate on the "national_id" field.
+func NationalIDLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldNationalID, v))
+}
+
+// NationalIDLTE applies the LTE predicate on the "national_id" field.
+func NationalIDLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldNationalID, v))
+}
+
+// NationalIDContains applies the Contains predicate on the "national_id" field.
+func NationalIDContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldNationalID, v))
+}
+
+// NationalIDHasPrefix applies the HasPrefix predicate on the "national_id" field.
+func NationalIDHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldNationalID, v))
+}
+
+// NationalIDHasSuffix applies the HasSuffix predicate on the "national_id" field.
+func NationalIDHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldNationalID, v))
+}
+
+// NationalIDIsNil applies the IsNil predicate on the "national_id" field.
+func NationalIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldNationalID))
+}
+
+// NationalIDNotNil applies the NotNil predicate on the "national_id" field.
+func NationalIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldNationalID))
+}
+
+// NationalIDEqualFold applies the EqualFold predicate on the "national_id" field.
+func NationalIDEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldNationalID, v))
+}
+
+// NationalIDContainsFold applies the ContainsFold predicate on the "national_id" field.
+func NationalIDContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldNationalID, v))
+}
+
+// NationalIDHashEQ applies the EQ predicate on the "national_id_hash" field.
+func NationalIDHashEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNationalIDHash, v))
+}
+
+// NationalIDHashNEQ applies the NEQ predicate on the "national_id_hash" field.
+func NationalIDHashNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNationalIDHash, v))
+}
+
+// NationalIDHashIn applies the In predicate on the "national_id_hash" field.
+func NationalIDHashIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldNationalIDHash, vs...))
+}
+
+// NationalIDHashNotIn applies the NotIn predicate on the "national_id_hash" field.
+func NationalIDHashNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldNationalIDHash, vs...))
+}
+
+// NationalIDHashGT applies the GT predicate on the "national_id_hash" field.
+func NationalIDHashGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldNationalIDHash, v))
+}
+
+// NationalIDHashGTE applies the GTE predicate on the "national_id_hash" field.
+func NationalIDHashGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldNationalIDHash, v))
+}
+
+// NationalIDHashLT applies the LT predicate on the "national_id_hash" field.
+func NationalIDHashLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldNationalIDHash, v))
+}
+
+// NationalIDHashLTE applies the LTE predicate on the "national_id_hash" field.
+func NationalIDHashLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldNationalIDHash, v))
+}
+
+// NationalIDHashContains applies the Contains predicate on the "national_id_hash" field.
+func NationalIDHashContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldNationalIDHash, v))
+}
+
+// NationalIDHashHasPrefix applies the HasPrefix predicate on the "national_id_hash" field.
+func NationalIDHashHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldNationalIDHash, v))
+}
+
+// NationalIDHashHasSuffix applies the HasSuffix predicate on the "national_id_hash" field.
+func NationalIDHashHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldNationalIDHash, v))
+}
+
+// NationalIDHashIsNil applies the IsNil predicate on the "national_id_hash" field.
+func NationalIDHashIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldNationalIDHash))
+}
+
+// NationalIDHashNotNil applies the NotNil predicate on the "national_id_hash" field.
+func NationalIDHashNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldNationalIDHash))
+}
+
+// NationalIDHashEqualFold applies the EqualFold predicate on the "national_id_hash" field.
+func NationalIDHashEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldNationalIDHash, v))
+}
+
+// NationalIDHashContainsFold applies the ContainsFold predicate on the "national_id_hash" field.
+func NationalIDHashContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldNationalIDHash, v))
+}
+
+// GenderEQ applies the EQ predicate on the "gender" field.
+func GenderEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldGender, v))
+}
+
+// GenderNEQ applies the NEQ predicate on the "gender" field.
+func GenderNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldGender, v))
+}
+
+// GenderIn applies the In predicate on the "gender" field.
+func GenderIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldGender, vs...))
+}
+
+// GenderNotIn applies the NotIn predicate on the "gender" field.
+func GenderNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldGender, vs...))
+}
+
+// GenderGT applies the GT predicate on the "gender" field.
+func GenderGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldGender, v))
+}
+
+// GenderGTE applies the GTE predicate on the "gender" field.
+func GenderGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldGender, v))
+}
+
+// GenderLT applies the LT predicate on the "gender" field.
+func GenderLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldGender, v))
+}
+
+// GenderLTE applies the LTE predicate on the "gender" field.
+func GenderLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldGender, v))
+}
+
+// GenderContains applies the Contains predicate on the "gender" field.
+func GenderContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldGender, v))
+}
+
+// GenderHasPrefix applies the HasPrefix predicate on the "gender" field.
+func GenderHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldGender, v))
+}
+
+// GenderHasSuffix applies the HasSuffix predicate on the "gender" field.
+func GenderHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldGender, v))
+}
+
+// GenderIsNil applies the IsNil predicate on the "gender" field.
+func GenderIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldGender))
+}
+
+// GenderNotNil applies the NotNil predicate on the "gender" field.
+func GenderNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldGender))
+}
+
+// GenderEqualFold applies the EqualFold predicate on the "gender" field.
+func GenderEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldGender, v))
+}
+
+// GenderContainsFold applies the ContainsFold predicate on the "gender" field.
+func GenderContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldGender, v))
+}
+
+// MaritalStatusEQ applies the EQ predicate on the "marital_status" field.
+func MaritalStatusEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldMaritalStatus, v))
+}
+
+// MaritalStatusNEQ applies the NEQ predicate on the "marital_status" field.
+func MaritalStatusNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldMaritalStatus, v))
+}
+
+// MaritalStatusIn applies the In predicate on the "marital_status" field.
+func MaritalStatusIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldMaritalStatus, vs...))
+}
+
+// MaritalStatusNotIn applies the NotIn predicate on the "marital_status" field.
+func MaritalStatusNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldMaritalStatus, vs...))
+}
+
+// MaritalStatusGT applies the GT predicate on the "marital_status" field.
+func MaritalStatusGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldMaritalStatus, v))
+}
+
+// MaritalStatusGTE applies the GTE predicate on the "marital_status" field.
+func MaritalStatusGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldMaritalStatus, v))
+}
+
+// MaritalStatusLT applies the LT predicate on the "marital_status" field.
+func MaritalStatusLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldMaritalStatus, v))
+}
+
+// MaritalStatusLTE applies the LTE predicate on the "marital_status" field.
+func MaritalStatusLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldMaritalStatus, v))
+}
+
+// MaritalStatusContains applies the Contains predicate on the "marital_status" field.
+func MaritalStatusContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldMaritalStatus, v))
+}
+
+// MaritalStatusHasPrefix applies the HasPrefix predicate on the "marital_status" field.
+func MaritalStatusHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldMaritalStatus, v))
+}
+
+// MaritalStatusHasSuffix applies the HasSuffix predicate on the "marital_status" field.
+func MaritalStatusHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldMaritalStatus, v))
+}
+
+// MaritalStatusIsNil applies the IsNil predicate on the "marital_status" field.
+func MaritalStatusIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldMaritalStatus))
+}
+
+// MaritalStatusNotNil applies the NotNil predicate on the "marital_status" field.
+func MaritalStatusNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldMaritalStatus))
+}
+
+// MaritalStatusEqualFold applies the EqualFold predicate on the "marital_status" field.
+func MaritalStatusEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldMaritalStatus, v))
+}
+
+// MaritalStatusContainsFold applies the ContainsFold predicate on the "marital_status" field.
+func MaritalStatusContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldMaritalStatus, v))
+}
+
+// BirthYearEQ applies the EQ predicate on the "birth_year" field.
+func BirthYearEQ(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldBirthYear, v))
+}
+
+// BirthYearNEQ applies the NEQ predicate on the "birth_year" field.
+func BirthYearNEQ(v int) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldBirthYear, v))
+}
+
+// BirthYearIn applies the In predicate on the "birth_year" field.
+func BirthYearIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldIn(FieldBirthYear, vs...))
+}
+
+// BirthYearNotIn applies the NotIn predicate on the "birth_year" field.
+func BirthYearNotIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldBirthYear, vs...))
+}
+
+// BirthYearGT applies the GT predicate on the "birth_year" field.
+func BirthYearGT(v int) predicate.User {
+	return predicate.User(sql.FieldGT(FieldBirthYear, v))
+}
+
+// BirthYearGTE applies the GTE predicate on the "birth_year" field.
+func BirthYearGTE(v int) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldBirthYear, v))
+}
+
+// BirthYearLT applies the LT predicate on the "birth_year" field.
+func BirthYearLT(v int) predicate.User {
+	return predicate.User(sql.FieldLT(FieldBirthYear, v))
+}
+
+// BirthYearLTE applies the LTE predicate on the "birth_year" field.
+func BirthYearLTE(v int) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldBirthYear, v))
+}
+
+// BirthYearIsNil applies the IsNil predicate on the "birth_year" field.
+func BirthYearIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldBirthYear))
+}
+
+// BirthYearNotNil applies the NotNil predicate on the "birth_year" field.
+func BirthYearNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldBirthYear))
+}
+
+// AvatarKeyEQ applies the EQ predicate on the "avatar_key" field.
+func AvatarKeyEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAvatarKey, v))
+}
+
+// AvatarKeyNEQ applies the NEQ predicate on the "avatar_key" field.
+func AvatarKeyNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAvatarKey, v))
+}
+
+// AvatarKeyIn applies the In predicate on the "avatar_key" field.
+func AvatarKeyIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAvatarKey, vs...))
+}
+
+// AvatarKeyNotIn applies the NotIn predicate on the "avatar_key" field.
+func AvatarKeyNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAvatarKey, vs...))
+}
+
+// AvatarKeyGT applies the GT predicate on the "avatar_key" field.
+func AvatarKeyGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldAvatarKey, v))
+}
+
+// AvatarKeyGTE applies the GTE predicate on the "avatar_key" field.
+func AvatarKeyGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldAvatarKey, v))
+}
+
+// AvatarKeyLT applies the LT predicate on the "avatar_key" field.
+func AvatarKeyLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldAvatarKey, v))
+}
+
+// AvatarKeyLTE applies the LTE predicate on the "avatar_key" field.
+func AvatarKeyLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldAvatarKey, v))
+}
+
+// AvatarKeyContains applies the Contains predicate on the "avatar_key" field.
+func AvatarKeyContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldAvatarKey, v))
+}
+
+// AvatarKeyHasPrefix applies the HasPrefix predicate on the "avatar_key" field.
+func AvatarKeyHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldAvatarKey, v))
+}
+
+// AvatarKeyHasSuffix applies the HasSuffix predicate on the "avatar_key" field.
+func AvatarKeyHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldAvatarKey, v))
+}
+
+// AvatarKeyIsNil applies the IsNil predicate on the "avatar_key" field.
+func AvatarKeyIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldAvatarKey))
+}
+
+// AvatarKeyNotNil applies the NotNil predicate on the "avatar_key" field.
+func AvatarKeyNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldAvatarKey))
+}
+
+// AvatarKeyEqualFold applies the EqualFold predicate on the "avatar_key" field.
+func AvatarKeyEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldAvatarKey, v))
+}
+
+// AvatarKeyContainsFold applies the ContainsFold predicate on the "avatar_key" field.
+func AvatarKeyContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldAvatarKey, v))
 }
 
 // PasswordHashEQ applies the EQ predicate on the "password_hash" field.

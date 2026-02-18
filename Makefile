@@ -12,17 +12,19 @@ REDIS_PORT=6379
 CONFIG ?= config.yaml
 
 # --- Colors for help output ---
-RESET  := \033[0m
-CYAN   := \033[36m
-YELLOW := \033[33m
-GREEN  := \033[32m
-BLUE   := \033[34m
-RED    := \033[31m
+ESC    := $(shell printf '\033')
+RESET  := $(ESC)[0m
+CYAN   := $(ESC)[36m
+YELLOW := $(ESC)[33m
+GREEN  := $(ESC)[32m
+BLUE   := $(ESC)[34m
+RED    := $(ESC)[31m
 
 # --- .PHONY declarations ---
 .PHONY: build run http-start test clean install tidy fmt vet lint entgen docgen help
 .PHONY: db-start db-stop db-restart db-logs db-shell db-status db-clean db-init db-migrate
 .PHONY: redis-start redis-stop redis-restart redis-logs redis-shell redis-status redis-clean
+.PHONY: dev down logs docker-build rebuild
 
 # --- Application Targets ----------------------------------------
 
@@ -172,26 +174,31 @@ redis-clean: ## Remove Redis container and data volume
 
 # --- Docker Compose Targets --------------------
 
-dev: ## Start the full development environment with Docker Compose
-	@echo "$(BLUE)Starting development environment with Docker Compose...$(RESET)"
-	@docker-compose -f $(COMPOSE_FILE) up -d
+dev: ## Start full dev environment (postgres + redis + app with Air hot reload)
+	@echo "$(BLUE)Starting development environment...$(RESET)"
+	@docker compose -f $(COMPOSE_FILE) up --build
 	@echo "$(GREEN)Development environment started!$(RESET)"
-	@echo "$(CYAN)Service URLs:$(CYAN)"
-	@echo "HTTP Server: http://localhost:8080"
-	@echo "PostgreSQL: postgres://$(DB_USER):$(DB_PASSWORD)@localhost:$(DB_PORT)/$(DB_NAME)"
-	@echo "Redis: redis://localhost:$(REDIS_PORT)"
+	@echo "$(CYAN)Service URLs:$(RESET)"
+	@echo "  HTTP Server: http://localhost:8080"
+	@echo "  PostgreSQL:  postgres://$(DB_USER):$(DB_PASSWORD)@localhost:$(DB_PORT)/$(DB_NAME)"
+	@echo "  Redis:       redis://localhost:$(REDIS_PORT)"
 
 down: ## Stop the Docker Compose environment
 	@echo "$(YELLOW)Stopping Docker Compose environment...$(RESET)"
-	@docker-compose -f $(COMPOSE_FILE) down
+	@docker compose -f $(COMPOSE_FILE) down
 	@echo "$(GREEN)Environment stopped!$(RESET)"
+
+logs: ## Tail logs from the app container
+	@docker compose -f $(COMPOSE_FILE) logs -f app
 
 docker-build: ## Build Docker images for the application
 	@echo "$(BLUE)Building Docker images...$(RESET)"
-	@docker-compose -f $(COMPOSE_FILE) build --no-deps --force-recreate
+	@docker compose -f $(COMPOSE_FILE) build
 	@echo "$(GREEN)Docker images built!$(RESET)"
 
-rebuild: down build dev ## Rebuild the application and restart the Docker Compose environment	
+rebuild: down docker-build dev ## Tear down, rebuild images, and start dev environment
+
+restart: down dev ## Restart the full dev environment
 
 # --- Help ---------------------------------------------------
 

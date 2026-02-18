@@ -1,0 +1,234 @@
+# Simorq Backend - Example Configuration
+# Copy this file to config.yaml and fill in the real values.
+# This file is safe to commit — all secrets are replaced with placeholders.
+
+# ── Databases ────────────────────────────────────────────────────────────────
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: CHANGE_ME
+  dbname: simorq_db
+  sslmode: disable
+  pool:
+    max_open_conns: 25
+    max_idle_conns: 10
+    conn_max_lifetime_minutes: 30
+  migrations:
+    auto_migrate: true
+    safe_mode: false
+  logging:
+    enabled: true
+    slow_query_threshold_ms: 200
+
+context_database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: CHANGE_ME
+  dbname: simorq_context_db
+  sslmode: disable
+  pool:
+    max_open_conns: 10
+    max_idle_conns: 5
+    conn_max_lifetime_minutes: 30
+  migrations:
+    auto_migrate: true
+    safe_mode: false
+  logging:
+    enabled: false
+    slow_query_threshold_ms: 500
+
+casbin_database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: CHANGE_ME
+  dbname: simorq_casbin_db
+  sslmode: disable
+  pool:
+    max_open_conns: 10
+    max_idle_conns: 5
+    conn_max_lifetime_minutes: 30
+  migrations:
+    auto_migrate: true
+    safe_mode: false
+  logging:
+    enabled: false
+    slow_query_threshold_ms: 500
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+
+redis:
+  addr: localhost:6379
+  db: 0
+  username: ""
+  password: ""
+  pool_size: 10
+  min_idle_conns: 2
+  dial_timeout_seconds: 5
+  read_timeout_seconds: 3
+  write_timeout_seconds: 3
+
+# ── HTTP Server ───────────────────────────────────────────────────────────────
+
+server:
+  port: 8080
+  timeout_seconds: 30
+  environment: development
+  domain: localhost
+  databases:
+    - simorq_db
+    - simorq_context_db
+    - simorq_casbin_db
+
+  cors:
+    enabled: true
+    allow_origins:
+      - "http://localhost:3000"
+      - "http://localhost:5173"
+    allow_methods:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    allow_headers:
+      - Origin
+      - Content-Type
+      - Accept
+      - Authorization
+      - X-Request-ID
+      - X-Clinic-ID
+    expose_headers:
+      - X-Request-ID
+    allow_credentials: true
+    max_age_seconds: 86400
+
+  headers:
+    xss_protection: "1; mode=block"
+    content_type_nosniff: "nosniff"
+    x_frame_options: "SAMEORIGIN"
+    referrer_policy: "strict-origin-when-cross-origin"
+    cross_origin_embedder_policy: "require-corp"
+    cross_origin_opener_policy: "same-origin"
+    cross_origin_resource_policy: "same-origin"
+    origin_agent_cluster: "?1"
+    x_dns_prefetch_control: "off"
+    x_download_options: "noopen"
+    x_permitted_cross_domain: "none"
+
+# ── Authentication ────────────────────────────────────────────────────────────
+
+authentication:
+  default_password_length: 16
+  session_ttl_minutes: 10080
+  otp_ttl_minutes: 5
+
+  # Generate with: openssl rand -hex 32
+  encryption_key: "YOUR_64_HEX_CHAR_AES256_KEY_HERE_______________________________"
+
+  paseto:
+    mode: local
+    # Generate with: openssl rand -hex 32
+    local_key_hex: "YOUR_64_HEX_CHAR_PASETO_LOCAL_KEY_HERE__________________________"
+    secret_key_hex: ""
+    public_key_hex: ""
+    issuer: "simorq-backend"
+    audience: "simorq-app"
+    access_ttl_minutes: 15
+    refresh_ttl_days: 7
+
+# ── Authorization (Casbin RBAC) ───────────────────────────────────────────────
+
+authorization:
+  casbin_model_path: casbin/model.conf
+  enable_audit: false
+  superadmin_bypass: true
+  policy_sync_enabled: true
+  health_check_enabled: true
+
+# ── Email ─────────────────────────────────────────────────────────────────────
+
+email:
+  enabled: false
+  from: "noreply@simorqcare.com"
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: ""
+    password: YOUR_SMTP_PASSWORD
+    use_tls: true
+    timeout_seconds: 10
+
+# ── SMS ───────────────────────────────────────────────────────────────────────
+
+sms:
+  enabled: false
+  smsir:
+    api_key: YOUR_SMSIR_API_KEY
+    secret_key: YOUR_SMSIR_SECRET_KEY
+    template_id: ""
+
+# ── Password Hashing (Argon2id) ───────────────────────────────────────────────
+
+password:
+  algorithm: argon2id
+  memory_kib: 65536
+  iterations: 3
+  parallelism: 2
+  salt_length: 16
+  key_length: 32
+  low_memory_mode: false
+
+# ── OTP ───────────────────────────────────────────────────────────────────────
+
+otp:
+  default_length: 6
+  min_length: 4
+  max_length: 8
+  hash_algorithm: sha256
+
+# ── Codes ─────────────────────────────────────────────────────────────────────
+
+codes:
+  token_byte_length: 32
+  url_safe_tokens: true
+  charset: ""
+
+# ── Observability ─────────────────────────────────────────────────────────────
+
+observability:
+  enabled: false
+  service_name: simorq-backend
+  service_version: "0.1.0"
+  tracing:
+    enabled: false
+    otlp_endpoint: "localhost:4317"
+    otlp_insecure: true
+    sampling_rate: 1.0
+  metrics:
+    enabled: false
+    path: /metrics
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+
+logging:
+  level: debug
+  format: text
+  output:
+    stdout: true
+    file:
+      enabled: false
+      path: logs/app.log
+      max_size_mb: 100
+      max_backups: 3
+      max_age_days: 28
+      compress: true
+    loki:
+      enabled: false
+      endpoint: "http://localhost:3100"
+      username: ""
+      password: YOUR_LOKI_PASSWORD

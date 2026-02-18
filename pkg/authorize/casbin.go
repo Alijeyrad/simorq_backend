@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	casbin "github.com/casbin/casbin/v2"
+	casbin "github.com/casbin/casbin/v3"
 )
 
 var (
@@ -52,7 +52,7 @@ func NewAuthorization(e *casbin.DistributedEnforcer) (IAuthorization, error) {
 
 	return &Authorization{
 		enforcer:       e,
-		superAdminRole: RoleSysSuperAdmin,
+		superAdminRole: RolePlatformSuperAdmin,
 	}, nil
 }
 
@@ -84,7 +84,7 @@ func (a *Authorization) Enforce(ctx context.Context, subject GroupSubject, domai
 
 	// Optional bypass: If user has sys superadmin in sys domain, allow everything.
 	if a.superAdminRole != "" {
-		if ok := a.enforcer.HasGroupingPolicy(string(subject), string(a.superAdminRole), string(DomainSys)); ok {
+		if ok, _ := a.enforcer.HasGroupingPolicy(string(subject), string(a.superAdminRole), string(DomainSys)); ok {
 			return true, nil
 		}
 	}

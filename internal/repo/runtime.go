@@ -5,7 +5,11 @@ package repo
 import (
 	"time"
 
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
 	"github.com/Alijeyrad/simorq_backend/internal/schema"
 	"github.com/google/uuid"
 )
@@ -14,6 +18,157 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	clinicMixin := schema.Clinic{}.Mixin()
+	clinicMixinFields0 := clinicMixin[0].Fields()
+	_ = clinicMixinFields0
+	clinicMixinFields1 := clinicMixin[1].Fields()
+	_ = clinicMixinFields1
+	clinicFields := schema.Clinic{}.Fields()
+	_ = clinicFields
+	// clinicDescCreatedAt is the schema descriptor for created_at field.
+	clinicDescCreatedAt := clinicMixinFields1[0].Descriptor()
+	// clinic.DefaultCreatedAt holds the default value on creation for the created_at field.
+	clinic.DefaultCreatedAt = clinicDescCreatedAt.Default.(func() time.Time)
+	// clinicDescUpdatedAt is the schema descriptor for updated_at field.
+	clinicDescUpdatedAt := clinicMixinFields1[1].Descriptor()
+	// clinic.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	clinic.DefaultUpdatedAt = clinicDescUpdatedAt.Default.(func() time.Time)
+	// clinic.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	clinic.UpdateDefaultUpdatedAt = clinicDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// clinicDescName is the schema descriptor for name field.
+	clinicDescName := clinicFields[0].Descriptor()
+	// clinic.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	clinic.NameValidator = func() func(string) error {
+		validators := clinicDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clinicDescSlug is the schema descriptor for slug field.
+	clinicDescSlug := clinicFields[1].Descriptor()
+	// clinic.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	clinic.SlugValidator = func() func(string) error {
+		validators := clinicDescSlug.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(slug string) error {
+			for _, fn := range fns {
+				if err := fn(slug); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clinicDescLogoKey is the schema descriptor for logo_key field.
+	clinicDescLogoKey := clinicFields[3].Descriptor()
+	// clinic.LogoKeyValidator is a validator for the "logo_key" field. It is called by the builders before save.
+	clinic.LogoKeyValidator = clinicDescLogoKey.Validators[0].(func(string) error)
+	// clinicDescPhone is the schema descriptor for phone field.
+	clinicDescPhone := clinicFields[4].Descriptor()
+	// clinic.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
+	clinic.PhoneValidator = clinicDescPhone.Validators[0].(func(string) error)
+	// clinicDescCity is the schema descriptor for city field.
+	clinicDescCity := clinicFields[6].Descriptor()
+	// clinic.CityValidator is a validator for the "city" field. It is called by the builders before save.
+	clinic.CityValidator = clinicDescCity.Validators[0].(func(string) error)
+	// clinicDescProvince is the schema descriptor for province field.
+	clinicDescProvince := clinicFields[7].Descriptor()
+	// clinic.ProvinceValidator is a validator for the "province" field. It is called by the builders before save.
+	clinic.ProvinceValidator = clinicDescProvince.Validators[0].(func(string) error)
+	// clinicDescIsActive is the schema descriptor for is_active field.
+	clinicDescIsActive := clinicFields[8].Descriptor()
+	// clinic.DefaultIsActive holds the default value on creation for the is_active field.
+	clinic.DefaultIsActive = clinicDescIsActive.Default.(bool)
+	// clinicDescIsVerified is the schema descriptor for is_verified field.
+	clinicDescIsVerified := clinicFields[9].Descriptor()
+	// clinic.DefaultIsVerified holds the default value on creation for the is_verified field.
+	clinic.DefaultIsVerified = clinicDescIsVerified.Default.(bool)
+	// clinicDescID is the schema descriptor for id field.
+	clinicDescID := clinicMixinFields0[0].Descriptor()
+	// clinic.DefaultID holds the default value on creation for the id field.
+	clinic.DefaultID = clinicDescID.Default.(func() uuid.UUID)
+	clinicmemberMixin := schema.ClinicMember{}.Mixin()
+	clinicmemberMixinFields0 := clinicmemberMixin[0].Fields()
+	_ = clinicmemberMixinFields0
+	clinicmemberFields := schema.ClinicMember{}.Fields()
+	_ = clinicmemberFields
+	// clinicmemberDescIsActive is the schema descriptor for is_active field.
+	clinicmemberDescIsActive := clinicmemberFields[3].Descriptor()
+	// clinicmember.DefaultIsActive holds the default value on creation for the is_active field.
+	clinicmember.DefaultIsActive = clinicmemberDescIsActive.Default.(bool)
+	// clinicmemberDescJoinedAt is the schema descriptor for joined_at field.
+	clinicmemberDescJoinedAt := clinicmemberFields[4].Descriptor()
+	// clinicmember.DefaultJoinedAt holds the default value on creation for the joined_at field.
+	clinicmember.DefaultJoinedAt = clinicmemberDescJoinedAt.Default.(func() time.Time)
+	// clinicmemberDescID is the schema descriptor for id field.
+	clinicmemberDescID := clinicmemberMixinFields0[0].Descriptor()
+	// clinicmember.DefaultID holds the default value on creation for the id field.
+	clinicmember.DefaultID = clinicmemberDescID.Default.(func() uuid.UUID)
+	clinicsettingsMixin := schema.ClinicSettings{}.Mixin()
+	clinicsettingsMixinFields0 := clinicsettingsMixin[0].Fields()
+	_ = clinicsettingsMixinFields0
+	clinicsettingsMixinFields1 := clinicsettingsMixin[1].Fields()
+	_ = clinicsettingsMixinFields1
+	clinicsettingsFields := schema.ClinicSettings{}.Fields()
+	_ = clinicsettingsFields
+	// clinicsettingsDescCreatedAt is the schema descriptor for created_at field.
+	clinicsettingsDescCreatedAt := clinicsettingsMixinFields1[0].Descriptor()
+	// clinicsettings.DefaultCreatedAt holds the default value on creation for the created_at field.
+	clinicsettings.DefaultCreatedAt = clinicsettingsDescCreatedAt.Default.(func() time.Time)
+	// clinicsettingsDescUpdatedAt is the schema descriptor for updated_at field.
+	clinicsettingsDescUpdatedAt := clinicsettingsMixinFields1[1].Descriptor()
+	// clinicsettings.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	clinicsettings.DefaultUpdatedAt = clinicsettingsDescUpdatedAt.Default.(func() time.Time)
+	// clinicsettings.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	clinicsettings.UpdateDefaultUpdatedAt = clinicsettingsDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// clinicsettingsDescReservationFeeAmount is the schema descriptor for reservation_fee_amount field.
+	clinicsettingsDescReservationFeeAmount := clinicsettingsFields[1].Descriptor()
+	// clinicsettings.DefaultReservationFeeAmount holds the default value on creation for the reservation_fee_amount field.
+	clinicsettings.DefaultReservationFeeAmount = clinicsettingsDescReservationFeeAmount.Default.(int64)
+	// clinicsettingsDescReservationFeePercent is the schema descriptor for reservation_fee_percent field.
+	clinicsettingsDescReservationFeePercent := clinicsettingsFields[2].Descriptor()
+	// clinicsettings.DefaultReservationFeePercent holds the default value on creation for the reservation_fee_percent field.
+	clinicsettings.DefaultReservationFeePercent = clinicsettingsDescReservationFeePercent.Default.(int)
+	// clinicsettingsDescCancellationWindowHours is the schema descriptor for cancellation_window_hours field.
+	clinicsettingsDescCancellationWindowHours := clinicsettingsFields[3].Descriptor()
+	// clinicsettings.DefaultCancellationWindowHours holds the default value on creation for the cancellation_window_hours field.
+	clinicsettings.DefaultCancellationWindowHours = clinicsettingsDescCancellationWindowHours.Default.(int)
+	// clinicsettingsDescCancellationFeeAmount is the schema descriptor for cancellation_fee_amount field.
+	clinicsettingsDescCancellationFeeAmount := clinicsettingsFields[4].Descriptor()
+	// clinicsettings.DefaultCancellationFeeAmount holds the default value on creation for the cancellation_fee_amount field.
+	clinicsettings.DefaultCancellationFeeAmount = clinicsettingsDescCancellationFeeAmount.Default.(int64)
+	// clinicsettingsDescCancellationFeePercent is the schema descriptor for cancellation_fee_percent field.
+	clinicsettingsDescCancellationFeePercent := clinicsettingsFields[5].Descriptor()
+	// clinicsettings.DefaultCancellationFeePercent holds the default value on creation for the cancellation_fee_percent field.
+	clinicsettings.DefaultCancellationFeePercent = clinicsettingsDescCancellationFeePercent.Default.(int)
+	// clinicsettingsDescAllowClientSelfBook is the schema descriptor for allow_client_self_book field.
+	clinicsettingsDescAllowClientSelfBook := clinicsettingsFields[6].Descriptor()
+	// clinicsettings.DefaultAllowClientSelfBook holds the default value on creation for the allow_client_self_book field.
+	clinicsettings.DefaultAllowClientSelfBook = clinicsettingsDescAllowClientSelfBook.Default.(bool)
+	// clinicsettingsDescDefaultSessionDurationMin is the schema descriptor for default_session_duration_min field.
+	clinicsettingsDescDefaultSessionDurationMin := clinicsettingsFields[7].Descriptor()
+	// clinicsettings.DefaultDefaultSessionDurationMin holds the default value on creation for the default_session_duration_min field.
+	clinicsettings.DefaultDefaultSessionDurationMin = clinicsettingsDescDefaultSessionDurationMin.Default.(int)
+	// clinicsettingsDescDefaultSessionPrice is the schema descriptor for default_session_price field.
+	clinicsettingsDescDefaultSessionPrice := clinicsettingsFields[8].Descriptor()
+	// clinicsettings.DefaultDefaultSessionPrice holds the default value on creation for the default_session_price field.
+	clinicsettings.DefaultDefaultSessionPrice = clinicsettingsDescDefaultSessionPrice.Default.(int64)
+	// clinicsettingsDescID is the schema descriptor for id field.
+	clinicsettingsDescID := clinicsettingsMixinFields0[0].Descriptor()
+	// clinicsettings.DefaultID holds the default value on creation for the id field.
+	clinicsettings.DefaultID = clinicsettingsDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
@@ -47,38 +202,105 @@ func init() {
 	userDescEmail := userFields[3].Descriptor()
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
+	// userDescNationalID is the schema descriptor for national_id field.
+	userDescNationalID := userFields[4].Descriptor()
+	// user.NationalIDValidator is a validator for the "national_id" field. It is called by the builders before save.
+	user.NationalIDValidator = userDescNationalID.Validators[0].(func(string) error)
+	// userDescNationalIDHash is the schema descriptor for national_id_hash field.
+	userDescNationalIDHash := userFields[5].Descriptor()
+	// user.NationalIDHashValidator is a validator for the "national_id_hash" field. It is called by the builders before save.
+	user.NationalIDHashValidator = userDescNationalIDHash.Validators[0].(func(string) error)
+	// userDescGender is the schema descriptor for gender field.
+	userDescGender := userFields[6].Descriptor()
+	// user.GenderValidator is a validator for the "gender" field. It is called by the builders before save.
+	user.GenderValidator = userDescGender.Validators[0].(func(string) error)
+	// userDescMaritalStatus is the schema descriptor for marital_status field.
+	userDescMaritalStatus := userFields[7].Descriptor()
+	// user.MaritalStatusValidator is a validator for the "marital_status" field. It is called by the builders before save.
+	user.MaritalStatusValidator = userDescMaritalStatus.Validators[0].(func(string) error)
+	// userDescAvatarKey is the schema descriptor for avatar_key field.
+	userDescAvatarKey := userFields[9].Descriptor()
+	// user.AvatarKeyValidator is a validator for the "avatar_key" field. It is called by the builders before save.
+	user.AvatarKeyValidator = userDescAvatarKey.Validators[0].(func(string) error)
 	// userDescMustChangePassword is the schema descriptor for must_change_password field.
-	userDescMustChangePassword := userFields[5].Descriptor()
+	userDescMustChangePassword := userFields[11].Descriptor()
 	// user.DefaultMustChangePassword holds the default value on creation for the must_change_password field.
 	user.DefaultMustChangePassword = userDescMustChangePassword.Default.(bool)
 	// userDescPhoneVerified is the schema descriptor for phone_verified field.
-	userDescPhoneVerified := userFields[7].Descriptor()
+	userDescPhoneVerified := userFields[13].Descriptor()
 	// user.DefaultPhoneVerified holds the default value on creation for the phone_verified field.
 	user.DefaultPhoneVerified = userDescPhoneVerified.Default.(bool)
 	// userDescEmailVerified is the schema descriptor for email_verified field.
-	userDescEmailVerified := userFields[8].Descriptor()
+	userDescEmailVerified := userFields[14].Descriptor()
 	// user.DefaultEmailVerified holds the default value on creation for the email_verified field.
 	user.DefaultEmailVerified = userDescEmailVerified.Default.(bool)
 	// userDescTwofaPhoneEnabled is the schema descriptor for twofa_phone_enabled field.
-	userDescTwofaPhoneEnabled := userFields[9].Descriptor()
+	userDescTwofaPhoneEnabled := userFields[15].Descriptor()
 	// user.DefaultTwofaPhoneEnabled holds the default value on creation for the twofa_phone_enabled field.
 	user.DefaultTwofaPhoneEnabled = userDescTwofaPhoneEnabled.Default.(bool)
 	// userDescTwofaEmailEnabled is the schema descriptor for twofa_email_enabled field.
-	userDescTwofaEmailEnabled := userFields[10].Descriptor()
+	userDescTwofaEmailEnabled := userFields[16].Descriptor()
 	// user.DefaultTwofaEmailEnabled holds the default value on creation for the twofa_email_enabled field.
 	user.DefaultTwofaEmailEnabled = userDescTwofaEmailEnabled.Default.(bool)
 	// userDescFailedLoginAttempts is the schema descriptor for failed_login_attempts field.
-	userDescFailedLoginAttempts := userFields[12].Descriptor()
+	userDescFailedLoginAttempts := userFields[18].Descriptor()
 	// user.DefaultFailedLoginAttempts holds the default value on creation for the failed_login_attempts field.
 	user.DefaultFailedLoginAttempts = userDescFailedLoginAttempts.Default.(int)
 	// user.FailedLoginAttemptsValidator is a validator for the "failed_login_attempts" field. It is called by the builders before save.
 	user.FailedLoginAttemptsValidator = userDescFailedLoginAttempts.Validators[0].(func(int) error)
 	// userDescMetadata is the schema descriptor for metadata field.
-	userDescMetadata := userFields[15].Descriptor()
+	userDescMetadata := userFields[21].Descriptor()
 	// user.DefaultMetadata holds the default value on creation for the metadata field.
 	user.DefaultMetadata = userDescMetadata.Default.(map[string]interface{})
 	// userDescID is the schema descriptor for id field.
 	userDescID := userMixinFields0[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	usersessionMixin := schema.UserSession{}.Mixin()
+	usersessionMixinFields0 := usersessionMixin[0].Fields()
+	_ = usersessionMixinFields0
+	usersessionMixinFields1 := usersessionMixin[1].Fields()
+	_ = usersessionMixinFields1
+	usersessionFields := schema.UserSession{}.Fields()
+	_ = usersessionFields
+	// usersessionDescCreatedAt is the schema descriptor for created_at field.
+	usersessionDescCreatedAt := usersessionMixinFields1[0].Descriptor()
+	// usersession.DefaultCreatedAt holds the default value on creation for the created_at field.
+	usersession.DefaultCreatedAt = usersessionDescCreatedAt.Default.(func() time.Time)
+	// usersessionDescUpdatedAt is the schema descriptor for updated_at field.
+	usersessionDescUpdatedAt := usersessionMixinFields1[1].Descriptor()
+	// usersession.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	usersession.DefaultUpdatedAt = usersessionDescUpdatedAt.Default.(func() time.Time)
+	// usersession.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	usersession.UpdateDefaultUpdatedAt = usersessionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// usersessionDescSessionID is the schema descriptor for session_id field.
+	usersessionDescSessionID := usersessionFields[1].Descriptor()
+	// usersession.SessionIDValidator is a validator for the "session_id" field. It is called by the builders before save.
+	usersession.SessionIDValidator = func() func(string) error {
+		validators := usersessionDescSessionID.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(session_id string) error {
+			for _, fn := range fns {
+				if err := fn(session_id); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// usersessionDescRefreshTokenHash is the schema descriptor for refresh_token_hash field.
+	usersessionDescRefreshTokenHash := usersessionFields[2].Descriptor()
+	// usersession.RefreshTokenHashValidator is a validator for the "refresh_token_hash" field. It is called by the builders before save.
+	usersession.RefreshTokenHashValidator = usersessionDescRefreshTokenHash.Validators[0].(func(string) error)
+	// usersessionDescIPAddress is the schema descriptor for ip_address field.
+	usersessionDescIPAddress := usersessionFields[4].Descriptor()
+	// usersession.IPAddressValidator is a validator for the "ip_address" field. It is called by the builders before save.
+	usersession.IPAddressValidator = usersessionDescIPAddress.Validators[0].(func(string) error)
+	// usersessionDescID is the schema descriptor for id field.
+	usersessionDescID := usersessionMixinFields0[0].Descriptor()
+	// usersession.DefaultID holds the default value on creation for the id field.
+	usersession.DefaultID = usersessionDescID.Default.(func() uuid.UUID)
 }

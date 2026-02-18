@@ -12,7 +12,11 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -73,7 +77,11 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			user.Table: user.ValidColumn,
+			clinic.Table:         clinic.ValidColumn,
+			clinicmember.Table:   clinicmember.ValidColumn,
+			clinicsettings.Table: clinicsettings.ValidColumn,
+			user.Table:           user.ValidColumn,
+			usersession.Table:    usersession.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

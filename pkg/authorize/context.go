@@ -105,12 +105,12 @@ func UserIDFromContext(ctx context.Context) (uuid.UUID, error) {
 }
 
 // DomainFromResource determines the appropriate domain based on resource ownership.
-// - If projectID is provided, returns project:<uuid> domain
+// - If clinicID is provided, returns clinic:<uuid> domain
 // - If userID is provided, returns user:<uuid> domain
 // - Otherwise returns sys domain
-func DomainFromResource(projectID, userID *string) Domain {
-	if projectID != nil && *projectID != "" {
-		return ProjectDomain(*projectID)
+func DomainFromResource(clinicID, userID *string) Domain {
+	if clinicID != nil && *clinicID != "" {
+		return ClinicDomain(*clinicID)
 	}
 	if userID != nil && *userID != "" {
 		return UserDomain(*userID)

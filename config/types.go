@@ -100,6 +100,9 @@ type AuthenticationConfig struct {
 	Paseto                PasetoConfig `mapstructure:"paseto"`
 	SessionTTLMinutes     int          `mapstructure:"session_ttl_minutes"`
 	OTPTTLMinutes         int          `mapstructure:"otp_ttl_minutes"`
+	// EncryptionKey is a 32-byte hex string used for AES-256-GCM encryption
+	// of sensitive fields such as national_id and IBAN.
+	EncryptionKey string `mapstructure:"encryption_key"`
 }
 
 type PasetoConfig struct {

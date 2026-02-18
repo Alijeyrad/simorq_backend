@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Alijeyrad/simorq_backend/pkg/constants"
 	"github.com/spf13/viper"
@@ -14,6 +15,12 @@ func ReadConfig(configPath string) (*Config, error) {
 	viper.SetConfigName(constants.ConfigName)
 	viper.SetConfigType(constants.ConfigFormat)
 	viper.AddConfigPath(configPath)
+
+	// Allow env vars to override config values.
+	// e.g. SIMORQ_DATABASE_HOST overrides database.host
+	viper.SetEnvPrefix("SIMORQ")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
 
 	// Read the config file (optional in Docker environments)
 	if err := viper.ReadInConfig(); err != nil {

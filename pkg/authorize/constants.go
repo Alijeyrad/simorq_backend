@@ -25,7 +25,7 @@ const (
 	ActionManage  Action = "manage"  // CRUD + list
 	ActionExecute Action = "execute" // run, trigger, start, stop, etc.
 
-	// lifecycle actions
+	// Lifecycle actions
 	ActionArchive Action = "archive"
 	ActionClose   Action = "close"
 
@@ -48,90 +48,133 @@ var KnownActions = map[Action]struct{}{
 // ----------------------------
 // Resources
 // ----------------------------
-//
 
 const (
 	WildcardResource Resource = "*"
 
 	// Identity / auth
-	ResourceUser          Resource = "user"
-	ResourceProfile       Resource = "profile"
-	ResourceAuthSession   Resource = "auth_session"
-	ResourceRefreshToken  Resource = "refresh_token"
-	ResourceOTP           Resource = "otp"
-	ResourceOAuthIdentity Resource = "oauth_identity"
-	ResourceWaitlist      Resource = "waitlist"
+	ResourceUser         Resource = "user"
+	ResourceAuthSession  Resource = "auth_session"
+	ResourceRefreshToken Resource = "refresh_token"
+	ResourceOTP          Resource = "otp"
 
-	// Core product
-	ResourceProject     Resource = "project"
-	ResourceChat        Resource = "chat"
-	ResourceInteraction Resource = "interaction"
+	// Clinic (tenant management)
+	ResourceClinic           Resource = "clinic"
+	ResourceClinicMember     Resource = "clinic_member"
+	ResourceClinicSettings   Resource = "clinic_settings"
+	ResourceClinicInvitation Resource = "clinic_invitation"
 
-	// Feature management
-	ResourceFeatureFlag     Resource = "feature_flag"
-	ResourceUserFeatureFlag Resource = "user_feature_flag"
+	// Clinical records
+	ResourcePatient             Resource = "patient"
+	ResourcePatientFile         Resource = "patient_file"
+	ResourcePatientReport       Resource = "patient_report"
+	ResourcePatientPrescription Resource = "patient_prescription"
+	ResourcePatientTest         Resource = "patient_test"
+	ResourcePatientIntakeForm   Resource = "patient_intake_form"
 
-	// System
+	// Scheduling
+	ResourceTimeSlot      Resource = "time_slot"
+	ResourceRecurringRule Resource = "recurring_rule"
+	ResourceAppointment   Resource = "appointment"
+
+	// Financial
+	ResourceWallet      Resource = "wallet"
+	ResourceTransaction Resource = "transaction"
+	ResourcePayment     Resource = "payment"
+	ResourceWithdrawal  Resource = "withdrawal"
+	ResourceCommission  Resource = "commission"
+
+	// Communication
+	ResourceConversation Resource = "conversation"
+	ResourceMessage      Resource = "message"
+	ResourceTicket       Resource = "ticket"
+	ResourceNotification Resource = "notification"
+
+	// Intern module
+	ResourceInternTask   Resource = "intern_task"
+	ResourceInternAccess Resource = "intern_access"
+
+	// System / platform admin
 	ResourceSystem Resource = "system"
 	ResourceAudit  Resource = "audit"
 	ResourceRBAC   Resource = "rbac"
 )
 
 var KnownResources = map[Resource]struct{}{
-	ResourceUser: {}, ResourceProfile: {}, ResourceAuthSession: {}, ResourceRefreshToken: {}, ResourceOTP: {}, ResourceOAuthIdentity: {},
-	ResourceProject: {}, ResourceChat: {}, ResourceInteraction: {},
-	ResourceFeatureFlag: {}, ResourceUserFeatureFlag: {},
-	ResourceSystem: {}, ResourceAudit: {}, ResourceRBAC: {}, ResourceWaitlist: {},
+	ResourceUser: {}, ResourceAuthSession: {}, ResourceRefreshToken: {}, ResourceOTP: {},
+	ResourceClinic: {}, ResourceClinicMember: {}, ResourceClinicSettings: {}, ResourceClinicInvitation: {},
+	ResourcePatient: {}, ResourcePatientFile: {}, ResourcePatientReport: {},
+	ResourcePatientPrescription: {}, ResourcePatientTest: {}, ResourcePatientIntakeForm: {},
+	ResourceTimeSlot: {}, ResourceRecurringRule: {}, ResourceAppointment: {},
+	ResourceWallet: {}, ResourceTransaction: {}, ResourcePayment: {}, ResourceWithdrawal: {}, ResourceCommission: {},
+	ResourceConversation: {}, ResourceMessage: {}, ResourceTicket: {}, ResourceNotification: {},
+	ResourceInternTask: {}, ResourceInternAccess: {},
+	ResourceSystem: {}, ResourceAudit: {}, ResourceRBAC: {},
 }
 
 // ----------------------------
 // Roles
 // ----------------------------
 //
-// These are the “policy subjects” we assign to users via grouping policies.
+// These are the "policy subjects" we assign to users via grouping policies.
 
 const (
 	WildcardRole Role = "*"
 
-	// Platform / system roles (domain = sys)
-	RoleSysSuperAdmin Role = "role:sys:superadmin"
-	RoleSysAdmin      Role = "role:sys:admin"
-	RoleSysSupport    Role = "role:sys:support"
+	// Platform role (domain = sys)
+	RolePlatformSuperAdmin Role = "role:platform:superadmin"
 
-	// Project roles (domain = project:<uuid>)
-	RoleProjectOwner  Role = "role:project:owner"
-	RoleProjectAdmin  Role = "role:project:admin"
-	RoleProjectMember Role = "role:project:member"
-	RoleProjectViewer Role = "role:project:viewer"
+	// Clinic roles (domain = clinic:<uuid>)
+	RoleClinicOwner     Role = "role:clinic:owner"
+	RoleClinicAdmin     Role = "role:clinic:admin"
+	RoleClinicTherapist Role = "role:clinic:therapist"
+	RoleClinicIntern    Role = "role:clinic:intern"
+	RoleClinicClient    Role = "role:clinic:client" // patient / مراجع
 
 	// Private user scope (domain = user:<uuid>)
 	RoleUserSelf Role = "role:user:self"
 )
 
 var KnownRoles = map[Role]struct{}{
-	RoleSysSuperAdmin: {}, RoleSysAdmin: {}, RoleSysSupport: {},
-	RoleProjectOwner: {}, RoleProjectAdmin: {}, RoleProjectMember: {}, RoleProjectViewer: {},
-	RoleUserSelf: {},
+	RolePlatformSuperAdmin: {},
+	RoleClinicOwner:        {},
+	RoleClinicAdmin:        {},
+	RoleClinicTherapist:    {},
+	RoleClinicIntern:       {},
+	RoleClinicClient:       {},
+	RoleUserSelf:           {},
 }
 
 // Persian display names
 var RoleDisplayNamesFA = map[Role]string{
-	RoleSysSuperAdmin: "سوپرادمین سیستم",
-	RoleSysAdmin:      "ادمین سیستم",
-	RoleSysSupport:    "پشتیبانی",
+	RolePlatformSuperAdmin: "سوپرادمین پلتفرم",
+	RoleClinicOwner:        "مالک کلینیک",
+	RoleClinicAdmin:        "ادمین کلینیک",
+	RoleClinicTherapist:    "درمانگر",
+	RoleClinicIntern:       "کارورز",
+	RoleClinicClient:       "مراجع",
+	RoleUserSelf:           "خود کاربر",
+}
 
-	RoleProjectOwner:  "مالک پروژه",
-	RoleProjectAdmin:  "ادمین پروژه",
-	RoleProjectMember: "عضو پروژه",
-	RoleProjectViewer: "بیننده پروژه",
+// Clinic member role strings (stored in DB clinic_members.role column)
+const (
+	ClinicMemberRoleOwner     = "owner"
+	ClinicMemberRoleAdmin     = "admin"
+	ClinicMemberRoleTherapist = "therapist"
+	ClinicMemberRoleIntern    = "intern"
+)
 
-	RoleUserSelf: "مالک (حریم شخصی)",
+// ClinicMemberRoleToRBACRole maps DB role values to Casbin roles
+var ClinicMemberRoleToRBACRole = map[string]Role{
+	ClinicMemberRoleOwner:     RoleClinicOwner,
+	ClinicMemberRoleAdmin:     RoleClinicAdmin,
+	ClinicMemberRoleTherapist: RoleClinicTherapist,
+	ClinicMemberRoleIntern:    RoleClinicIntern,
 }
 
 // ----------------------------
 // Domains
 // ----------------------------
-//
 
 const (
 	DomainSys Domain = "sys"
@@ -139,8 +182,8 @@ const (
 
 // Domain prefixes (for exact domains we generate per entity)
 const (
-	DomainPrefixProject Domain = "project:"
-	DomainPrefixUser    Domain = "user:"
+	DomainPrefixClinic Domain = "clinic:"
+	DomainPrefixUser   Domain = "user:"
 )
 
 const (
@@ -152,15 +195,15 @@ var (
 )
 
 // Domain builders (typed, safe)
-func ProjectDomain(projectID string) Domain {
-	return Domain(fmt.Sprintf("%s%s", DomainPrefixProject, projectID))
+func ClinicDomain(clinicID string) Domain {
+	return Domain(fmt.Sprintf("%s%s", DomainPrefixClinic, clinicID))
 }
 
 func UserDomain(userID string) Domain {
 	return Domain(fmt.Sprintf("%s%s", DomainPrefixUser, userID))
 }
 
-// Optional strict validators
+// IsValidDomain checks whether d is a recognised domain string.
 func IsValidDomain(d Domain) bool {
 	if d == DomainSys || d == WildcardDomain {
 		return true
@@ -168,8 +211,8 @@ func IsValidDomain(d Domain) bool {
 
 	s := string(d)
 	switch {
-	case len(s) > len(DomainPrefixProject) && s[:len(DomainPrefixProject)] == string(DomainPrefixProject):
-		return reUUID.MatchString(s[len(DomainPrefixProject):])
+	case len(s) > len(DomainPrefixClinic) && s[:len(DomainPrefixClinic)] == string(DomainPrefixClinic):
+		return reUUID.MatchString(s[len(DomainPrefixClinic):])
 	case len(s) > len(DomainPrefixUser) && s[:len(DomainPrefixUser)] == string(DomainPrefixUser):
 		return reUUID.MatchString(s[len(DomainPrefixUser):])
 	default:
@@ -178,7 +221,7 @@ func IsValidDomain(d Domain) bool {
 }
 
 // ----------------------------
-// Casbin tuple helpers (optional)
+// Casbin tuple helpers
 // ----------------------------
 
 type PolicyEffect string

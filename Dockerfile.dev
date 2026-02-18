@@ -1,0 +1,19 @@
+# Development image with Air hot reload
+FROM golang:1.25-alpine
+
+RUN apk --no-cache add ca-certificates tzdata
+
+# Install Air
+RUN go install github.com/air-verse/air@latest
+
+WORKDIR /app
+
+# Pre-download dependencies (layer is cached; source is mounted at runtime)
+COPY go.mod go.sum ./
+RUN go mod download
+
+ENV TZ=Asia/Tehran
+
+EXPOSE 8080
+
+CMD ["air"]
