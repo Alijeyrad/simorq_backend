@@ -8,10 +8,14 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
 	"github.com/Alijeyrad/simorq_backend/internal/service/auth"
 	"github.com/Alijeyrad/simorq_backend/internal/service/clinic"
+	svcfile "github.com/Alijeyrad/simorq_backend/internal/service/file"
+	"github.com/Alijeyrad/simorq_backend/internal/service/patient"
+	"github.com/Alijeyrad/simorq_backend/internal/service/psychtest"
 	"github.com/Alijeyrad/simorq_backend/internal/service/user"
 	"github.com/Alijeyrad/simorq_backend/pkg/authorize"
 	"github.com/Alijeyrad/simorq_backend/pkg/email"
 	pasetotoken "github.com/Alijeyrad/simorq_backend/pkg/paseto"
+	s3pkg "github.com/Alijeyrad/simorq_backend/pkg/s3"
 	"github.com/Alijeyrad/simorq_backend/pkg/sms"
 )
 
@@ -21,6 +25,9 @@ var ServiceModule = fx.Module("services",
 		ProvideUserService,
 		ProvideAuthService,
 		ProvideClinicService,
+		ProvidePatientService,
+		ProvideFileService,
+		ProvidePsychTestService,
 		ProvidePasetoManager,
 	),
 )
@@ -41,6 +48,18 @@ func ProvideAuthService(
 
 func ProvideClinicService(db *repo.Client, authz authorize.IAuthorization) clinic.Service {
 	return clinic.New(db, authz)
+}
+
+func ProvidePatientService(db *repo.Client) patient.Service {
+	return patient.New(db)
+}
+
+func ProvideFileService(db *repo.Client, s3 *s3pkg.Client) svcfile.Service {
+	return svcfile.New(db, s3)
+}
+
+func ProvidePsychTestService(db *repo.Client) psychtest.Service {
+	return psychtest.New(db)
 }
 
 func ProvidePasetoManager(cfg *config.Config) (*pasetotoken.Manager, error) {

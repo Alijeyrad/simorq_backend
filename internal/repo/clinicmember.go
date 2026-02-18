@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/google/uuid"
 )
@@ -42,9 +43,11 @@ type ClinicMemberEdges struct {
 	Clinic *Clinic `json:"clinic,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// TherapistProfile holds the value of the therapist_profile edge.
+	TherapistProfile *TherapistProfile `json:"therapist_profile,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ClinicOrErr returns the Clinic value or an error if the edge
@@ -67,6 +70,17 @@ func (e ClinicMemberEdges) UserOrErr() (*User, error) {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
+}
+
+// TherapistProfileOrErr returns the TherapistProfile value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ClinicMemberEdges) TherapistProfileOrErr() (*TherapistProfile, error) {
+	if e.TherapistProfile != nil {
+		return e.TherapistProfile, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: therapistprofile.Label}
+	}
+	return nil, &NotLoadedError{edge: "therapist_profile"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -154,6 +168,11 @@ func (_m *ClinicMember) QueryClinic() *ClinicQuery {
 // QueryUser queries the "user" edge of the ClinicMember entity.
 func (_m *ClinicMember) QueryUser() *UserQuery {
 	return NewClinicMemberClient(_m.config).QueryUser(_m)
+}
+
+// QueryTherapistProfile queries the "therapist_profile" edge of the ClinicMember entity.
+func (_m *ClinicMember) QueryTherapistProfile() *TherapistProfileQuery {
+	return NewClinicMemberClient(_m.config).QueryTherapistProfile(_m)
 }
 
 // Update returns a builder for updating this ClinicMember.

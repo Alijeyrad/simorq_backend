@@ -897,6 +897,52 @@ func HasSettingsWith(preds ...predicate.ClinicSettings) predicate.Clinic {
 	})
 }
 
+// HasPermissions applies the HasEdge predicate on the "permissions" edge.
+func HasPermissions() predicate.Clinic {
+	return predicate.Clinic(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PermissionsTable, PermissionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPermissionsWith applies the HasEdge predicate on the "permissions" edge with a given conditions (other predicates).
+func HasPermissionsWith(preds ...predicate.ClinicPermission) predicate.Clinic {
+	return predicate.Clinic(func(s *sql.Selector) {
+		step := newPermissionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasPatients applies the HasEdge predicate on the "patients" edge.
+func HasPatients() predicate.Clinic {
+	return predicate.Clinic(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PatientsTable, PatientsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPatientsWith applies the HasEdge predicate on the "patients" edge with a given conditions (other predicates).
+func HasPatientsWith(preds ...predicate.Patient) predicate.Clinic {
+	return predicate.Clinic(func(s *sql.Selector) {
+		step := newPatientsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Clinic) predicate.Clinic {
 	return predicate.Clinic(sql.AndPredicates(predicates...))

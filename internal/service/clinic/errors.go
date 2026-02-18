@@ -9,5 +9,7 @@ var (
 	ErrAlreadyMember     = errors.New("user is already a member of this clinic")
 	ErrInvalidRole       = errors.New("invalid clinic member role")
 	ErrCannotRemoveOwner = errors.New("cannot remove the clinic owner")
-	ErrNotMember         = errors.New("user is not a member of this clinic")
+	ErrNotMember              = errors.New("user is not a member of this clinic")
+	ErrPermissionNotFound     = errors.New("permission override not found")
+	ErrTherapistProfileNotFound = errors.New("therapist profile not found")
 )

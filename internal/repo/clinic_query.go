@@ -14,7 +14,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/predicate"
 	"github.com/google/uuid"
 )
@@ -22,12 +24,14 @@ import (
 // ClinicQuery is the builder for querying Clinic entities.
 type ClinicQuery struct {
 	config
-	ctx          *QueryContext
-	order        []clinic.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.Clinic
-	withMembers  *ClinicMemberQuery
-	withSettings *ClinicSettingsQuery
+	ctx             *QueryContext
+	order           []clinic.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Clinic
+	withMembers     *ClinicMemberQuery
+	withSettings    *ClinicSettingsQuery
+	withPermissions *ClinicPermissionQuery
+	withPatients    *PatientQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -101,6 +105,50 @@ func (_q *ClinicQuery) QuerySettings() *ClinicSettingsQuery {
 			sqlgraph.From(clinic.Table, clinic.FieldID, selector),
 			sqlgraph.To(clinicsettings.Table, clinicsettings.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, clinic.SettingsTable, clinic.SettingsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPermissions chains the current query on the "permissions" edge.
+func (_q *ClinicQuery) QueryPermissions() *ClinicPermissionQuery {
+	query := (&ClinicPermissionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinic.Table, clinic.FieldID, selector),
+			sqlgraph.To(clinicpermission.Table, clinicpermission.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, clinic.PermissionsTable, clinic.PermissionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPatients chains the current query on the "patients" edge.
+func (_q *ClinicQuery) QueryPatients() *PatientQuery {
+	query := (&PatientClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinic.Table, clinic.FieldID, selector),
+			sqlgraph.To(patient.Table, patient.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, clinic.PatientsTable, clinic.PatientsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -295,13 +343,15 @@ func (_q *ClinicQuery) Clone() *ClinicQuery {
 		return nil
 	}
 	return &ClinicQuery{
-		config:       _q.config,
-		ctx:          _q.ctx.Clone(),
-		order:        append([]clinic.OrderOption{}, _q.order...),
-		inters:       append([]Interceptor{}, _q.inters...),
-		predicates:   append([]predicate.Clinic{}, _q.predicates...),
-		withMembers:  _q.withMembers.Clone(),
-		withSettings: _q.withSettings.Clone(),
+		config:          _q.config,
+		ctx:             _q.ctx.Clone(),
+		order:           append([]clinic.OrderOption{}, _q.order...),
+		inters:          append([]Interceptor{}, _q.inters...),
+		predicates:      append([]predicate.Clinic{}, _q.predicates...),
+		withMembers:     _q.withMembers.Clone(),
+		withSettings:    _q.withSettings.Clone(),
+		withPermissions: _q.withPermissions.Clone(),
+		withPatients:    _q.withPatients.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -327,6 +377,28 @@ func (_q *ClinicQuery) WithSettings(opts ...func(*ClinicSettingsQuery)) *ClinicQ
 		opt(query)
 	}
 	_q.withSettings = query
+	return _q
+}
+
+// WithPermissions tells the query-builder to eager-load the nodes that are connected to
+// the "permissions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ClinicQuery) WithPermissions(opts ...func(*ClinicPermissionQuery)) *ClinicQuery {
+	query := (&ClinicPermissionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withPermissions = query
+	return _q
+}
+
+// WithPatients tells the query-builder to eager-load the nodes that are connected to
+// the "patients" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ClinicQuery) WithPatients(opts ...func(*PatientQuery)) *ClinicQuery {
+	query := (&PatientClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withPatients = query
 	return _q
 }
 
@@ -408,9 +480,11 @@ func (_q *ClinicQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Clini
 	var (
 		nodes       = []*Clinic{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			_q.withMembers != nil,
 			_q.withSettings != nil,
+			_q.withPermissions != nil,
+			_q.withPatients != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -441,6 +515,20 @@ func (_q *ClinicQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Clini
 	if query := _q.withSettings; query != nil {
 		if err := _q.loadSettings(ctx, query, nodes, nil,
 			func(n *Clinic, e *ClinicSettings) { n.Edges.Settings = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withPermissions; query != nil {
+		if err := _q.loadPermissions(ctx, query, nodes,
+			func(n *Clinic) { n.Edges.Permissions = []*ClinicPermission{} },
+			func(n *Clinic, e *ClinicPermission) { n.Edges.Permissions = append(n.Edges.Permissions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withPatients; query != nil {
+		if err := _q.loadPatients(ctx, query, nodes,
+			func(n *Clinic) { n.Edges.Patients = []*Patient{} },
+			func(n *Clinic, e *Patient) { n.Edges.Patients = append(n.Edges.Patients, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -489,6 +577,66 @@ func (_q *ClinicQuery) loadSettings(ctx context.Context, query *ClinicSettingsQu
 	}
 	query.Where(predicate.ClinicSettings(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(clinic.SettingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ClinicID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "clinic_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ClinicQuery) loadPermissions(ctx context.Context, query *ClinicPermissionQuery, nodes []*Clinic, init func(*Clinic), assign func(*Clinic, *ClinicPermission)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Clinic)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(clinicpermission.FieldClinicID)
+	}
+	query.Where(predicate.ClinicPermission(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(clinic.PermissionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ClinicID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "clinic_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ClinicQuery) loadPatients(ctx context.Context, query *PatientQuery, nodes []*Clinic, init func(*Clinic), assign func(*Clinic, *Patient)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Clinic)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(patient.FieldClinicID)
+	}
+	query.Where(predicate.Patient(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(clinic.PatientsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

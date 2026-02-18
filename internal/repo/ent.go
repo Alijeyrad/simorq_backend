@@ -14,7 +14,15 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patientfile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patientprescription"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patientreport"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patienttest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/psychtest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
 )
@@ -77,11 +85,19 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			clinic.Table:         clinic.ValidColumn,
-			clinicmember.Table:   clinicmember.ValidColumn,
-			clinicsettings.Table: clinicsettings.ValidColumn,
-			user.Table:           user.ValidColumn,
-			usersession.Table:    usersession.ValidColumn,
+			clinic.Table:              clinic.ValidColumn,
+			clinicmember.Table:        clinicmember.ValidColumn,
+			clinicpermission.Table:    clinicpermission.ValidColumn,
+			clinicsettings.Table:      clinicsettings.ValidColumn,
+			patient.Table:             patient.ValidColumn,
+			patientfile.Table:         patientfile.ValidColumn,
+			patientprescription.Table: patientprescription.ValidColumn,
+			patientreport.Table:       patientreport.ValidColumn,
+			patienttest.Table:         patienttest.ValidColumn,
+			psychtest.Table:           psychtest.ValidColumn,
+			therapistprofile.Table:    therapistprofile.ValidColumn,
+			user.Table:                user.ValidColumn,
+			usersession.Table:         usersession.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

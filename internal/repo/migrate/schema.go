@@ -84,6 +84,44 @@ var (
 			},
 		},
 	}
+	// ClinicPermissionsColumns holds the columns for the "clinic_permissions" table.
+	ClinicPermissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "resource_type", Type: field.TypeString, Size: 50},
+		{Name: "resource_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "action", Type: field.TypeString, Size: 20},
+		{Name: "granted", Type: field.TypeBool, Default: true},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// ClinicPermissionsTable holds the schema information for the "clinic_permissions" table.
+	ClinicPermissionsTable = &schema.Table{
+		Name:       "clinic_permissions",
+		Columns:    ClinicPermissionsColumns,
+		PrimaryKey: []*schema.Column{ClinicPermissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "clinic_permissions_clinics_permissions",
+				Columns:    []*schema.Column{ClinicPermissionsColumns[6]},
+				RefColumns: []*schema.Column{ClinicsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "clinic_permissions_users_user",
+				Columns:    []*schema.Column{ClinicPermissionsColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "clinicpermission_clinic_id_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{ClinicPermissionsColumns[6], ClinicPermissionsColumns[7]},
+			},
+		},
+	}
 	// ClinicSettingsColumns holds the columns for the "clinic_settings" table.
 	ClinicSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -110,6 +148,321 @@ var (
 				Symbol:     "clinic_settings_clinics_settings",
 				Columns:    []*schema.Column{ClinicSettingsColumns[12]},
 				RefColumns: []*schema.Column{ClinicsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// PatientsColumns holds the columns for the "patients" table.
+	PatientsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "file_number", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "waiting_reservation", "inactive", "discharged"}, Default: "active"},
+		{Name: "session_count", Type: field.TypeInt, Default: 0},
+		{Name: "total_cancellations", Type: field.TypeInt, Default: 0},
+		{Name: "last_cancel_reason", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "has_discount", Type: field.TypeBool, Default: false},
+		{Name: "discount_percent", Type: field.TypeInt, Default: 0},
+		{Name: "payment_status", Type: field.TypeEnum, Enums: []string{"paid", "unpaid", "partial"}, Default: "unpaid"},
+		{Name: "total_paid", Type: field.TypeInt64, Default: 0},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "referral_source", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "chief_complaint", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "is_child", Type: field.TypeBool, Default: false},
+		{Name: "child_birth_date", Type: field.TypeTime, Nullable: true},
+		{Name: "child_school", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "child_grade", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "parent_name", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "parent_phone", Type: field.TypeString, Nullable: true, Size: 11},
+		{Name: "parent_relation", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "developmental_history", Type: field.TypeJSON, Nullable: true},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "primary_therapist_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// PatientsTable holds the schema information for the "patients" table.
+	PatientsTable = &schema.Table{
+		Name:       "patients",
+		Columns:    PatientsColumns,
+		PrimaryKey: []*schema.Column{PatientsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "patients_clinics_patients",
+				Columns:    []*schema.Column{PatientsColumns[24]},
+				RefColumns: []*schema.Column{ClinicsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "patients_users_user",
+				Columns:    []*schema.Column{PatientsColumns[25]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "patients_clinic_members_primary_therapist",
+				Columns:    []*schema.Column{PatientsColumns[26]},
+				RefColumns: []*schema.Column{ClinicMembersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "patient_clinic_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{PatientsColumns[24], PatientsColumns[25]},
+			},
+			{
+				Name:    "patient_clinic_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientsColumns[24]},
+			},
+			{
+				Name:    "patient_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientsColumns[25]},
+			},
+			{
+				Name:    "patient_clinic_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{PatientsColumns[24], PatientsColumns[5]},
+			},
+			{
+				Name:    "patient_clinic_id_file_number",
+				Unique:  false,
+				Columns: []*schema.Column{PatientsColumns[24], PatientsColumns[4]},
+			},
+		},
+	}
+	// PatientFilesColumns holds the columns for the "patient_files" table.
+	PatientFilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "linked_type", Type: field.TypeString, Nullable: true, Size: 30},
+		{Name: "linked_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "file_name", Type: field.TypeString, Size: 255},
+		{Name: "file_key", Type: field.TypeString, Size: 500},
+		{Name: "file_size", Type: field.TypeInt64, Nullable: true},
+		{Name: "mime_type", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "patient_id", Type: field.TypeUUID},
+		{Name: "uploaded_by", Type: field.TypeUUID},
+	}
+	// PatientFilesTable holds the schema information for the "patient_files" table.
+	PatientFilesTable = &schema.Table{
+		Name:       "patient_files",
+		Columns:    PatientFilesColumns,
+		PrimaryKey: []*schema.Column{PatientFilesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "patient_files_patients_files",
+				Columns:    []*schema.Column{PatientFilesColumns[10]},
+				RefColumns: []*schema.Column{PatientsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "patient_files_users_uploader",
+				Columns:    []*schema.Column{PatientFilesColumns[11]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "patientfile_patient_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientFilesColumns[10]},
+			},
+			{
+				Name:    "patientfile_linked_type_linked_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientFilesColumns[3], PatientFilesColumns[4]},
+			},
+			{
+				Name:    "patientfile_clinic_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientFilesColumns[2]},
+			},
+		},
+	}
+	// PatientPrescriptionsColumns holds the columns for the "patient_prescriptions" table.
+	PatientPrescriptionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "title", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "file_key", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "file_name", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "prescribed_date", Type: field.TypeTime},
+		{Name: "patient_id", Type: field.TypeUUID},
+		{Name: "therapist_id", Type: field.TypeUUID},
+	}
+	// PatientPrescriptionsTable holds the schema information for the "patient_prescriptions" table.
+	PatientPrescriptionsTable = &schema.Table{
+		Name:       "patient_prescriptions",
+		Columns:    PatientPrescriptionsColumns,
+		PrimaryKey: []*schema.Column{PatientPrescriptionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "patient_prescriptions_patients_prescriptions",
+				Columns:    []*schema.Column{PatientPrescriptionsColumns[9]},
+				RefColumns: []*schema.Column{PatientsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "patient_prescriptions_clinic_members_therapist",
+				Columns:    []*schema.Column{PatientPrescriptionsColumns[10]},
+				RefColumns: []*schema.Column{ClinicMembersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// PatientReportsColumns holds the columns for the "patient_reports" table.
+	PatientReportsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "appointment_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "title", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "content", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "report_date", Type: field.TypeTime},
+		{Name: "patient_id", Type: field.TypeUUID},
+		{Name: "therapist_id", Type: field.TypeUUID},
+	}
+	// PatientReportsTable holds the schema information for the "patient_reports" table.
+	PatientReportsTable = &schema.Table{
+		Name:       "patient_reports",
+		Columns:    PatientReportsColumns,
+		PrimaryKey: []*schema.Column{PatientReportsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "patient_reports_patients_reports",
+				Columns:    []*schema.Column{PatientReportsColumns[8]},
+				RefColumns: []*schema.Column{PatientsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "patient_reports_clinic_members_therapist",
+				Columns:    []*schema.Column{PatientReportsColumns[9]},
+				RefColumns: []*schema.Column{ClinicMembersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "patientreport_patient_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientReportsColumns[8]},
+			},
+			{
+				Name:    "patientreport_clinic_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientReportsColumns[3]},
+			},
+			{
+				Name:    "patientreport_therapist_id",
+				Unique:  false,
+				Columns: []*schema.Column{PatientReportsColumns[9]},
+			},
+			{
+				Name:    "patientreport_report_date",
+				Unique:  false,
+				Columns: []*schema.Column{PatientReportsColumns[7]},
+			},
+		},
+	}
+	// PatientTestsColumns holds the columns for the "patient_tests" table.
+	PatientTestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "test_name", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "raw_scores", Type: field.TypeJSON, Nullable: true},
+		{Name: "computed_scores", Type: field.TypeJSON, Nullable: true},
+		{Name: "interpretation", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "test_date", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"assigned", "completed", "reviewed"}, Default: "assigned"},
+		{Name: "patient_id", Type: field.TypeUUID},
+		{Name: "test_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "administered_by", Type: field.TypeUUID, Nullable: true},
+	}
+	// PatientTestsTable holds the schema information for the "patient_tests" table.
+	PatientTestsTable = &schema.Table{
+		Name:       "patient_tests",
+		Columns:    PatientTestsColumns,
+		PrimaryKey: []*schema.Column{PatientTestsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "patient_tests_patients_tests",
+				Columns:    []*schema.Column{PatientTestsColumns[10]},
+				RefColumns: []*schema.Column{PatientsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "patient_tests_psych_tests_psych_test",
+				Columns:    []*schema.Column{PatientTestsColumns[11]},
+				RefColumns: []*schema.Column{PsychTestsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "patient_tests_clinic_members_administrator",
+				Columns:    []*schema.Column{PatientTestsColumns[12]},
+				RefColumns: []*schema.Column{ClinicMembersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// PsychTestsColumns holds the columns for the "psych_tests" table.
+	PsychTestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Size: 255},
+		{Name: "name_fa", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "category", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "age_range", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "schema_data", Type: field.TypeJSON, Nullable: true},
+		{Name: "scoring_method", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+	}
+	// PsychTestsTable holds the schema information for the "psych_tests" table.
+	PsychTestsTable = &schema.Table{
+		Name:       "psych_tests",
+		Columns:    PsychTestsColumns,
+		PrimaryKey: []*schema.Column{PsychTestsColumns[0]},
+	}
+	// TherapistProfilesColumns holds the columns for the "therapist_profiles" table.
+	TherapistProfilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "education", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "psychology_license", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "approach", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "specialties", Type: field.TypeJSON, Nullable: true},
+		{Name: "bio", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "rating", Type: field.TypeFloat64, Default: 0},
+		{Name: "session_price", Type: field.TypeInt64, Nullable: true},
+		{Name: "session_duration_min", Type: field.TypeInt, Nullable: true},
+		{Name: "is_accepting", Type: field.TypeBool, Default: true},
+		{Name: "clinic_member_id", Type: field.TypeUUID, Unique: true},
+	}
+	// TherapistProfilesTable holds the schema information for the "therapist_profiles" table.
+	TherapistProfilesTable = &schema.Table{
+		Name:       "therapist_profiles",
+		Columns:    TherapistProfilesColumns,
+		PrimaryKey: []*schema.Column{TherapistProfilesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "therapist_profiles_clinic_members_therapist_profile",
+				Columns:    []*schema.Column{TherapistProfilesColumns[12]},
+				RefColumns: []*schema.Column{ClinicMembersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -206,7 +559,15 @@ var (
 	Tables = []*schema.Table{
 		ClinicsTable,
 		ClinicMembersTable,
+		ClinicPermissionsTable,
 		ClinicSettingsTable,
+		PatientsTable,
+		PatientFilesTable,
+		PatientPrescriptionsTable,
+		PatientReportsTable,
+		PatientTestsTable,
+		PsychTestsTable,
+		TherapistProfilesTable,
 		UsersTable,
 		UserSessionsTable,
 	}
@@ -215,6 +576,21 @@ var (
 func init() {
 	ClinicMembersTable.ForeignKeys[0].RefTable = ClinicsTable
 	ClinicMembersTable.ForeignKeys[1].RefTable = UsersTable
+	ClinicPermissionsTable.ForeignKeys[0].RefTable = ClinicsTable
+	ClinicPermissionsTable.ForeignKeys[1].RefTable = UsersTable
 	ClinicSettingsTable.ForeignKeys[0].RefTable = ClinicsTable
+	PatientsTable.ForeignKeys[0].RefTable = ClinicsTable
+	PatientsTable.ForeignKeys[1].RefTable = UsersTable
+	PatientsTable.ForeignKeys[2].RefTable = ClinicMembersTable
+	PatientFilesTable.ForeignKeys[0].RefTable = PatientsTable
+	PatientFilesTable.ForeignKeys[1].RefTable = UsersTable
+	PatientPrescriptionsTable.ForeignKeys[0].RefTable = PatientsTable
+	PatientPrescriptionsTable.ForeignKeys[1].RefTable = ClinicMembersTable
+	PatientReportsTable.ForeignKeys[0].RefTable = PatientsTable
+	PatientReportsTable.ForeignKeys[1].RefTable = ClinicMembersTable
+	PatientTestsTable.ForeignKeys[0].RefTable = PatientsTable
+	PatientTestsTable.ForeignKeys[1].RefTable = PsychTestsTable
+	PatientTestsTable.ForeignKeys[2].RefTable = ClinicMembersTable
+	TherapistProfilesTable.ForeignKeys[0].RefTable = ClinicMembersTable
 	UserSessionsTable.ForeignKeys[0].RefTable = UsersTable
 }

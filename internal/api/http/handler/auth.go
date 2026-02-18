@@ -162,6 +162,34 @@ func (h *AuthHandler) InternSetup(c fiber.Ctx) error {
 	return ok(c, result)
 }
 
+// POST /api/v1/auth/change-password  (requires AuthRequired middleware)
+func (h *AuthHandler) ChangePassword(c fiber.Ctx) error {
+	claims, ok := pasetotoken.ClaimsFromFiber(c)
+	if !ok || claims.SessionID == nil {
+		return unauthorized(c)
+	}
+
+	var body struct {
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
+	if err := c.Bind().JSON(&body); err != nil {
+		return badRequest(c, "invalid request body")
+	}
+	if body.CurrentPassword == "" || body.NewPassword == "" {
+		return badRequest(c, "current_password and new_password are required")
+	}
+
+	if err := h.svc.ChangePassword(c.Context(), claims.UserID, *claims.SessionID, auth.ChangePasswordRequest{
+		CurrentPassword: body.CurrentPassword,
+		NewPassword:     body.NewPassword,
+	}); err != nil {
+		return mapAuthError(c, err)
+	}
+
+	return noContent(c)
+}
+
 // ---------------------------------------------------------------------------
 // Error mapping
 // ---------------------------------------------------------------------------
@@ -184,6 +212,8 @@ func mapAuthError(c fiber.Ctx, err error) error {
 		return badRequest(c, err.Error())
 	case errors.Is(err, auth.ErrOTPMaxAttempts):
 		return tooManyRequests(c, err.Error())
+	case errors.Is(err, auth.ErrWrongPassword):
+		return badRequest(c, err.Error())
 	case errors.Is(err, auth.ErrInvalidCredentials):
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
 	case errors.Is(err, auth.ErrAccountSuspended):

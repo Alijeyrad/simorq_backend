@@ -7,7 +7,15 @@ import (
 
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patientfile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patientprescription"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patientreport"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patienttest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/psychtest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
 	"github.com/Alijeyrad/simorq_backend/internal/schema"
@@ -116,6 +124,61 @@ func init() {
 	clinicmemberDescID := clinicmemberMixinFields0[0].Descriptor()
 	// clinicmember.DefaultID holds the default value on creation for the id field.
 	clinicmember.DefaultID = clinicmemberDescID.Default.(func() uuid.UUID)
+	clinicpermissionMixin := schema.ClinicPermission{}.Mixin()
+	clinicpermissionMixinFields0 := clinicpermissionMixin[0].Fields()
+	_ = clinicpermissionMixinFields0
+	clinicpermissionMixinFields1 := clinicpermissionMixin[1].Fields()
+	_ = clinicpermissionMixinFields1
+	clinicpermissionFields := schema.ClinicPermission{}.Fields()
+	_ = clinicpermissionFields
+	// clinicpermissionDescCreatedAt is the schema descriptor for created_at field.
+	clinicpermissionDescCreatedAt := clinicpermissionMixinFields1[0].Descriptor()
+	// clinicpermission.DefaultCreatedAt holds the default value on creation for the created_at field.
+	clinicpermission.DefaultCreatedAt = clinicpermissionDescCreatedAt.Default.(func() time.Time)
+	// clinicpermissionDescResourceType is the schema descriptor for resource_type field.
+	clinicpermissionDescResourceType := clinicpermissionFields[2].Descriptor()
+	// clinicpermission.ResourceTypeValidator is a validator for the "resource_type" field. It is called by the builders before save.
+	clinicpermission.ResourceTypeValidator = func() func(string) error {
+		validators := clinicpermissionDescResourceType.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(resource_type string) error {
+			for _, fn := range fns {
+				if err := fn(resource_type); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clinicpermissionDescAction is the schema descriptor for action field.
+	clinicpermissionDescAction := clinicpermissionFields[4].Descriptor()
+	// clinicpermission.ActionValidator is a validator for the "action" field. It is called by the builders before save.
+	clinicpermission.ActionValidator = func() func(string) error {
+		validators := clinicpermissionDescAction.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(action string) error {
+			for _, fn := range fns {
+				if err := fn(action); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clinicpermissionDescGranted is the schema descriptor for granted field.
+	clinicpermissionDescGranted := clinicpermissionFields[5].Descriptor()
+	// clinicpermission.DefaultGranted holds the default value on creation for the granted field.
+	clinicpermission.DefaultGranted = clinicpermissionDescGranted.Default.(bool)
+	// clinicpermissionDescID is the schema descriptor for id field.
+	clinicpermissionDescID := clinicpermissionMixinFields0[0].Descriptor()
+	// clinicpermission.DefaultID holds the default value on creation for the id field.
+	clinicpermission.DefaultID = clinicpermissionDescID.Default.(func() uuid.UUID)
 	clinicsettingsMixin := schema.ClinicSettings{}.Mixin()
 	clinicsettingsMixinFields0 := clinicsettingsMixin[0].Fields()
 	_ = clinicsettingsMixinFields0
@@ -169,6 +232,327 @@ func init() {
 	clinicsettingsDescID := clinicsettingsMixinFields0[0].Descriptor()
 	// clinicsettings.DefaultID holds the default value on creation for the id field.
 	clinicsettings.DefaultID = clinicsettingsDescID.Default.(func() uuid.UUID)
+	patientMixin := schema.Patient{}.Mixin()
+	patientMixinFields0 := patientMixin[0].Fields()
+	_ = patientMixinFields0
+	patientMixinFields1 := patientMixin[1].Fields()
+	_ = patientMixinFields1
+	patientFields := schema.Patient{}.Fields()
+	_ = patientFields
+	// patientDescCreatedAt is the schema descriptor for created_at field.
+	patientDescCreatedAt := patientMixinFields1[0].Descriptor()
+	// patient.DefaultCreatedAt holds the default value on creation for the created_at field.
+	patient.DefaultCreatedAt = patientDescCreatedAt.Default.(func() time.Time)
+	// patientDescUpdatedAt is the schema descriptor for updated_at field.
+	patientDescUpdatedAt := patientMixinFields1[1].Descriptor()
+	// patient.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	patient.DefaultUpdatedAt = patientDescUpdatedAt.Default.(func() time.Time)
+	// patient.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	patient.UpdateDefaultUpdatedAt = patientDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// patientDescFileNumber is the schema descriptor for file_number field.
+	patientDescFileNumber := patientFields[3].Descriptor()
+	// patient.FileNumberValidator is a validator for the "file_number" field. It is called by the builders before save.
+	patient.FileNumberValidator = patientDescFileNumber.Validators[0].(func(string) error)
+	// patientDescSessionCount is the schema descriptor for session_count field.
+	patientDescSessionCount := patientFields[5].Descriptor()
+	// patient.DefaultSessionCount holds the default value on creation for the session_count field.
+	patient.DefaultSessionCount = patientDescSessionCount.Default.(int)
+	// patientDescTotalCancellations is the schema descriptor for total_cancellations field.
+	patientDescTotalCancellations := patientFields[6].Descriptor()
+	// patient.DefaultTotalCancellations holds the default value on creation for the total_cancellations field.
+	patient.DefaultTotalCancellations = patientDescTotalCancellations.Default.(int)
+	// patientDescHasDiscount is the schema descriptor for has_discount field.
+	patientDescHasDiscount := patientFields[8].Descriptor()
+	// patient.DefaultHasDiscount holds the default value on creation for the has_discount field.
+	patient.DefaultHasDiscount = patientDescHasDiscount.Default.(bool)
+	// patientDescDiscountPercent is the schema descriptor for discount_percent field.
+	patientDescDiscountPercent := patientFields[9].Descriptor()
+	// patient.DefaultDiscountPercent holds the default value on creation for the discount_percent field.
+	patient.DefaultDiscountPercent = patientDescDiscountPercent.Default.(int)
+	// patientDescTotalPaid is the schema descriptor for total_paid field.
+	patientDescTotalPaid := patientFields[11].Descriptor()
+	// patient.DefaultTotalPaid holds the default value on creation for the total_paid field.
+	patient.DefaultTotalPaid = patientDescTotalPaid.Default.(int64)
+	// patientDescReferralSource is the schema descriptor for referral_source field.
+	patientDescReferralSource := patientFields[13].Descriptor()
+	// patient.ReferralSourceValidator is a validator for the "referral_source" field. It is called by the builders before save.
+	patient.ReferralSourceValidator = patientDescReferralSource.Validators[0].(func(string) error)
+	// patientDescIsChild is the schema descriptor for is_child field.
+	patientDescIsChild := patientFields[15].Descriptor()
+	// patient.DefaultIsChild holds the default value on creation for the is_child field.
+	patient.DefaultIsChild = patientDescIsChild.Default.(bool)
+	// patientDescChildSchool is the schema descriptor for child_school field.
+	patientDescChildSchool := patientFields[17].Descriptor()
+	// patient.ChildSchoolValidator is a validator for the "child_school" field. It is called by the builders before save.
+	patient.ChildSchoolValidator = patientDescChildSchool.Validators[0].(func(string) error)
+	// patientDescChildGrade is the schema descriptor for child_grade field.
+	patientDescChildGrade := patientFields[18].Descriptor()
+	// patient.ChildGradeValidator is a validator for the "child_grade" field. It is called by the builders before save.
+	patient.ChildGradeValidator = patientDescChildGrade.Validators[0].(func(string) error)
+	// patientDescParentName is the schema descriptor for parent_name field.
+	patientDescParentName := patientFields[19].Descriptor()
+	// patient.ParentNameValidator is a validator for the "parent_name" field. It is called by the builders before save.
+	patient.ParentNameValidator = patientDescParentName.Validators[0].(func(string) error)
+	// patientDescParentPhone is the schema descriptor for parent_phone field.
+	patientDescParentPhone := patientFields[20].Descriptor()
+	// patient.ParentPhoneValidator is a validator for the "parent_phone" field. It is called by the builders before save.
+	patient.ParentPhoneValidator = patientDescParentPhone.Validators[0].(func(string) error)
+	// patientDescParentRelation is the schema descriptor for parent_relation field.
+	patientDescParentRelation := patientFields[21].Descriptor()
+	// patient.ParentRelationValidator is a validator for the "parent_relation" field. It is called by the builders before save.
+	patient.ParentRelationValidator = patientDescParentRelation.Validators[0].(func(string) error)
+	// patientDescID is the schema descriptor for id field.
+	patientDescID := patientMixinFields0[0].Descriptor()
+	// patient.DefaultID holds the default value on creation for the id field.
+	patient.DefaultID = patientDescID.Default.(func() uuid.UUID)
+	patientfileMixin := schema.PatientFile{}.Mixin()
+	patientfileMixinFields0 := patientfileMixin[0].Fields()
+	_ = patientfileMixinFields0
+	patientfileMixinFields1 := patientfileMixin[1].Fields()
+	_ = patientfileMixinFields1
+	patientfileFields := schema.PatientFile{}.Fields()
+	_ = patientfileFields
+	// patientfileDescCreatedAt is the schema descriptor for created_at field.
+	patientfileDescCreatedAt := patientfileMixinFields1[0].Descriptor()
+	// patientfile.DefaultCreatedAt holds the default value on creation for the created_at field.
+	patientfile.DefaultCreatedAt = patientfileDescCreatedAt.Default.(func() time.Time)
+	// patientfileDescLinkedType is the schema descriptor for linked_type field.
+	patientfileDescLinkedType := patientfileFields[3].Descriptor()
+	// patientfile.LinkedTypeValidator is a validator for the "linked_type" field. It is called by the builders before save.
+	patientfile.LinkedTypeValidator = patientfileDescLinkedType.Validators[0].(func(string) error)
+	// patientfileDescFileName is the schema descriptor for file_name field.
+	patientfileDescFileName := patientfileFields[5].Descriptor()
+	// patientfile.FileNameValidator is a validator for the "file_name" field. It is called by the builders before save.
+	patientfile.FileNameValidator = func() func(string) error {
+		validators := patientfileDescFileName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(file_name string) error {
+			for _, fn := range fns {
+				if err := fn(file_name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// patientfileDescFileKey is the schema descriptor for file_key field.
+	patientfileDescFileKey := patientfileFields[6].Descriptor()
+	// patientfile.FileKeyValidator is a validator for the "file_key" field. It is called by the builders before save.
+	patientfile.FileKeyValidator = func() func(string) error {
+		validators := patientfileDescFileKey.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(file_key string) error {
+			for _, fn := range fns {
+				if err := fn(file_key); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// patientfileDescMimeType is the schema descriptor for mime_type field.
+	patientfileDescMimeType := patientfileFields[8].Descriptor()
+	// patientfile.MimeTypeValidator is a validator for the "mime_type" field. It is called by the builders before save.
+	patientfile.MimeTypeValidator = patientfileDescMimeType.Validators[0].(func(string) error)
+	// patientfileDescID is the schema descriptor for id field.
+	patientfileDescID := patientfileMixinFields0[0].Descriptor()
+	// patientfile.DefaultID holds the default value on creation for the id field.
+	patientfile.DefaultID = patientfileDescID.Default.(func() uuid.UUID)
+	patientprescriptionMixin := schema.PatientPrescription{}.Mixin()
+	patientprescriptionMixinFields0 := patientprescriptionMixin[0].Fields()
+	_ = patientprescriptionMixinFields0
+	patientprescriptionMixinFields1 := patientprescriptionMixin[1].Fields()
+	_ = patientprescriptionMixinFields1
+	patientprescriptionFields := schema.PatientPrescription{}.Fields()
+	_ = patientprescriptionFields
+	// patientprescriptionDescCreatedAt is the schema descriptor for created_at field.
+	patientprescriptionDescCreatedAt := patientprescriptionMixinFields1[0].Descriptor()
+	// patientprescription.DefaultCreatedAt holds the default value on creation for the created_at field.
+	patientprescription.DefaultCreatedAt = patientprescriptionDescCreatedAt.Default.(func() time.Time)
+	// patientprescriptionDescUpdatedAt is the schema descriptor for updated_at field.
+	patientprescriptionDescUpdatedAt := patientprescriptionMixinFields1[1].Descriptor()
+	// patientprescription.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	patientprescription.DefaultUpdatedAt = patientprescriptionDescUpdatedAt.Default.(func() time.Time)
+	// patientprescription.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	patientprescription.UpdateDefaultUpdatedAt = patientprescriptionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// patientprescriptionDescTitle is the schema descriptor for title field.
+	patientprescriptionDescTitle := patientprescriptionFields[3].Descriptor()
+	// patientprescription.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	patientprescription.TitleValidator = patientprescriptionDescTitle.Validators[0].(func(string) error)
+	// patientprescriptionDescFileKey is the schema descriptor for file_key field.
+	patientprescriptionDescFileKey := patientprescriptionFields[5].Descriptor()
+	// patientprescription.FileKeyValidator is a validator for the "file_key" field. It is called by the builders before save.
+	patientprescription.FileKeyValidator = patientprescriptionDescFileKey.Validators[0].(func(string) error)
+	// patientprescriptionDescFileName is the schema descriptor for file_name field.
+	patientprescriptionDescFileName := patientprescriptionFields[6].Descriptor()
+	// patientprescription.FileNameValidator is a validator for the "file_name" field. It is called by the builders before save.
+	patientprescription.FileNameValidator = patientprescriptionDescFileName.Validators[0].(func(string) error)
+	// patientprescriptionDescPrescribedDate is the schema descriptor for prescribed_date field.
+	patientprescriptionDescPrescribedDate := patientprescriptionFields[7].Descriptor()
+	// patientprescription.DefaultPrescribedDate holds the default value on creation for the prescribed_date field.
+	patientprescription.DefaultPrescribedDate = patientprescriptionDescPrescribedDate.Default.(func() time.Time)
+	// patientprescriptionDescID is the schema descriptor for id field.
+	patientprescriptionDescID := patientprescriptionMixinFields0[0].Descriptor()
+	// patientprescription.DefaultID holds the default value on creation for the id field.
+	patientprescription.DefaultID = patientprescriptionDescID.Default.(func() uuid.UUID)
+	patientreportMixin := schema.PatientReport{}.Mixin()
+	patientreportMixinFields0 := patientreportMixin[0].Fields()
+	_ = patientreportMixinFields0
+	patientreportMixinFields1 := patientreportMixin[1].Fields()
+	_ = patientreportMixinFields1
+	patientreportFields := schema.PatientReport{}.Fields()
+	_ = patientreportFields
+	// patientreportDescCreatedAt is the schema descriptor for created_at field.
+	patientreportDescCreatedAt := patientreportMixinFields1[0].Descriptor()
+	// patientreport.DefaultCreatedAt holds the default value on creation for the created_at field.
+	patientreport.DefaultCreatedAt = patientreportDescCreatedAt.Default.(func() time.Time)
+	// patientreportDescUpdatedAt is the schema descriptor for updated_at field.
+	patientreportDescUpdatedAt := patientreportMixinFields1[1].Descriptor()
+	// patientreport.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	patientreport.DefaultUpdatedAt = patientreportDescUpdatedAt.Default.(func() time.Time)
+	// patientreport.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	patientreport.UpdateDefaultUpdatedAt = patientreportDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// patientreportDescTitle is the schema descriptor for title field.
+	patientreportDescTitle := patientreportFields[4].Descriptor()
+	// patientreport.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	patientreport.TitleValidator = patientreportDescTitle.Validators[0].(func(string) error)
+	// patientreportDescReportDate is the schema descriptor for report_date field.
+	patientreportDescReportDate := patientreportFields[6].Descriptor()
+	// patientreport.DefaultReportDate holds the default value on creation for the report_date field.
+	patientreport.DefaultReportDate = patientreportDescReportDate.Default.(func() time.Time)
+	// patientreportDescID is the schema descriptor for id field.
+	patientreportDescID := patientreportMixinFields0[0].Descriptor()
+	// patientreport.DefaultID holds the default value on creation for the id field.
+	patientreport.DefaultID = patientreportDescID.Default.(func() uuid.UUID)
+	patienttestMixin := schema.PatientTest{}.Mixin()
+	patienttestMixinFields0 := patienttestMixin[0].Fields()
+	_ = patienttestMixinFields0
+	patienttestMixinFields1 := patienttestMixin[1].Fields()
+	_ = patienttestMixinFields1
+	patienttestFields := schema.PatientTest{}.Fields()
+	_ = patienttestFields
+	// patienttestDescCreatedAt is the schema descriptor for created_at field.
+	patienttestDescCreatedAt := patienttestMixinFields1[0].Descriptor()
+	// patienttest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	patienttest.DefaultCreatedAt = patienttestDescCreatedAt.Default.(func() time.Time)
+	// patienttestDescUpdatedAt is the schema descriptor for updated_at field.
+	patienttestDescUpdatedAt := patienttestMixinFields1[1].Descriptor()
+	// patienttest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	patienttest.DefaultUpdatedAt = patienttestDescUpdatedAt.Default.(func() time.Time)
+	// patienttest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	patienttest.UpdateDefaultUpdatedAt = patienttestDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// patienttestDescTestName is the schema descriptor for test_name field.
+	patienttestDescTestName := patienttestFields[4].Descriptor()
+	// patienttest.TestNameValidator is a validator for the "test_name" field. It is called by the builders before save.
+	patienttest.TestNameValidator = patienttestDescTestName.Validators[0].(func(string) error)
+	// patienttestDescTestDate is the schema descriptor for test_date field.
+	patienttestDescTestDate := patienttestFields[8].Descriptor()
+	// patienttest.DefaultTestDate holds the default value on creation for the test_date field.
+	patienttest.DefaultTestDate = patienttestDescTestDate.Default.(func() time.Time)
+	// patienttestDescID is the schema descriptor for id field.
+	patienttestDescID := patienttestMixinFields0[0].Descriptor()
+	// patienttest.DefaultID holds the default value on creation for the id field.
+	patienttest.DefaultID = patienttestDescID.Default.(func() uuid.UUID)
+	psychtestMixin := schema.PsychTest{}.Mixin()
+	psychtestMixinFields0 := psychtestMixin[0].Fields()
+	_ = psychtestMixinFields0
+	psychtestMixinFields1 := psychtestMixin[1].Fields()
+	_ = psychtestMixinFields1
+	psychtestFields := schema.PsychTest{}.Fields()
+	_ = psychtestFields
+	// psychtestDescCreatedAt is the schema descriptor for created_at field.
+	psychtestDescCreatedAt := psychtestMixinFields1[0].Descriptor()
+	// psychtest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	psychtest.DefaultCreatedAt = psychtestDescCreatedAt.Default.(func() time.Time)
+	// psychtestDescName is the schema descriptor for name field.
+	psychtestDescName := psychtestFields[0].Descriptor()
+	// psychtest.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	psychtest.NameValidator = func() func(string) error {
+		validators := psychtestDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// psychtestDescNameFa is the schema descriptor for name_fa field.
+	psychtestDescNameFa := psychtestFields[1].Descriptor()
+	// psychtest.NameFaValidator is a validator for the "name_fa" field. It is called by the builders before save.
+	psychtest.NameFaValidator = psychtestDescNameFa.Validators[0].(func(string) error)
+	// psychtestDescCategory is the schema descriptor for category field.
+	psychtestDescCategory := psychtestFields[3].Descriptor()
+	// psychtest.CategoryValidator is a validator for the "category" field. It is called by the builders before save.
+	psychtest.CategoryValidator = psychtestDescCategory.Validators[0].(func(string) error)
+	// psychtestDescAgeRange is the schema descriptor for age_range field.
+	psychtestDescAgeRange := psychtestFields[4].Descriptor()
+	// psychtest.AgeRangeValidator is a validator for the "age_range" field. It is called by the builders before save.
+	psychtest.AgeRangeValidator = psychtestDescAgeRange.Validators[0].(func(string) error)
+	// psychtestDescScoringMethod is the schema descriptor for scoring_method field.
+	psychtestDescScoringMethod := psychtestFields[6].Descriptor()
+	// psychtest.ScoringMethodValidator is a validator for the "scoring_method" field. It is called by the builders before save.
+	psychtest.ScoringMethodValidator = psychtestDescScoringMethod.Validators[0].(func(string) error)
+	// psychtestDescIsActive is the schema descriptor for is_active field.
+	psychtestDescIsActive := psychtestFields[7].Descriptor()
+	// psychtest.DefaultIsActive holds the default value on creation for the is_active field.
+	psychtest.DefaultIsActive = psychtestDescIsActive.Default.(bool)
+	// psychtestDescID is the schema descriptor for id field.
+	psychtestDescID := psychtestMixinFields0[0].Descriptor()
+	// psychtest.DefaultID holds the default value on creation for the id field.
+	psychtest.DefaultID = psychtestDescID.Default.(func() uuid.UUID)
+	therapistprofileMixin := schema.TherapistProfile{}.Mixin()
+	therapistprofileMixinFields0 := therapistprofileMixin[0].Fields()
+	_ = therapistprofileMixinFields0
+	therapistprofileMixinFields1 := therapistprofileMixin[1].Fields()
+	_ = therapistprofileMixinFields1
+	therapistprofileFields := schema.TherapistProfile{}.Fields()
+	_ = therapistprofileFields
+	// therapistprofileDescCreatedAt is the schema descriptor for created_at field.
+	therapistprofileDescCreatedAt := therapistprofileMixinFields1[0].Descriptor()
+	// therapistprofile.DefaultCreatedAt holds the default value on creation for the created_at field.
+	therapistprofile.DefaultCreatedAt = therapistprofileDescCreatedAt.Default.(func() time.Time)
+	// therapistprofileDescUpdatedAt is the schema descriptor for updated_at field.
+	therapistprofileDescUpdatedAt := therapistprofileMixinFields1[1].Descriptor()
+	// therapistprofile.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	therapistprofile.DefaultUpdatedAt = therapistprofileDescUpdatedAt.Default.(func() time.Time)
+	// therapistprofile.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	therapistprofile.UpdateDefaultUpdatedAt = therapistprofileDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// therapistprofileDescEducation is the schema descriptor for education field.
+	therapistprofileDescEducation := therapistprofileFields[1].Descriptor()
+	// therapistprofile.EducationValidator is a validator for the "education" field. It is called by the builders before save.
+	therapistprofile.EducationValidator = therapistprofileDescEducation.Validators[0].(func(string) error)
+	// therapistprofileDescPsychologyLicense is the schema descriptor for psychology_license field.
+	therapistprofileDescPsychologyLicense := therapistprofileFields[2].Descriptor()
+	// therapistprofile.PsychologyLicenseValidator is a validator for the "psychology_license" field. It is called by the builders before save.
+	therapistprofile.PsychologyLicenseValidator = therapistprofileDescPsychologyLicense.Validators[0].(func(string) error)
+	// therapistprofileDescApproach is the schema descriptor for approach field.
+	therapistprofileDescApproach := therapistprofileFields[3].Descriptor()
+	// therapistprofile.ApproachValidator is a validator for the "approach" field. It is called by the builders before save.
+	therapistprofile.ApproachValidator = therapistprofileDescApproach.Validators[0].(func(string) error)
+	// therapistprofileDescRating is the schema descriptor for rating field.
+	therapistprofileDescRating := therapistprofileFields[6].Descriptor()
+	// therapistprofile.DefaultRating holds the default value on creation for the rating field.
+	therapistprofile.DefaultRating = therapistprofileDescRating.Default.(float64)
+	// therapistprofileDescIsAccepting is the schema descriptor for is_accepting field.
+	therapistprofileDescIsAccepting := therapistprofileFields[9].Descriptor()
+	// therapistprofile.DefaultIsAccepting holds the default value on creation for the is_accepting field.
+	therapistprofile.DefaultIsAccepting = therapistprofileDescIsAccepting.Default.(bool)
+	// therapistprofileDescID is the schema descriptor for id field.
+	therapistprofileDescID := therapistprofileMixinFields0[0].Descriptor()
+	// therapistprofile.DefaultID holds the default value on creation for the id field.
+	therapistprofile.DefaultID = therapistprofileDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0

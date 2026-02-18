@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/google/uuid"
 )
@@ -91,6 +92,25 @@ func (_c *ClinicMemberCreate) SetClinic(v *Clinic) *ClinicMemberCreate {
 // SetUser sets the "user" edge to the User entity.
 func (_c *ClinicMemberCreate) SetUser(v *User) *ClinicMemberCreate {
 	return _c.SetUserID(v.ID)
+}
+
+// SetTherapistProfileID sets the "therapist_profile" edge to the TherapistProfile entity by ID.
+func (_c *ClinicMemberCreate) SetTherapistProfileID(id uuid.UUID) *ClinicMemberCreate {
+	_c.mutation.SetTherapistProfileID(id)
+	return _c
+}
+
+// SetNillableTherapistProfileID sets the "therapist_profile" edge to the TherapistProfile entity by ID if the given value is not nil.
+func (_c *ClinicMemberCreate) SetNillableTherapistProfileID(id *uuid.UUID) *ClinicMemberCreate {
+	if id != nil {
+		_c = _c.SetTherapistProfileID(*id)
+	}
+	return _c
+}
+
+// SetTherapistProfile sets the "therapist_profile" edge to the TherapistProfile entity.
+func (_c *ClinicMemberCreate) SetTherapistProfile(v *TherapistProfile) *ClinicMemberCreate {
+	return _c.SetTherapistProfileID(v.ID)
 }
 
 // Mutation returns the ClinicMemberMutation object of the builder.
@@ -249,6 +269,22 @@ func (_c *ClinicMemberCreate) createSpec() (*ClinicMember, *sqlgraph.CreateSpec)
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TherapistProfileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   clinicmember.TherapistProfileTable,
+			Columns: []string{clinicmember.TherapistProfileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(therapistprofile.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

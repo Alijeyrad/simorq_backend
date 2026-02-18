@@ -30,6 +30,8 @@ const (
 	EdgeClinic = "clinic"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeTherapistProfile holds the string denoting the therapist_profile edge name in mutations.
+	EdgeTherapistProfile = "therapist_profile"
 	// Table holds the table name of the clinicmember in the database.
 	Table = "clinic_members"
 	// ClinicTable is the table that holds the clinic relation/edge.
@@ -46,6 +48,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
+	// TherapistProfileTable is the table that holds the therapist_profile relation/edge.
+	TherapistProfileTable = "therapist_profiles"
+	// TherapistProfileInverseTable is the table name for the TherapistProfile entity.
+	// It exists in this package in order to avoid circular dependency with the "therapistprofile" package.
+	TherapistProfileInverseTable = "therapist_profiles"
+	// TherapistProfileColumn is the table column denoting the therapist_profile relation/edge.
+	TherapistProfileColumn = "clinic_member_id"
 )
 
 // Columns holds all SQL columns for clinicmember fields.
@@ -148,6 +157,13 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByTherapistProfileField orders the results by therapist_profile field.
+func ByTherapistProfileField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTherapistProfileStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newClinicStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -160,5 +176,12 @@ func newUserStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
+	)
+}
+func newTherapistProfileStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TherapistProfileInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, TherapistProfileTable, TherapistProfileColumn),
 	)
 }

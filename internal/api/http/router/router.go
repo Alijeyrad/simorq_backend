@@ -7,6 +7,9 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
 	"github.com/Alijeyrad/simorq_backend/internal/service/auth"
 	"github.com/Alijeyrad/simorq_backend/internal/service/clinic"
+	"github.com/Alijeyrad/simorq_backend/internal/service/file"
+	"github.com/Alijeyrad/simorq_backend/internal/service/patient"
+	"github.com/Alijeyrad/simorq_backend/internal/service/psychtest"
 	"github.com/Alijeyrad/simorq_backend/internal/service/user"
 	"github.com/Alijeyrad/simorq_backend/pkg/authorize"
 	pasetotoken "github.com/Alijeyrad/simorq_backend/pkg/paseto"
@@ -24,14 +27,17 @@ var Module = fx.Module("router", fx.Provide(NewRouter))
 type Params struct {
 	fx.In
 
-	Cfg       *config.Config
-	Redis     *redis.Client
-	Auth      authorize.IAuthorization
-	DB        *repo.Client
-	UserSvc   user.Service
-	AuthSvc   auth.Service
-	ClinicSvc clinic.Service
-	PasetoMgr *pasetotoken.Manager
+	Cfg          *config.Config
+	Redis        *redis.Client
+	Auth         authorize.IAuthorization
+	DB           *repo.Client
+	UserSvc      user.Service
+	AuthSvc      auth.Service
+	ClinicSvc    clinic.Service
+	PatientSvc   patient.Service
+	FileSvc      file.Service
+	PsychTestSvc psychtest.Service
+	PasetoMgr    *pasetotoken.Manager
 }
 
 type Router struct {
@@ -49,6 +55,7 @@ func (r *Router) Register(app *fiber.App) {
 	// 2. Initialize Middlewares
 	authRequired := middleware.AuthRequired(r.p.PasetoMgr, r.p.Redis)
 	clinicCtx := middleware.ClinicContext(r.p.DB)
+	clinicHeader := middleware.ClinicHeader(r.p.DB)
 
 	// Permission helper
 	requirePerm := func(res authorize.Resource, act authorize.Action) fiber.Handler {
@@ -59,6 +66,9 @@ func (r *Router) Register(app *fiber.App) {
 	authH := handler.NewAuthHandler(r.p.AuthSvc)
 	userH := handler.NewUserHandler(r.p.UserSvc)
 	clinicH := handler.NewClinicHandler(r.p.ClinicSvc)
+	patientH := handler.NewPatientHandler(r.p.PatientSvc)
+	fileH := handler.NewFileHandler(r.p.FileSvc)
+	testH := handler.NewTestHandler(r.p.PsychTestSvc)
 
 	api := app.Group("/api/v1")
 
@@ -66,6 +76,9 @@ func (r *Router) Register(app *fiber.App) {
 	r.registerAuthRoutes(api, authH, authRequired)
 	r.registerUserRoutes(api, userH, authRequired)
 	r.registerClinicRoutes(api, clinicH, authRequired, clinicCtx, requirePerm)
+	r.registerPatientRoutes(api, patientH, fileH, authRequired, clinicHeader, requirePerm)
+	r.registerFileRoutes(api, fileH, authRequired, clinicHeader)
+	r.registerTestRoutes(api, testH, authRequired)
 }
 
 func (r *Router) registerSystemRoutes(app *fiber.App) {

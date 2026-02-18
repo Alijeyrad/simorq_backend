@@ -14,6 +14,7 @@ import (
 	"github.com/Alijeyrad/simorq_backend/pkg/email"
 	"github.com/Alijeyrad/simorq_backend/pkg/observability"
 	redispkg "github.com/Alijeyrad/simorq_backend/pkg/redis"
+	s3pkg "github.com/Alijeyrad/simorq_backend/pkg/s3"
 	"github.com/Alijeyrad/simorq_backend/pkg/sms"
 )
 
@@ -25,6 +26,7 @@ var InfraModule = fx.Module("infra",
 	fx.Provide(ProvideEmailClient),
 	fx.Provide(ProvideSMSClient),
 	fx.Provide(ProvideOTel),
+	fx.Provide(ProvideS3Client),
 )
 
 func ProvideEntClient(lc fx.Lifecycle, cfg *config.Config) (*repo.Client, error) {
@@ -83,6 +85,10 @@ func ProvideEmailClient(cfg *config.Config) (*email.Client, error) {
 
 func ProvideSMSClient(cfg *config.Config) (*sms.Client, error) {
 	return sms.NewFromConfig(cfg.SMS)
+}
+
+func ProvideS3Client(cfg *config.Config) (*s3pkg.Client, error) {
+	return s3pkg.New(cfg.S3)
 }
 
 func ProvideOTel(lc fx.Lifecycle, cfg *config.Config) (*observability.Provider, error) {

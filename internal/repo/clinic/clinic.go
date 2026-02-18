@@ -45,6 +45,10 @@ const (
 	EdgeMembers = "members"
 	// EdgeSettings holds the string denoting the settings edge name in mutations.
 	EdgeSettings = "settings"
+	// EdgePermissions holds the string denoting the permissions edge name in mutations.
+	EdgePermissions = "permissions"
+	// EdgePatients holds the string denoting the patients edge name in mutations.
+	EdgePatients = "patients"
 	// Table holds the table name of the clinic in the database.
 	Table = "clinics"
 	// MembersTable is the table that holds the members relation/edge.
@@ -61,6 +65,20 @@ const (
 	SettingsInverseTable = "clinic_settings"
 	// SettingsColumn is the table column denoting the settings relation/edge.
 	SettingsColumn = "clinic_id"
+	// PermissionsTable is the table that holds the permissions relation/edge.
+	PermissionsTable = "clinic_permissions"
+	// PermissionsInverseTable is the table name for the ClinicPermission entity.
+	// It exists in this package in order to avoid circular dependency with the "clinicpermission" package.
+	PermissionsInverseTable = "clinic_permissions"
+	// PermissionsColumn is the table column denoting the permissions relation/edge.
+	PermissionsColumn = "clinic_id"
+	// PatientsTable is the table that holds the patients relation/edge.
+	PatientsTable = "patients"
+	// PatientsInverseTable is the table name for the Patient entity.
+	// It exists in this package in order to avoid circular dependency with the "patient" package.
+	PatientsInverseTable = "patients"
+	// PatientsColumn is the table column denoting the patients relation/edge.
+	PatientsColumn = "clinic_id"
 )
 
 // Columns holds all SQL columns for clinic fields.
@@ -211,6 +229,34 @@ func BySettingsField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSettingsStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByPermissionsCount orders the results by permissions count.
+func ByPermissionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPermissionsStep(), opts...)
+	}
+}
+
+// ByPermissions orders the results by permissions terms.
+func ByPermissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPermissionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByPatientsCount orders the results by patients count.
+func ByPatientsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPatientsStep(), opts...)
+	}
+}
+
+// ByPatients orders the results by patients terms.
+func ByPatients(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPatientsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newMembersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -223,5 +269,19 @@ func newSettingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SettingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, SettingsTable, SettingsColumn),
+	)
+}
+func newPermissionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PermissionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PermissionsTable, PermissionsColumn),
+	)
+}
+func newPatientsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PatientsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PatientsTable, PatientsColumn),
 	)
 }

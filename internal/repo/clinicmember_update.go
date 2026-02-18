@@ -13,6 +13,7 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/predicate"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/google/uuid"
 )
@@ -96,6 +97,25 @@ func (_u *ClinicMemberUpdate) SetUser(v *User) *ClinicMemberUpdate {
 	return _u.SetUserID(v.ID)
 }
 
+// SetTherapistProfileID sets the "therapist_profile" edge to the TherapistProfile entity by ID.
+func (_u *ClinicMemberUpdate) SetTherapistProfileID(id uuid.UUID) *ClinicMemberUpdate {
+	_u.mutation.SetTherapistProfileID(id)
+	return _u
+}
+
+// SetNillableTherapistProfileID sets the "therapist_profile" edge to the TherapistProfile entity by ID if the given value is not nil.
+func (_u *ClinicMemberUpdate) SetNillableTherapistProfileID(id *uuid.UUID) *ClinicMemberUpdate {
+	if id != nil {
+		_u = _u.SetTherapistProfileID(*id)
+	}
+	return _u
+}
+
+// SetTherapistProfile sets the "therapist_profile" edge to the TherapistProfile entity.
+func (_u *ClinicMemberUpdate) SetTherapistProfile(v *TherapistProfile) *ClinicMemberUpdate {
+	return _u.SetTherapistProfileID(v.ID)
+}
+
 // Mutation returns the ClinicMemberMutation object of the builder.
 func (_u *ClinicMemberUpdate) Mutation() *ClinicMemberMutation {
 	return _u.mutation
@@ -110,6 +130,12 @@ func (_u *ClinicMemberUpdate) ClearClinic() *ClinicMemberUpdate {
 // ClearUser clears the "user" edge to the User entity.
 func (_u *ClinicMemberUpdate) ClearUser() *ClinicMemberUpdate {
 	_u.mutation.ClearUser()
+	return _u
+}
+
+// ClearTherapistProfile clears the "therapist_profile" edge to the TherapistProfile entity.
+func (_u *ClinicMemberUpdate) ClearTherapistProfile() *ClinicMemberUpdate {
+	_u.mutation.ClearTherapistProfile()
 	return _u
 }
 
@@ -232,6 +258,35 @@ func (_u *ClinicMemberUpdate) sqlSave(ctx context.Context) (_node int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.TherapistProfileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   clinicmember.TherapistProfileTable,
+			Columns: []string{clinicmember.TherapistProfileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(therapistprofile.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TherapistProfileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   clinicmember.TherapistProfileTable,
+			Columns: []string{clinicmember.TherapistProfileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(therapistprofile.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{clinicmember.Label}
@@ -318,6 +373,25 @@ func (_u *ClinicMemberUpdateOne) SetUser(v *User) *ClinicMemberUpdateOne {
 	return _u.SetUserID(v.ID)
 }
 
+// SetTherapistProfileID sets the "therapist_profile" edge to the TherapistProfile entity by ID.
+func (_u *ClinicMemberUpdateOne) SetTherapistProfileID(id uuid.UUID) *ClinicMemberUpdateOne {
+	_u.mutation.SetTherapistProfileID(id)
+	return _u
+}
+
+// SetNillableTherapistProfileID sets the "therapist_profile" edge to the TherapistProfile entity by ID if the given value is not nil.
+func (_u *ClinicMemberUpdateOne) SetNillableTherapistProfileID(id *uuid.UUID) *ClinicMemberUpdateOne {
+	if id != nil {
+		_u = _u.SetTherapistProfileID(*id)
+	}
+	return _u
+}
+
+// SetTherapistProfile sets the "therapist_profile" edge to the TherapistProfile entity.
+func (_u *ClinicMemberUpdateOne) SetTherapistProfile(v *TherapistProfile) *ClinicMemberUpdateOne {
+	return _u.SetTherapistProfileID(v.ID)
+}
+
 // Mutation returns the ClinicMemberMutation object of the builder.
 func (_u *ClinicMemberUpdateOne) Mutation() *ClinicMemberMutation {
 	return _u.mutation
@@ -332,6 +406,12 @@ func (_u *ClinicMemberUpdateOne) ClearClinic() *ClinicMemberUpdateOne {
 // ClearUser clears the "user" edge to the User entity.
 func (_u *ClinicMemberUpdateOne) ClearUser() *ClinicMemberUpdateOne {
 	_u.mutation.ClearUser()
+	return _u
+}
+
+// ClearTherapistProfile clears the "therapist_profile" edge to the TherapistProfile entity.
+func (_u *ClinicMemberUpdateOne) ClearTherapistProfile() *ClinicMemberUpdateOne {
+	_u.mutation.ClearTherapistProfile()
 	return _u
 }
 
@@ -477,6 +557,35 @@ func (_u *ClinicMemberUpdateOne) sqlSave(ctx context.Context) (_node *ClinicMemb
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TherapistProfileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   clinicmember.TherapistProfileTable,
+			Columns: []string{clinicmember.TherapistProfileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(therapistprofile.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TherapistProfileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   clinicmember.TherapistProfileTable,
+			Columns: []string{clinicmember.TherapistProfileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(therapistprofile.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

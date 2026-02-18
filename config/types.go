@@ -15,6 +15,7 @@ type Config struct {
 	Codes           CodesConfig          `mapstructure:"codes"`
 	Observability   ObservabilityConfig  `mapstructure:"observability"`
 	Logging         LoggingConfig        `mapstructure:"logging"`
+	S3              S3Config             `mapstructure:"s3"`
 }
 
 type DatabaseConfig struct {
@@ -225,6 +226,15 @@ type ZarinPalConfig struct {
 	CallbackURL string `mapstructure:"callback_url"`
 	MerchantID  string `mapstructure:"merchant_id"`
 	Sandbox     bool   `mapstructure:"sandbox"`
+}
+
+type S3Config struct {
+	Endpoint        string `mapstructure:"endpoint"`
+	Region          string `mapstructure:"region"`
+	AccessKeyID     string `mapstructure:"access_key_id"`
+	SecretAccessKey string `mapstructure:"secret_access_key"`
+	Bucket          string `mapstructure:"bucket"`
+	PresignTTLSec   int    `mapstructure:"presign_ttl_sec"`
 }
 
 func (c *Config) Validate() error {

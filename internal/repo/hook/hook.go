@@ -33,6 +33,18 @@ func (f ClinicMemberFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ClinicMemberMutation", m)
 }
 
+// The ClinicPermissionFunc type is an adapter to allow the use of ordinary
+// function as ClinicPermission mutator.
+type ClinicPermissionFunc func(context.Context, *repo.ClinicPermissionMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ClinicPermissionFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.ClinicPermissionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ClinicPermissionMutation", m)
+}
+
 // The ClinicSettingsFunc type is an adapter to allow the use of ordinary
 // function as ClinicSettings mutator.
 type ClinicSettingsFunc func(context.Context, *repo.ClinicSettingsMutation) (repo.Value, error)
@@ -43,6 +55,90 @@ func (f ClinicSettingsFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.V
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ClinicSettingsMutation", m)
+}
+
+// The PatientFunc type is an adapter to allow the use of ordinary
+// function as Patient mutator.
+type PatientFunc func(context.Context, *repo.PatientMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PatientFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.PatientMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PatientMutation", m)
+}
+
+// The PatientFileFunc type is an adapter to allow the use of ordinary
+// function as PatientFile mutator.
+type PatientFileFunc func(context.Context, *repo.PatientFileMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PatientFileFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.PatientFileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PatientFileMutation", m)
+}
+
+// The PatientPrescriptionFunc type is an adapter to allow the use of ordinary
+// function as PatientPrescription mutator.
+type PatientPrescriptionFunc func(context.Context, *repo.PatientPrescriptionMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PatientPrescriptionFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.PatientPrescriptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PatientPrescriptionMutation", m)
+}
+
+// The PatientReportFunc type is an adapter to allow the use of ordinary
+// function as PatientReport mutator.
+type PatientReportFunc func(context.Context, *repo.PatientReportMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PatientReportFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.PatientReportMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PatientReportMutation", m)
+}
+
+// The PatientTestFunc type is an adapter to allow the use of ordinary
+// function as PatientTest mutator.
+type PatientTestFunc func(context.Context, *repo.PatientTestMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PatientTestFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.PatientTestMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PatientTestMutation", m)
+}
+
+// The PsychTestFunc type is an adapter to allow the use of ordinary
+// function as PsychTest mutator.
+type PsychTestFunc func(context.Context, *repo.PsychTestMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PsychTestFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.PsychTestMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PsychTestMutation", m)
+}
+
+// The TherapistProfileFunc type is an adapter to allow the use of ordinary
+// function as TherapistProfile mutator.
+type TherapistProfileFunc func(context.Context, *repo.TherapistProfileMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TherapistProfileFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.TherapistProfileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.TherapistProfileMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

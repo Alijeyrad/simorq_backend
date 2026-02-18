@@ -12,8 +12,32 @@ type Clinic func(*sql.Selector)
 // ClinicMember is the predicate function for clinicmember builders.
 type ClinicMember func(*sql.Selector)
 
+// ClinicPermission is the predicate function for clinicpermission builders.
+type ClinicPermission func(*sql.Selector)
+
 // ClinicSettings is the predicate function for clinicsettings builders.
 type ClinicSettings func(*sql.Selector)
+
+// Patient is the predicate function for patient builders.
+type Patient func(*sql.Selector)
+
+// PatientFile is the predicate function for patientfile builders.
+type PatientFile func(*sql.Selector)
+
+// PatientPrescription is the predicate function for patientprescription builders.
+type PatientPrescription func(*sql.Selector)
+
+// PatientReport is the predicate function for patientreport builders.
+type PatientReport func(*sql.Selector)
+
+// PatientTest is the predicate function for patienttest builders.
+type PatientTest func(*sql.Selector)
+
+// PsychTest is the predicate function for psychtest builders.
+type PsychTest func(*sql.Selector)
+
+// TherapistProfile is the predicate function for therapistprofile builders.
+type TherapistProfile func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

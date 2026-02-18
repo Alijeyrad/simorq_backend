@@ -13,4 +13,5 @@ func (r *Router) registerAuthRoutes(api fiber.Router, h *handler.AuthHandler, au
 	group.Post("/refresh", h.Refresh)
 	group.Post("/logout", authRequired, h.Logout)
 	group.Post("/intern-setup", authRequired, h.InternSetup)
+	group.Post("/change-password", authRequired, h.ChangePassword)
 }

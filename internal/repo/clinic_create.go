@@ -12,7 +12,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/google/uuid"
 )
 
@@ -237,6 +239,36 @@ func (_c *ClinicCreate) SetSettings(v *ClinicSettings) *ClinicCreate {
 	return _c.SetSettingsID(v.ID)
 }
 
+// AddPermissionIDs adds the "permissions" edge to the ClinicPermission entity by IDs.
+func (_c *ClinicCreate) AddPermissionIDs(ids ...uuid.UUID) *ClinicCreate {
+	_c.mutation.AddPermissionIDs(ids...)
+	return _c
+}
+
+// AddPermissions adds the "permissions" edges to the ClinicPermission entity.
+func (_c *ClinicCreate) AddPermissions(v ...*ClinicPermission) *ClinicCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPermissionIDs(ids...)
+}
+
+// AddPatientIDs adds the "patients" edge to the Patient entity by IDs.
+func (_c *ClinicCreate) AddPatientIDs(ids ...uuid.UUID) *ClinicCreate {
+	_c.mutation.AddPatientIDs(ids...)
+	return _c
+}
+
+// AddPatients adds the "patients" edges to the Patient entity.
+func (_c *ClinicCreate) AddPatients(v ...*Patient) *ClinicCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPatientIDs(ids...)
+}
+
 // Mutation returns the ClinicMutation object of the builder.
 func (_c *ClinicCreate) Mutation() *ClinicMutation {
 	return _c.mutation
@@ -456,6 +488,38 @@ func (_c *ClinicCreate) createSpec() (*Clinic, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(clinicsettings.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PermissionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PermissionsTable,
+			Columns: []string{clinic.PermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clinicpermission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PatientsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PatientsTable,
+			Columns: []string{clinic.PatientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(patient.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

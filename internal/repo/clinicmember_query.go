@@ -4,6 +4,7 @@ package repo
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/predicate"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/google/uuid"
 )
@@ -21,12 +23,13 @@ import (
 // ClinicMemberQuery is the builder for querying ClinicMember entities.
 type ClinicMemberQuery struct {
 	config
-	ctx        *QueryContext
-	order      []clinicmember.OrderOption
-	inters     []Interceptor
-	predicates []predicate.ClinicMember
-	withClinic *ClinicQuery
-	withUser   *UserQuery
+	ctx                  *QueryContext
+	order                []clinicmember.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.ClinicMember
+	withClinic           *ClinicQuery
+	withUser             *UserQuery
+	withTherapistProfile *TherapistProfileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -100,6 +103,28 @@ func (_q *ClinicMemberQuery) QueryUser() *UserQuery {
 			sqlgraph.From(clinicmember.Table, clinicmember.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, clinicmember.UserTable, clinicmember.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTherapistProfile chains the current query on the "therapist_profile" edge.
+func (_q *ClinicMemberQuery) QueryTherapistProfile() *TherapistProfileQuery {
+	query := (&TherapistProfileClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clinicmember.Table, clinicmember.FieldID, selector),
+			sqlgraph.To(therapistprofile.Table, therapistprofile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, clinicmember.TherapistProfileTable, clinicmember.TherapistProfileColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -294,13 +319,14 @@ func (_q *ClinicMemberQuery) Clone() *ClinicMemberQuery {
 		return nil
 	}
 	return &ClinicMemberQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]clinicmember.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.ClinicMember{}, _q.predicates...),
-		withClinic: _q.withClinic.Clone(),
-		withUser:   _q.withUser.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]clinicmember.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.ClinicMember{}, _q.predicates...),
+		withClinic:           _q.withClinic.Clone(),
+		withUser:             _q.withUser.Clone(),
+		withTherapistProfile: _q.withTherapistProfile.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -326,6 +352,17 @@ func (_q *ClinicMemberQuery) WithUser(opts ...func(*UserQuery)) *ClinicMemberQue
 		opt(query)
 	}
 	_q.withUser = query
+	return _q
+}
+
+// WithTherapistProfile tells the query-builder to eager-load the nodes that are connected to
+// the "therapist_profile" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ClinicMemberQuery) WithTherapistProfile(opts ...func(*TherapistProfileQuery)) *ClinicMemberQuery {
+	query := (&TherapistProfileClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTherapistProfile = query
 	return _q
 }
 
@@ -407,9 +444,10 @@ func (_q *ClinicMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*ClinicMember{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withClinic != nil,
 			_q.withUser != nil,
+			_q.withTherapistProfile != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -439,6 +477,12 @@ func (_q *ClinicMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if query := _q.withUser; query != nil {
 		if err := _q.loadUser(ctx, query, nodes, nil,
 			func(n *ClinicMember, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTherapistProfile; query != nil {
+		if err := _q.loadTherapistProfile(ctx, query, nodes, nil,
+			func(n *ClinicMember, e *TherapistProfile) { n.Edges.TherapistProfile = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -500,6 +544,33 @@ func (_q *ClinicMemberQuery) loadUser(ctx context.Context, query *UserQuery, nod
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *ClinicMemberQuery) loadTherapistProfile(ctx context.Context, query *TherapistProfileQuery, nodes []*ClinicMember, init func(*ClinicMember), assign func(*ClinicMember, *TherapistProfile)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*ClinicMember)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(therapistprofile.FieldClinicMemberID)
+	}
+	query.Where(predicate.TherapistProfile(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(clinicmember.TherapistProfileColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ClinicMemberID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "clinic_member_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

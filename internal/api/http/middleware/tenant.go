@@ -10,7 +10,10 @@ import (
 	pasetotoken "github.com/Alijeyrad/simorq_backend/pkg/paseto"
 )
 
-const LocalsMemberRole = "member_role"
+const (
+	LocalsMemberRole = "member_role"
+	LocalsMemberID   = "member_id"
+)
 
 // ClinicContext reads the clinic ID from the :id URL param, validates the clinic
 // exists and is active, checks the current user is a member, and stores the
@@ -47,6 +50,7 @@ func ClinicContext(db *repo.Client) fiber.Handler {
 				Only(c.Context())
 			if err == nil {
 				c.Locals(LocalsMemberRole, string(m.Role))
+				c.Locals(LocalsMemberID, m.ID.String())
 			}
 		}
 

@@ -16,8 +16,24 @@ type Tx struct {
 	Clinic *ClinicClient
 	// ClinicMember is the client for interacting with the ClinicMember builders.
 	ClinicMember *ClinicMemberClient
+	// ClinicPermission is the client for interacting with the ClinicPermission builders.
+	ClinicPermission *ClinicPermissionClient
 	// ClinicSettings is the client for interacting with the ClinicSettings builders.
 	ClinicSettings *ClinicSettingsClient
+	// Patient is the client for interacting with the Patient builders.
+	Patient *PatientClient
+	// PatientFile is the client for interacting with the PatientFile builders.
+	PatientFile *PatientFileClient
+	// PatientPrescription is the client for interacting with the PatientPrescription builders.
+	PatientPrescription *PatientPrescriptionClient
+	// PatientReport is the client for interacting with the PatientReport builders.
+	PatientReport *PatientReportClient
+	// PatientTest is the client for interacting with the PatientTest builders.
+	PatientTest *PatientTestClient
+	// PsychTest is the client for interacting with the PsychTest builders.
+	PsychTest *PsychTestClient
+	// TherapistProfile is the client for interacting with the TherapistProfile builders.
+	TherapistProfile *TherapistProfileClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserSession is the client for interacting with the UserSession builders.
@@ -155,7 +171,15 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Clinic = NewClinicClient(tx.config)
 	tx.ClinicMember = NewClinicMemberClient(tx.config)
+	tx.ClinicPermission = NewClinicPermissionClient(tx.config)
 	tx.ClinicSettings = NewClinicSettingsClient(tx.config)
+	tx.Patient = NewPatientClient(tx.config)
+	tx.PatientFile = NewPatientFileClient(tx.config)
+	tx.PatientPrescription = NewPatientPrescriptionClient(tx.config)
+	tx.PatientReport = NewPatientReportClient(tx.config)
+	tx.PatientTest = NewPatientTestClient(tx.config)
+	tx.PsychTest = NewPsychTestClient(tx.config)
+	tx.TherapistProfile = NewTherapistProfileClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserSession = NewUserSessionClient(tx.config)
 }

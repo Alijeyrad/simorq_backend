@@ -28,4 +28,8 @@ func (r *Router) registerClinicRoutes(
 	mgmt.Patch("/members/:mid", requirePerm(authorize.ResourceClinicMember, authorize.ActionUpdate), h.UpdateMember)
 	mgmt.Delete("/members/:mid", requirePerm(authorize.ResourceClinicMember, authorize.ActionDelete), h.RemoveMember)
 	mgmt.Get("/therapists", h.ListTherapists)
+	mgmt.Get("/permissions", requirePerm(authorize.ResourceRBAC, authorize.ActionList), h.GetPermissions)
+	mgmt.Patch("/permissions", requirePerm(authorize.ResourceRBAC, authorize.ActionGrant), h.SetPermission)
+	mgmt.Get("/members/:mid/profile", h.GetTherapistProfile)
+	mgmt.Patch("/members/:mid/profile", requirePerm(authorize.ResourceClinicMember, authorize.ActionUpdate), h.UpdateTherapistProfile)
 }

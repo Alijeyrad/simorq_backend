@@ -86,20 +86,20 @@ m = g(r.sub, p.sub, r.tenant) && r.tenant == p.tenant && keyMatch2(r.obj, p.obj)
 
 ### 2.3 Permission Matrix
 
-| Resource | Owner | Admin | Therapist | Intern | Client |
-|---|---|---|---|---|---|
-| Clinic settings | CRUD | CRUD | R | — | — |
-| Therapist profiles | CRUD | CRUD | R(own)+U(own) | R | R |
-| Client profiles | CRUD | CRUD | R(assigned) | R(assigned*) | R(own)+U(own) |
-| Patient files/reports | CRUD | CRUD | CRUD(assigned) | CR(assigned*) | R(own) |
-| Appointments | CRUD | CRUD | CRUD(own) | R(assigned*) | CRUD(own) |
-| Schedule/slots | CRUD | CRUD | CRUD(own) | R | R |
-| Payments/wallet | CRUD | R | R(own) | — | R(own) |
-| Tickets | CRUD | CRUD | CRUD(own) | CRUD(own) | CRUD(own) |
-| Chat messages | CRUD | CRUD | CRUD(own convos) | — | CRUD(own convos) |
-| Intern tasks | CRUD | CRUD | CRUD(own interns) | CRUD(own tasks) | — |
-| Commission settings | — | — | — | — | — |
-| Platform admin | CRUD | — | — | — | — |
+| Resource              | Owner | Admin | Therapist         | Intern          | Client           |
+| --------------------- | ----- | ----- | ----------------- | --------------- | ---------------- |
+| Clinic settings       | CRUD  | CRUD  | R                 | —              | —               |
+| Therapist profiles    | CRUD  | CRUD  | R(own)+U(own)     | R               | R                |
+| Client profiles       | CRUD  | CRUD  | R(assigned)       | R(assigned*)    | R(own)+U(own)    |
+| Patient files/reports | CRUD  | CRUD  | CRUD(assigned)    | CR(assigned*)   | R(own)           |
+| Appointments          | CRUD  | CRUD  | CRUD(own)         | R(assigned*)    | CRUD(own)        |
+| Schedule/slots        | CRUD  | CRUD  | CRUD(own)         | R               | R                |
+| Payments/wallet       | CRUD  | R     | R(own)            | —              | R(own)           |
+| Tickets               | CRUD  | CRUD  | CRUD(own)         | CRUD(own)       | CRUD(own)        |
+| Chat messages         | CRUD  | CRUD  | CRUD(own convos)  | —              | CRUD(own convos) |
+| Intern tasks          | CRUD  | CRUD  | CRUD(own interns) | CRUD(own tasks) | —               |
+| Commission settings   | —    | —    | —                | —              | —               |
+| Platform admin        | CRUD  | —    | —                | —              | —               |
 
 > `*assigned` = only when therapist explicitly grants access to that intern for specific patients.
 
@@ -186,6 +186,7 @@ clinic_id | user_id | resource_type | resource_id | action | granted
 ### 3.2 Detailed Table Definitions
 
 #### **users**
+
 ```sql
 CREATE TABLE users (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -210,6 +211,7 @@ CREATE INDEX idx_users_national_id_hash ON users(national_id_hash);
 ```
 
 #### **user_notification_prefs** (new — frontend uses GET/PATCH /users/me/notifications)
+
 ```sql
 CREATE TABLE user_notification_prefs (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -227,6 +229,7 @@ CREATE TABLE user_notification_prefs (
 ```
 
 #### **clinics**
+
 ```sql
 CREATE TABLE clinics (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -246,6 +249,7 @@ CREATE TABLE clinics (
 ```
 
 #### **clinic_members**
+
 ```sql
 CREATE TABLE clinic_members (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -263,6 +267,7 @@ CREATE INDEX idx_clinic_members_user ON clinic_members(user_id);
 ```
 
 #### **clinic_settings**
+
 ```sql
 CREATE TABLE clinic_settings (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -286,6 +291,7 @@ CREATE TABLE clinic_settings (
 ```
 
 #### **clinic_permissions** (per-user overrides, used by /panel/permissions)
+
 ```sql
 CREATE TABLE clinic_permissions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -305,6 +311,7 @@ CREATE INDEX idx_clinic_permissions_clinic_user ON clinic_permissions(clinic_id,
 ```
 
 #### **therapist_profiles** (extends clinic_members where role=therapist)
+
 ```sql
 CREATE TABLE therapist_profiles (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -325,6 +332,7 @@ CREATE TABLE therapist_profiles (
 ```
 
 #### **patients** (per-clinic patient record)
+
 ```sql
 CREATE TABLE patients (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -375,6 +383,7 @@ CREATE INDEX idx_patients_file_number ON patients(clinic_id, file_number);
 ```
 
 #### **patient_reports**
+
 ```sql
 CREATE TABLE patient_reports (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -398,6 +407,7 @@ CREATE INDEX idx_patient_reports_date ON patient_reports(report_date);
 ```
 
 #### **patient_files** (unified file storage, with download endpoint)
+
 ```sql
 CREATE TABLE patient_files (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -422,6 +432,7 @@ CREATE INDEX idx_patient_files_linked ON patient_files(linked_type, linked_id);
 ```
 
 #### **patient_prescriptions**
+
 ```sql
 CREATE TABLE patient_prescriptions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -441,6 +452,7 @@ CREATE TABLE patient_prescriptions (
 ```
 
 #### **psych_tests** (platform-wide test catalog)
+
 ```sql
 CREATE TABLE psych_tests (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -457,6 +469,7 @@ CREATE TABLE psych_tests (
 ```
 
 #### **patient_tests** (test results per patient)
+
 ```sql
 CREATE TABLE patient_tests (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -479,6 +492,7 @@ CREATE TABLE patient_tests (
 ```
 
 #### **time_slots** (therapist availability)
+
 ```sql
 CREATE TABLE time_slots (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -505,6 +519,7 @@ CREATE INDEX idx_time_slots_available ON time_slots(clinic_id, is_available, is_
 ```
 
 #### **recurring_rules**
+
 ```sql
 CREATE TABLE recurring_rules (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -526,6 +541,7 @@ CREATE TABLE recurring_rules (
 ```
 
 #### **appointments**
+
 ```sql
 CREATE TABLE appointments (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -571,6 +587,7 @@ CREATE INDEX idx_appointments_date ON appointments(appointment_date);
 ```
 
 #### **wallets**
+
 ```sql
 CREATE TABLE wallets (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -587,6 +604,7 @@ CREATE TABLE wallets (
 ```
 
 #### **transactions**
+
 ```sql
 CREATE TABLE transactions (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -615,6 +633,7 @@ CREATE INDEX idx_transactions_created ON transactions(created_at);
 ```
 
 #### **payment_requests** (ZarinPal)
+
 ```sql
 CREATE TABLE payment_requests (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -634,6 +653,7 @@ CREATE TABLE payment_requests (
 ```
 
 #### **withdrawal_requests**
+
 ```sql
 CREATE TABLE withdrawal_requests (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -650,6 +670,7 @@ CREATE TABLE withdrawal_requests (
 ```
 
 #### **commission_rules**
+
 ```sql
 CREATE TABLE commission_rules (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -665,6 +686,7 @@ CREATE TABLE commission_rules (
 ```
 
 #### **conversations & messages**
+
 ```sql
 CREATE TABLE conversations (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -702,6 +724,7 @@ CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at);
 ```
 
 #### **tickets & ticket_messages**
+
 ```sql
 CREATE TABLE tickets (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -732,6 +755,7 @@ CREATE TABLE ticket_messages (
 ```
 
 #### **notifications**
+
 ```sql
 CREATE TABLE notifications (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -752,6 +776,7 @@ CREATE INDEX idx_notifications_user ON notifications(user_id, is_read, created_a
 ```
 
 #### **contact_messages** (from public contact form)
+
 ```sql
 CREATE TABLE contact_messages (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -765,6 +790,7 @@ CREATE TABLE contact_messages (
 ```
 
 #### **intern_profiles, intern_tasks, intern_patient_access**
+
 ```sql
 CREATE TABLE intern_profiles (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -822,6 +848,7 @@ CREATE TABLE intern_patient_access (
 ```
 
 #### **user_devices** (push notifications / PWA)
+
 ```sql
 CREATE TABLE user_devices (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -877,6 +904,7 @@ Web:  https://simorqcare.com/
 ```
 
 **AuthUser shape** (returned in login/register/refresh responses):
+
 ```ts
 interface AuthUser {
   id: string
@@ -1052,6 +1080,7 @@ interface AuthUser {
 ```
 
 Patient list filters:
+
 - `therapist_id`, `status`, `payment_status`, `has_discount`
 - `sort` = `created_at` | `appointment_date` | `start_time`
 - `order` = `asc` | `desc`
@@ -1309,16 +1338,16 @@ app/
 
 ### 7.2 Content Collections (`content.config.ts`)
 
-| Collection | Source | Type | Used by |
-|---|---|---|---|
-| `index` | `0.index.yml` | page | `/` |
+| Collection     | Source                 | Type | Used by                               |
+| -------------- | ---------------------- | ---- | ------------------------------------- |
+| `index`      | `0.index.yml`        | page | `/`                                 |
 | `therapists` | `5.therapists/*.yml` | data | `/therapists`, `/therapists/[id]` |
-| `faq` | `6.faq.yml` | data | `/faq` |
-| `privacy` | `7.privacy.yml` | data | `/privacy` |
-| `terms` | `8.terms.yml` | data | `/terms` |
-| `about` | `9.about.yml` | data | `/about` |
-| `contact` | `10.contact.yml` | data | `/contact` (info section only) |
-| `clinics` | `11.clinics/*.yml` | data | `/clinics`, `/clinics/[id]` |
+| `faq`        | `6.faq.yml`          | data | `/faq`                              |
+| `privacy`    | `7.privacy.yml`      | data | `/privacy`                          |
+| `terms`      | `8.terms.yml`        | data | `/terms`                            |
+| `about`      | `9.about.yml`        | data | `/about`                            |
+| `contact`    | `10.contact.yml`     | data | `/contact` (info section only)      |
+| `clinics`    | `11.clinics/*.yml`   | data | `/clinics`, `/clinics/[id]`       |
 
 > Template collections (`docs`, `pricing`, `blog/posts`, `changelog/versions`) remain in `content.config.ts` but are not used by Simorq pages and can be removed during cleanup.
 
@@ -1368,16 +1397,16 @@ runtimeConfig: {
 
 ### 7.4 Design System Quick Reference
 
-| Token | Value | Usage |
-|---|---|---|
-| `--ui-primary` | `#00C16A` | Buttons, active nav, highlights |
-| `--ui-secondary` | `#8B5CF6` | Role switcher, special badges |
-| Font | Vazirmatn (Google Fonts) | All text |
-| Direction | RTL globally | `html[dir=rtl]` |
-| Numbers | `persianNumber()` | All displayed numbers |
-| Dates | `formatJalali()` | All displayed dates |
-| Currency | `formatCurrency()` | `x٬xxx٬xxx ریال` |
-| Icons | Heroicons only (`i-heroicons-*`) | |
+| Token              | Value                              | Usage                           |
+| ------------------ | ---------------------------------- | ------------------------------- |
+| `--ui-primary`   | `#00C16A`                        | Buttons, active nav, highlights |
+| `--ui-secondary` | `#8B5CF6`                        | Role switcher, special badges   |
+| Font               | Vazirmatn (Google Fonts)           | All text                        |
+| Direction          | RTL globally                       | `html[dir=rtl]`               |
+| Numbers            | `persianNumber()`                | All displayed numbers           |
+| Dates              | `formatJalali()`                 | All displayed dates             |
+| Currency           | `formatCurrency()`               | `x٬xxx٬xxx ریال`        |
+| Icons              | Heroicons only (`i-heroicons-*`) |                                 |
 
 **Sessions:** In-person only (`حضوری`). No video, no join button anywhere.
 
@@ -1394,12 +1423,12 @@ runtimeConfig: {
 
 ### 8.2 Sensitive Data Encryption
 
-| Field | Storage | Lookup |
-|---|---|---|
-| National ID | AES-256-GCM encrypted | Argon2id hash |
-| Phone | Plaintext (needed for SMS) | Indexed |
-| Password | Argon2id hash | — |
-| IBAN | AES-256-GCM encrypted | — |
+| Field       | Storage                    | Lookup        |
+| ----------- | -------------------------- | ------------- |
+| National ID | AES-256-GCM encrypted      | Argon2id hash |
+| Phone       | Plaintext (needed for SMS) | Indexed       |
+| Password    | Argon2id hash              | —            |
+| IBAN        | AES-256-GCM encrypted      | —            |
 
 ### 8.3 File Security
 
@@ -1501,14 +1530,16 @@ simorqcare.com {
 ## 11. Phased Delivery Roadmap
 
 ### Completed (Frontend UI done, API needed)
-- [x] All layouts: default, auth, dashboard, panel
-- [x] Public pages: home, therapists, therapist profile, clinics, clinic detail, faq, privacy, terms, about, contact
-- [x] Login + signup pages
-- [x] Dashboard: appointments (upcoming, finalize, history), messages, payments, profile, tickets, settings (notifications, security)
-- [x] Panel: appointments, patient list, patient detail (reports, files, tests, prescriptions), messages, finances, profile, schedule, members, permissions, settings, tickets
-- [x] Shared components: AppointmentCard, TherapistCard, ConfirmModal, JalaliDatePicker, FileUploader, WalletCard, TransactionCard
+
+- [X] All layouts: default, auth, dashboard, panel
+- [X] Public pages: home, therapists, therapist profile, clinics, clinic detail, faq, privacy, terms, about, contact
+- [X] Login + signup pages
+- [X] Dashboard: appointments (upcoming, finalize, history), messages, payments, profile, tickets, settings (notifications, security)
+- [X] Panel: appointments, patient list, patient detail (reports, files, tests, prescriptions), messages, finances, profile, schedule, members, permissions, settings, tickets
+- [X] Shared components: AppointmentCard, TherapistCard, ConfirmModal, JalaliDatePicker, FileUploader, WalletCard, TransactionCard
 
 ### Phase 1 — Go API Foundation
+
 - [ ] Project scaffold (Go + Fiber v3)
 - [ ] Docker Compose dev environment
 - [ ] Database migrations (all tables above)
@@ -1519,12 +1550,14 @@ simorqcare.com {
 - [ ] Clinic permissions endpoint
 
 ### Phase 2 — Clinical Core
+
 - [ ] Patient CRUD (all fields including child psych)
 - [ ] Patient reports, files (S3 upload + presigned download), prescriptions, tests
 - [ ] File upload unified endpoint (`POST /files/upload`)
 - [ ] File serve endpoint (`GET /files/:key`)
 
 ### Phase 3 — Scheduling & Payments
+
 - [ ] Time slot CRUD + recurring rules + slot generation
 - [ ] Schedule toggle (`PATCH /schedule/toggle`)
 - [ ] Public slot listing (`GET /therapists/:slug/slots`)
@@ -1535,6 +1568,7 @@ simorqcare.com {
 - [ ] Commission calculation (NATS wallet-worker)
 
 ### Phase 4 — Communication
+
 - [ ] Conversations + messages (polling)
 - [ ] Patient context on conversation detail
 - [ ] Ticket system (create, reply, status change)
@@ -1544,12 +1578,14 @@ simorqcare.com {
 - [ ] NATS workers: notification, SMS, wallet
 
 ### Phase 5 — User Settings & Misc
+
 - [ ] `GET/PATCH /users/me/notifications` (prefs)
 - [ ] `POST /auth/change-password`
 - [ ] Contact form (`POST /contact`)
 - [ ] Intern module (profiles, tasks, patient access)
 
 ### Phase 6 — Polish & Ship
+
 - [ ] Admin panel endpoints (`/admin/*`)
 - [ ] Sitemap: wire to real DB query (therapists + clinics)
 - [ ] Load testing
@@ -1557,6 +1593,7 @@ simorqcare.com {
 - [ ] Deploy to ArvanCloud VPS
 
 ### Post-Launch (Backlog)
+
 - [ ] Real-time chat via NATS/WebSocket
 - [ ] In-app psychological test conducting
 - [ ] Video sessions
@@ -1568,15 +1605,15 @@ simorqcare.com {
 
 ## 12. Key Technical Decisions
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| Auth tokens | Pinia (client-only) | No SSR for protected routes — tokens never on server |
-| ORM vs raw SQL | Raw SQL + pgx | Full control; sqlc optional |
-| File storage | ArvanCloud S3 | Private ACL + presigned URLs |
-| Date handling | Gregorian in DB, Jalali in UI | Standard DB ops, convert at display layer |
-| Multi-tenancy | Shared DB + clinic_id column | Casbin enforces isolation |
-| Real-time (v1) | HTTP polling | Simplest; NATS ready for upgrade |
-| i18n | Static Persian text | No runtime locale switching needed |
-| PWA | vite-pwa + Workbox | Offline shell; push notification support |
-| SMS provider | TBD (Kavenegar / Ghasedak) | Iranian provider required |
-| Sessions | In-person only | No video infrastructure needed for v1 |
+| Decision       | Choice                        | Rationale                                             |
+| -------------- | ----------------------------- | ----------------------------------------------------- |
+| Auth tokens    | Pinia (client-only)           | No SSR for protected routes — tokens never on server |
+| ORM vs raw SQL | Raw SQL + pgx                 | Full control; sqlc optional                           |
+| File storage   | ArvanCloud S3                 | Private ACL + presigned URLs                          |
+| Date handling  | Gregorian in DB, Jalali in UI | Standard DB ops, convert at display layer             |
+| Multi-tenancy  | Shared DB + clinic_id column  | Casbin enforces isolation                             |
+| Real-time (v1) | HTTP polling                  | Simplest; NATS ready for upgrade                      |
+| i18n           | Static Persian text           | No runtime locale switching needed                    |
+| PWA            | vite-pwa + Workbox            | Offline shell; push notification support              |
+| SMS provider   | TBD (Kavenegar / Ghasedak)    | Iranian provider required                             |
+| Sessions       | In-person only                | No video infrastructure needed for v1                 |

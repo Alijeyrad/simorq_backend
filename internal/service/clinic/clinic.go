@@ -10,7 +10,9 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
 	entclinic "github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	entmember "github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	entperm "github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	entsettings "github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	entprofile "github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
 	"github.com/Alijeyrad/simorq_backend/pkg/authorize"
 )
 
@@ -69,6 +71,25 @@ type AddMemberRequest struct {
 	Role   string // owner | admin | therapist | intern
 }
 
+type SetPermissionRequest struct {
+	UserID       uuid.UUID
+	ResourceType string
+	ResourceID   *uuid.UUID // nil = applies to all resources of that type
+	Action       string
+	Granted      bool
+}
+
+type UpdateTherapistProfileRequest struct {
+	Education          *string
+	PsychologyLicense  *string
+	Approach           *string
+	Specialties        []string
+	Bio                *string
+	SessionPrice       *int64
+	SessionDurationMin *int
+	IsAccepting        *bool
+}
+
 type UpdateMemberRequest struct {
 	Role     *string
 	IsActive *bool
@@ -95,6 +116,12 @@ type Service interface {
 	RemoveMember(ctx context.Context, clinicID, memberID uuid.UUID) error
 
 	IsMember(ctx context.Context, clinicID, userID uuid.UUID) (bool, error)
+
+	GetPermissions(ctx context.Context, clinicID uuid.UUID) ([]*repo.ClinicPermission, error)
+	SetPermission(ctx context.Context, clinicID uuid.UUID, req SetPermissionRequest) error
+
+	GetTherapistProfile(ctx context.Context, memberID uuid.UUID) (*repo.TherapistProfile, error)
+	UpdateTherapistProfile(ctx context.Context, memberID uuid.UUID, req UpdateTherapistProfileRequest) (*repo.TherapistProfile, error)
 }
 
 // ---------------------------------------------------------------------------
@@ -453,6 +480,148 @@ func (s *clinicService) IsMember(ctx context.Context, clinicID, userID uuid.UUID
 	return s.db.ClinicMember.Query().
 		Where(entmember.ClinicID(clinicID), entmember.UserID(userID), entmember.IsActive(true)).
 		Exist(ctx)
+}
+
+// ---------------------------------------------------------------------------
+// Permissions
+// ---------------------------------------------------------------------------
+
+func (s *clinicService) GetPermissions(ctx context.Context, clinicID uuid.UUID) ([]*repo.ClinicPermission, error) {
+	return s.db.ClinicPermission.Query().
+		Where(entperm.ClinicID(clinicID)).
+		WithUser().
+		All(ctx)
+}
+
+func (s *clinicService) SetPermission(ctx context.Context, clinicID uuid.UUID, req SetPermissionRequest) error {
+	// Upsert: delete existing matching record, then create new one
+	q := s.db.ClinicPermission.Delete().
+		Where(
+			entperm.ClinicID(clinicID),
+			entperm.UserID(req.UserID),
+			entperm.ResourceType(req.ResourceType),
+			entperm.Action(req.Action),
+		)
+	if req.ResourceID != nil {
+		q = q.Where(entperm.ResourceID(*req.ResourceID))
+	} else {
+		q = q.Where(entperm.ResourceIDIsNil())
+	}
+	if _, err := q.Exec(ctx); err != nil {
+		return fmt.Errorf("delete existing permission: %w", err)
+	}
+
+	c := s.db.ClinicPermission.Create().
+		SetClinicID(clinicID).
+		SetUserID(req.UserID).
+		SetResourceType(req.ResourceType).
+		SetAction(req.Action).
+		SetGranted(req.Granted)
+	if req.ResourceID != nil {
+		c = c.SetResourceID(*req.ResourceID)
+	}
+	if _, err := c.Save(ctx); err != nil {
+		return fmt.Errorf("save permission: %w", err)
+	}
+
+	// Sync to Casbin
+	domain := authorize.ClinicDomain(clinicID.String())
+	resource := authorize.Resource(req.ResourceType)
+	action := authorize.Action(req.Action)
+	subject := authorize.GroupSubject(req.UserID.String())
+
+	if req.Granted {
+		s.auth.AddPermission(ctx, authorize.Role(subject), domain, resource, action, authorize.EffectAllow)
+	} else {
+		s.auth.RemovePermission(ctx, authorize.Role(subject), domain, resource, action, authorize.EffectAllow)
+	}
+
+	return nil
+}
+
+// ---------------------------------------------------------------------------
+// TherapistProfile
+// ---------------------------------------------------------------------------
+
+func (s *clinicService) GetTherapistProfile(ctx context.Context, memberID uuid.UUID) (*repo.TherapistProfile, error) {
+	p, err := s.db.TherapistProfile.Query().
+		Where(entprofile.ClinicMemberID(memberID)).
+		Only(ctx)
+	if err != nil {
+		if repo.IsNotFound(err) {
+			return nil, ErrTherapistProfileNotFound
+		}
+		return nil, fmt.Errorf("get therapist profile: %w", err)
+	}
+	return p, nil
+}
+
+func (s *clinicService) UpdateTherapistProfile(ctx context.Context, memberID uuid.UUID, req UpdateTherapistProfileRequest) (*repo.TherapistProfile, error) {
+	// Upsert: get or create
+	p, err := s.db.TherapistProfile.Query().
+		Where(entprofile.ClinicMemberID(memberID)).
+		Only(ctx)
+	if err != nil && !repo.IsNotFound(err) {
+		return nil, fmt.Errorf("get therapist profile: %w", err)
+	}
+
+	if repo.IsNotFound(err) {
+		// Create new profile
+		c := s.db.TherapistProfile.Create().SetClinicMemberID(memberID)
+		if req.Education != nil {
+			c = c.SetNillableEducation(req.Education)
+		}
+		if req.PsychologyLicense != nil {
+			c = c.SetNillablePsychologyLicense(req.PsychologyLicense)
+		}
+		if req.Approach != nil {
+			c = c.SetNillableApproach(req.Approach)
+		}
+		if req.Specialties != nil {
+			c = c.SetSpecialties(req.Specialties)
+		}
+		if req.Bio != nil {
+			c = c.SetNillableBio(req.Bio)
+		}
+		if req.SessionPrice != nil {
+			c = c.SetNillableSessionPrice(req.SessionPrice)
+		}
+		if req.SessionDurationMin != nil {
+			c = c.SetNillableSessionDurationMin(req.SessionDurationMin)
+		}
+		if req.IsAccepting != nil {
+			c = c.SetIsAccepting(*req.IsAccepting)
+		}
+		return c.Save(ctx)
+	}
+
+	// Update existing
+	u := s.db.TherapistProfile.UpdateOne(p)
+	if req.Education != nil {
+		u = u.SetNillableEducation(req.Education)
+	}
+	if req.PsychologyLicense != nil {
+		u = u.SetNillablePsychologyLicense(req.PsychologyLicense)
+	}
+	if req.Approach != nil {
+		u = u.SetNillableApproach(req.Approach)
+	}
+	if req.Specialties != nil {
+		u = u.SetSpecialties(req.Specialties)
+	}
+	if req.Bio != nil {
+		u = u.SetNillableBio(req.Bio)
+	}
+	if req.SessionPrice != nil {
+		u = u.SetNillableSessionPrice(req.SessionPrice)
+	}
+	if req.SessionDurationMin != nil {
+		u = u.SetNillableSessionDurationMin(req.SessionDurationMin)
+	}
+	if req.IsAccepting != nil {
+		u = u.SetIsAccepting(*req.IsAccepting)
+	}
+	return u.Save(ctx)
 }
 
 // ---------------------------------------------------------------------------

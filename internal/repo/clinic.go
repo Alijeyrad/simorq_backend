@@ -57,9 +57,13 @@ type ClinicEdges struct {
 	Members []*ClinicMember `json:"members,omitempty"`
 	// Settings holds the value of the settings edge.
 	Settings *ClinicSettings `json:"settings,omitempty"`
+	// Permissions holds the value of the permissions edge.
+	Permissions []*ClinicPermission `json:"permissions,omitempty"`
+	// Patients holds the value of the patients edge.
+	Patients []*Patient `json:"patients,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 }
 
 // MembersOrErr returns the Members value or an error if the edge
@@ -80,6 +84,24 @@ func (e ClinicEdges) SettingsOrErr() (*ClinicSettings, error) {
 		return nil, &NotFoundError{label: clinicsettings.Label}
 	}
 	return nil, &NotLoadedError{edge: "settings"}
+}
+
+// PermissionsOrErr returns the Permissions value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClinicEdges) PermissionsOrErr() ([]*ClinicPermission, error) {
+	if e.loadedTypes[2] {
+		return e.Permissions, nil
+	}
+	return nil, &NotLoadedError{edge: "permissions"}
+}
+
+// PatientsOrErr returns the Patients value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClinicEdges) PatientsOrErr() ([]*Patient, error) {
+	if e.loadedTypes[3] {
+		return e.Patients, nil
+	}
+	return nil, &NotLoadedError{edge: "patients"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -222,6 +244,16 @@ func (_m *Clinic) QueryMembers() *ClinicMemberQuery {
 // QuerySettings queries the "settings" edge of the Clinic entity.
 func (_m *Clinic) QuerySettings() *ClinicSettingsQuery {
 	return NewClinicClient(_m.config).QuerySettings(_m)
+}
+
+// QueryPermissions queries the "permissions" edge of the Clinic entity.
+func (_m *Clinic) QueryPermissions() *ClinicPermissionQuery {
+	return NewClinicClient(_m.config).QueryPermissions(_m)
+}
+
+// QueryPatients queries the "patients" edge of the Clinic entity.
+func (_m *Clinic) QueryPatients() *PatientQuery {
+	return NewClinicClient(_m.config).QueryPatients(_m)
 }
 
 // Update returns a builder for updating this Clinic.

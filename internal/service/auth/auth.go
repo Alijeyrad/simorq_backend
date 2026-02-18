@@ -68,6 +68,11 @@ type InternSetupRequest struct {
 	InternshipYear int
 }
 
+type ChangePasswordRequest struct {
+	CurrentPassword string
+	NewPassword     string
+}
+
 type AuthTokens struct {
 	AccessToken  string
 	RefreshToken string
@@ -85,6 +90,7 @@ type Service interface {
 	RefreshTokens(ctx context.Context, refreshToken string) (*AuthTokens, error)
 	Logout(ctx context.Context, sessionID uuid.UUID) error
 	InternSetup(ctx context.Context, userID uuid.UUID, req InternSetupRequest) (*repo.User, error)
+	ChangePassword(ctx context.Context, userID uuid.UUID, currentSessionID uuid.UUID, req ChangePasswordRequest) error
 }
 
 // ---------------------------------------------------------------------------
@@ -485,6 +491,67 @@ func (s *authService) createSession(ctx context.Context, u *repo.User) (*AuthTok
 		RefreshToken: refresh,
 		ExpiresIn:    int64(accessTTL.Seconds()),
 	}, nil
+}
+
+// ---------------------------------------------------------------------------
+// ChangePassword
+// ---------------------------------------------------------------------------
+
+func (s *authService) ChangePassword(ctx context.Context, userID uuid.UUID, currentSessionID uuid.UUID, req ChangePasswordRequest) error {
+	if len(req.NewPassword) < 8 {
+		return ErrPasswordTooShort
+	}
+
+	u, err := s.db.User.Get(ctx, userID)
+	if err != nil {
+		if repo.IsNotFound(err) {
+			return ErrInvalidCredentials
+		}
+		return fmt.Errorf("get user: %w", err)
+	}
+
+	if u.PasswordHash == nil {
+		return ErrInvalidCredentials
+	}
+	if err := password.Verify(*u.PasswordHash, req.CurrentPassword); err != nil {
+		return ErrWrongPassword
+	}
+
+	newHash, err := password.Hash(req.NewPassword)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+
+	if _, err := s.db.User.UpdateOne(u).SetPasswordHash(newHash).Save(ctx); err != nil {
+		return fmt.Errorf("update password: %w", err)
+	}
+
+	// Revoke all other sessions (pattern: session:*)
+	// We scan Redis keys matching "session:*" and delete all except current session.
+	pattern := "session:*"
+	var cursor uint64
+	for {
+		keys, next, err := s.rdb.Scan(ctx, cursor, pattern, 100).Result()
+		if err != nil {
+			break
+		}
+		for _, k := range keys {
+			// keep the current session alive
+			if k == redisKeySession(currentSessionID.String()) {
+				continue
+			}
+			// only delete sessions that belong to this user
+			if val, err := s.rdb.Get(ctx, k).Result(); err == nil && val == userID.String() {
+				s.rdb.Del(ctx, k)
+			}
+		}
+		if next == 0 {
+			break
+		}
+		cursor = next
+	}
+
+	return nil
 }
 
 func (s *authService) recordFailedLogin(ctx context.Context, u *repo.User) {

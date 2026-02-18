@@ -18,4 +18,5 @@ var (
 	ErrSessionNotFound     = errors.New("session not found or expired")
 	ErrInvalidToken        = errors.New("invalid or expired token")
 	ErrNotIntern           = errors.New("intern setup requires an intern role in a clinic")
+	ErrWrongPassword       = errors.New("current password is incorrect")
 )

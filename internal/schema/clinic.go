@@ -86,6 +86,8 @@ func (Clinic) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("members", ClinicMember.Type),
 		edge.To("settings", ClinicSettings.Type).Unique(),
+		edge.To("permissions", ClinicPermission.Type),
+		edge.To("patients", Patient.Type),
 	}
 }
 
@@ -143,6 +145,7 @@ func (ClinicMember) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("user_id"),
+		edge.To("therapist_profile", TherapistProfile.Type).Unique(),
 	}
 }
 

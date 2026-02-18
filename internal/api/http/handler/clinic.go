@@ -299,6 +299,121 @@ func (h *ClinicHandler) ListTherapists(c fiber.Ctx) error {
 	return ok(c, therapists)
 }
 
+// GET /api/v1/clinics/:id/permissions
+func (h *ClinicHandler) GetPermissions(c fiber.Ctx) error {
+	clinicID, err := parseClinicID(c)
+	if err != nil {
+		return badRequest(c, "invalid clinic id")
+	}
+
+	perms, err := h.svc.GetPermissions(c.Context(), clinicID)
+	if err != nil {
+		return internalError(c)
+	}
+
+	return ok(c, perms)
+}
+
+// PATCH /api/v1/clinics/:id/permissions
+func (h *ClinicHandler) SetPermission(c fiber.Ctx) error {
+	clinicID, err := parseClinicID(c)
+	if err != nil {
+		return badRequest(c, "invalid clinic id")
+	}
+
+	var body struct {
+		UserID       string  `json:"user_id"`
+		ResourceType string  `json:"resource_type"`
+		ResourceID   *string `json:"resource_id"`
+		Action       string  `json:"action"`
+		Granted      bool    `json:"granted"`
+	}
+	if err := c.Bind().JSON(&body); err != nil {
+		return badRequest(c, "invalid request body")
+	}
+	if body.UserID == "" || body.ResourceType == "" || body.Action == "" {
+		return badRequest(c, "user_id, resource_type, and action are required")
+	}
+
+	userID, err := uuid.Parse(body.UserID)
+	if err != nil {
+		return badRequest(c, "invalid user_id")
+	}
+
+	req := clinic.SetPermissionRequest{
+		UserID:       userID,
+		ResourceType: body.ResourceType,
+		Action:       body.Action,
+		Granted:      body.Granted,
+	}
+	if body.ResourceID != nil {
+		rid, err := uuid.Parse(*body.ResourceID)
+		if err != nil {
+			return badRequest(c, "invalid resource_id")
+		}
+		req.ResourceID = &rid
+	}
+
+	if err := h.svc.SetPermission(c.Context(), clinicID, req); err != nil {
+		return mapClinicError(c, err)
+	}
+
+	return noContent(c)
+}
+
+// GET /api/v1/clinics/:id/members/:mid/profile
+func (h *ClinicHandler) GetTherapistProfile(c fiber.Ctx) error {
+	memberID, err := uuid.Parse(c.Params("mid"))
+	if err != nil {
+		return badRequest(c, "invalid member id")
+	}
+
+	profile, err := h.svc.GetTherapistProfile(c.Context(), memberID)
+	if err != nil {
+		return mapClinicError(c, err)
+	}
+
+	return ok(c, profile)
+}
+
+// PATCH /api/v1/clinics/:id/members/:mid/profile
+func (h *ClinicHandler) UpdateTherapistProfile(c fiber.Ctx) error {
+	memberID, err := uuid.Parse(c.Params("mid"))
+	if err != nil {
+		return badRequest(c, "invalid member id")
+	}
+
+	var body struct {
+		Education          *string  `json:"education"`
+		PsychologyLicense  *string  `json:"psychology_license"`
+		Approach           *string  `json:"approach"`
+		Specialties        []string `json:"specialties"`
+		Bio                *string  `json:"bio"`
+		SessionPrice       *int64   `json:"session_price"`
+		SessionDurationMin *int     `json:"session_duration_min"`
+		IsAccepting        *bool    `json:"is_accepting"`
+	}
+	if err := c.Bind().JSON(&body); err != nil {
+		return badRequest(c, "invalid request body")
+	}
+
+	profile, err := h.svc.UpdateTherapistProfile(c.Context(), memberID, clinic.UpdateTherapistProfileRequest{
+		Education:          body.Education,
+		PsychologyLicense:  body.PsychologyLicense,
+		Approach:           body.Approach,
+		Specialties:        body.Specialties,
+		Bio:                body.Bio,
+		SessionPrice:       body.SessionPrice,
+		SessionDurationMin: body.SessionDurationMin,
+		IsAccepting:        body.IsAccepting,
+	})
+	if err != nil {
+		return mapClinicError(c, err)
+	}
+
+	return ok(c, profile)
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -321,6 +436,8 @@ func mapClinicError(c fiber.Ctx, err error) error {
 		return badRequest(c, err.Error())
 	case errors.Is(err, clinic.ErrCannotRemoveOwner):
 		return badRequest(c, err.Error())
+	case errors.Is(err, clinic.ErrTherapistProfileNotFound):
+		return notFound(c, err.Error())
 	default:
 		return internalError(c)
 	}

@@ -13,7 +13,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/predicate"
 	"github.com/google/uuid"
 )
@@ -267,6 +269,36 @@ func (_u *ClinicUpdate) SetSettings(v *ClinicSettings) *ClinicUpdate {
 	return _u.SetSettingsID(v.ID)
 }
 
+// AddPermissionIDs adds the "permissions" edge to the ClinicPermission entity by IDs.
+func (_u *ClinicUpdate) AddPermissionIDs(ids ...uuid.UUID) *ClinicUpdate {
+	_u.mutation.AddPermissionIDs(ids...)
+	return _u
+}
+
+// AddPermissions adds the "permissions" edges to the ClinicPermission entity.
+func (_u *ClinicUpdate) AddPermissions(v ...*ClinicPermission) *ClinicUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPermissionIDs(ids...)
+}
+
+// AddPatientIDs adds the "patients" edge to the Patient entity by IDs.
+func (_u *ClinicUpdate) AddPatientIDs(ids ...uuid.UUID) *ClinicUpdate {
+	_u.mutation.AddPatientIDs(ids...)
+	return _u
+}
+
+// AddPatients adds the "patients" edges to the Patient entity.
+func (_u *ClinicUpdate) AddPatients(v ...*Patient) *ClinicUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPatientIDs(ids...)
+}
+
 // Mutation returns the ClinicMutation object of the builder.
 func (_u *ClinicUpdate) Mutation() *ClinicMutation {
 	return _u.mutation
@@ -297,6 +329,48 @@ func (_u *ClinicUpdate) RemoveMembers(v ...*ClinicMember) *ClinicUpdate {
 func (_u *ClinicUpdate) ClearSettings() *ClinicUpdate {
 	_u.mutation.ClearSettings()
 	return _u
+}
+
+// ClearPermissions clears all "permissions" edges to the ClinicPermission entity.
+func (_u *ClinicUpdate) ClearPermissions() *ClinicUpdate {
+	_u.mutation.ClearPermissions()
+	return _u
+}
+
+// RemovePermissionIDs removes the "permissions" edge to ClinicPermission entities by IDs.
+func (_u *ClinicUpdate) RemovePermissionIDs(ids ...uuid.UUID) *ClinicUpdate {
+	_u.mutation.RemovePermissionIDs(ids...)
+	return _u
+}
+
+// RemovePermissions removes "permissions" edges to ClinicPermission entities.
+func (_u *ClinicUpdate) RemovePermissions(v ...*ClinicPermission) *ClinicUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePermissionIDs(ids...)
+}
+
+// ClearPatients clears all "patients" edges to the Patient entity.
+func (_u *ClinicUpdate) ClearPatients() *ClinicUpdate {
+	_u.mutation.ClearPatients()
+	return _u
+}
+
+// RemovePatientIDs removes the "patients" edge to Patient entities by IDs.
+func (_u *ClinicUpdate) RemovePatientIDs(ids ...uuid.UUID) *ClinicUpdate {
+	_u.mutation.RemovePatientIDs(ids...)
+	return _u
+}
+
+// RemovePatients removes "patients" edges to Patient entities.
+func (_u *ClinicUpdate) RemovePatients(v ...*Patient) *ClinicUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePatientIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -506,6 +580,96 @@ func (_u *ClinicUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(clinicsettings.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PermissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PermissionsTable,
+			Columns: []string{clinic.PermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clinicpermission.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPermissionsIDs(); len(nodes) > 0 && !_u.mutation.PermissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PermissionsTable,
+			Columns: []string{clinic.PermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clinicpermission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PermissionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PermissionsTable,
+			Columns: []string{clinic.PermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clinicpermission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PatientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PatientsTable,
+			Columns: []string{clinic.PatientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(patient.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPatientsIDs(); len(nodes) > 0 && !_u.mutation.PatientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PatientsTable,
+			Columns: []string{clinic.PatientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(patient.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PatientsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PatientsTable,
+			Columns: []string{clinic.PatientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(patient.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -769,6 +933,36 @@ func (_u *ClinicUpdateOne) SetSettings(v *ClinicSettings) *ClinicUpdateOne {
 	return _u.SetSettingsID(v.ID)
 }
 
+// AddPermissionIDs adds the "permissions" edge to the ClinicPermission entity by IDs.
+func (_u *ClinicUpdateOne) AddPermissionIDs(ids ...uuid.UUID) *ClinicUpdateOne {
+	_u.mutation.AddPermissionIDs(ids...)
+	return _u
+}
+
+// AddPermissions adds the "permissions" edges to the ClinicPermission entity.
+func (_u *ClinicUpdateOne) AddPermissions(v ...*ClinicPermission) *ClinicUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPermissionIDs(ids...)
+}
+
+// AddPatientIDs adds the "patients" edge to the Patient entity by IDs.
+func (_u *ClinicUpdateOne) AddPatientIDs(ids ...uuid.UUID) *ClinicUpdateOne {
+	_u.mutation.AddPatientIDs(ids...)
+	return _u
+}
+
+// AddPatients adds the "patients" edges to the Patient entity.
+func (_u *ClinicUpdateOne) AddPatients(v ...*Patient) *ClinicUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPatientIDs(ids...)
+}
+
 // Mutation returns the ClinicMutation object of the builder.
 func (_u *ClinicUpdateOne) Mutation() *ClinicMutation {
 	return _u.mutation
@@ -799,6 +993,48 @@ func (_u *ClinicUpdateOne) RemoveMembers(v ...*ClinicMember) *ClinicUpdateOne {
 func (_u *ClinicUpdateOne) ClearSettings() *ClinicUpdateOne {
 	_u.mutation.ClearSettings()
 	return _u
+}
+
+// ClearPermissions clears all "permissions" edges to the ClinicPermission entity.
+func (_u *ClinicUpdateOne) ClearPermissions() *ClinicUpdateOne {
+	_u.mutation.ClearPermissions()
+	return _u
+}
+
+// RemovePermissionIDs removes the "permissions" edge to ClinicPermission entities by IDs.
+func (_u *ClinicUpdateOne) RemovePermissionIDs(ids ...uuid.UUID) *ClinicUpdateOne {
+	_u.mutation.RemovePermissionIDs(ids...)
+	return _u
+}
+
+// RemovePermissions removes "permissions" edges to ClinicPermission entities.
+func (_u *ClinicUpdateOne) RemovePermissions(v ...*ClinicPermission) *ClinicUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePermissionIDs(ids...)
+}
+
+// ClearPatients clears all "patients" edges to the Patient entity.
+func (_u *ClinicUpdateOne) ClearPatients() *ClinicUpdateOne {
+	_u.mutation.ClearPatients()
+	return _u
+}
+
+// RemovePatientIDs removes the "patients" edge to Patient entities by IDs.
+func (_u *ClinicUpdateOne) RemovePatientIDs(ids ...uuid.UUID) *ClinicUpdateOne {
+	_u.mutation.RemovePatientIDs(ids...)
+	return _u
+}
+
+// RemovePatients removes "patients" edges to Patient entities.
+func (_u *ClinicUpdateOne) RemovePatients(v ...*Patient) *ClinicUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePatientIDs(ids...)
 }
 
 // Where appends a list predicates to the ClinicUpdate builder.
@@ -1038,6 +1274,96 @@ func (_u *ClinicUpdateOne) sqlSave(ctx context.Context) (_node *Clinic, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(clinicsettings.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PermissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PermissionsTable,
+			Columns: []string{clinic.PermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clinicpermission.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPermissionsIDs(); len(nodes) > 0 && !_u.mutation.PermissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PermissionsTable,
+			Columns: []string{clinic.PermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clinicpermission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PermissionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PermissionsTable,
+			Columns: []string{clinic.PermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clinicpermission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PatientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PatientsTable,
+			Columns: []string{clinic.PatientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(patient.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPatientsIDs(); len(nodes) > 0 && !_u.mutation.PatientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PatientsTable,
+			Columns: []string{clinic.PatientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(patient.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PatientsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   clinic.PatientsTable,
+			Columns: []string{clinic.PatientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(patient.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

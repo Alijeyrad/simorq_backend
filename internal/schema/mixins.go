@@ -55,3 +55,16 @@ func (SoftDeleteMixin) Fields() []ent.Field {
 			Default(nil),
 	}
 }
+
+// CreatedAtMixin provides only created_at (for append-only records).
+type CreatedAtMixin struct {
+	mixin.Schema
+}
+
+func (CreatedAtMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.Time("created_at").
+			Default(time.Now).
+			Immutable(),
+	}
+}
