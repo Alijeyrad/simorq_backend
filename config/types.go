@@ -16,6 +16,7 @@ type Config struct {
 	Observability   ObservabilityConfig  `mapstructure:"observability"`
 	Logging         LoggingConfig        `mapstructure:"logging"`
 	S3              S3Config             `mapstructure:"s3"`
+	ZarinPal        ZarinPalConfig       `mapstructure:"zarinpal"`
 }
 
 type DatabaseConfig struct {

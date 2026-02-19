@@ -16,6 +16,7 @@ import (
 	redispkg "github.com/Alijeyrad/simorq_backend/pkg/redis"
 	s3pkg "github.com/Alijeyrad/simorq_backend/pkg/s3"
 	"github.com/Alijeyrad/simorq_backend/pkg/sms"
+	zarinpalpkg "github.com/Alijeyrad/simorq_backend/pkg/zarinpal"
 )
 
 // InfraModule provides all infrastructure dependencies.
@@ -27,6 +28,7 @@ var InfraModule = fx.Module("infra",
 	fx.Provide(ProvideSMSClient),
 	fx.Provide(ProvideOTel),
 	fx.Provide(ProvideS3Client),
+	fx.Provide(ProvideZarinPalClient),
 )
 
 func ProvideEntClient(lc fx.Lifecycle, cfg *config.Config) (*repo.Client, error) {
@@ -89,6 +91,10 @@ func ProvideSMSClient(cfg *config.Config) (*sms.Client, error) {
 
 func ProvideS3Client(cfg *config.Config) (*s3pkg.Client, error) {
 	return s3pkg.New(cfg.S3)
+}
+
+func ProvideZarinPalClient(cfg *config.Config) *zarinpalpkg.Client {
+	return zarinpalpkg.New(cfg.ZarinPal)
 }
 
 func ProvideOTel(lc fx.Lifecycle, cfg *config.Config) (*observability.Provider, error) {

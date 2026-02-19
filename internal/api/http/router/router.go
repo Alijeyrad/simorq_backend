@@ -5,11 +5,14 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/api/http/handler"
 	"github.com/Alijeyrad/simorq_backend/internal/api/http/middleware"
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
+	"github.com/Alijeyrad/simorq_backend/internal/service/appointment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/auth"
 	"github.com/Alijeyrad/simorq_backend/internal/service/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/service/file"
 	"github.com/Alijeyrad/simorq_backend/internal/service/patient"
+	"github.com/Alijeyrad/simorq_backend/internal/service/payment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/psychtest"
+	"github.com/Alijeyrad/simorq_backend/internal/service/scheduling"
 	"github.com/Alijeyrad/simorq_backend/internal/service/user"
 	"github.com/Alijeyrad/simorq_backend/pkg/authorize"
 	pasetotoken "github.com/Alijeyrad/simorq_backend/pkg/paseto"
@@ -35,9 +38,12 @@ type Params struct {
 	AuthSvc      auth.Service
 	ClinicSvc    clinic.Service
 	PatientSvc   patient.Service
-	FileSvc      file.Service
-	PsychTestSvc psychtest.Service
-	PasetoMgr    *pasetotoken.Manager
+	FileSvc        file.Service
+	PsychTestSvc   psychtest.Service
+	SchedulingSvc  scheduling.Service
+	AppointmentSvc appointment.Service
+	PaymentSvc     payment.Service
+	PasetoMgr      *pasetotoken.Manager
 }
 
 type Router struct {
@@ -69,6 +75,9 @@ func (r *Router) Register(app *fiber.App) {
 	patientH := handler.NewPatientHandler(r.p.PatientSvc)
 	fileH := handler.NewFileHandler(r.p.FileSvc)
 	testH := handler.NewTestHandler(r.p.PsychTestSvc)
+	scheduleH := handler.NewScheduleHandler(r.p.SchedulingSvc)
+	appointmentH := handler.NewAppointmentHandler(r.p.AppointmentSvc)
+	paymentH := handler.NewPaymentHandler(r.p.PaymentSvc)
 
 	api := app.Group("/api/v1")
 
@@ -79,6 +88,9 @@ func (r *Router) Register(app *fiber.App) {
 	r.registerPatientRoutes(api, patientH, fileH, authRequired, clinicHeader, requirePerm)
 	r.registerFileRoutes(api, fileH, authRequired, clinicHeader)
 	r.registerTestRoutes(api, testH, authRequired)
+	r.registerScheduleRoutes(api, scheduleH, authRequired, clinicHeader, requirePerm)
+	r.registerAppointmentRoutes(api, appointmentH, authRequired, clinicHeader, requirePerm)
+	r.registerPaymentRoutes(api, paymentH, authRequired, clinicHeader)
 }
 
 func (r *Router) registerSystemRoutes(app *fiber.App) {

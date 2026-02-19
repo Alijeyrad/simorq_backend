@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Appointment is the client for interacting with the Appointment builders.
+	Appointment *AppointmentClient
 	// Clinic is the client for interacting with the Clinic builders.
 	Clinic *ClinicClient
 	// ClinicMember is the client for interacting with the ClinicMember builders.
@@ -20,6 +22,8 @@ type Tx struct {
 	ClinicPermission *ClinicPermissionClient
 	// ClinicSettings is the client for interacting with the ClinicSettings builders.
 	ClinicSettings *ClinicSettingsClient
+	// CommissionRule is the client for interacting with the CommissionRule builders.
+	CommissionRule *CommissionRuleClient
 	// Patient is the client for interacting with the Patient builders.
 	Patient *PatientClient
 	// PatientFile is the client for interacting with the PatientFile builders.
@@ -30,14 +34,26 @@ type Tx struct {
 	PatientReport *PatientReportClient
 	// PatientTest is the client for interacting with the PatientTest builders.
 	PatientTest *PatientTestClient
+	// PaymentRequest is the client for interacting with the PaymentRequest builders.
+	PaymentRequest *PaymentRequestClient
 	// PsychTest is the client for interacting with the PsychTest builders.
 	PsychTest *PsychTestClient
+	// RecurringRule is the client for interacting with the RecurringRule builders.
+	RecurringRule *RecurringRuleClient
 	// TherapistProfile is the client for interacting with the TherapistProfile builders.
 	TherapistProfile *TherapistProfileClient
+	// TimeSlot is the client for interacting with the TimeSlot builders.
+	TimeSlot *TimeSlotClient
+	// Transaction is the client for interacting with the Transaction builders.
+	Transaction *TransactionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserSession is the client for interacting with the UserSession builders.
 	UserSession *UserSessionClient
+	// Wallet is the client for interacting with the Wallet builders.
+	Wallet *WalletClient
+	// WithdrawalRequest is the client for interacting with the WithdrawalRequest builders.
+	WithdrawalRequest *WithdrawalRequestClient
 
 	// lazily loaded.
 	client     *Client
@@ -169,19 +185,27 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Appointment = NewAppointmentClient(tx.config)
 	tx.Clinic = NewClinicClient(tx.config)
 	tx.ClinicMember = NewClinicMemberClient(tx.config)
 	tx.ClinicPermission = NewClinicPermissionClient(tx.config)
 	tx.ClinicSettings = NewClinicSettingsClient(tx.config)
+	tx.CommissionRule = NewCommissionRuleClient(tx.config)
 	tx.Patient = NewPatientClient(tx.config)
 	tx.PatientFile = NewPatientFileClient(tx.config)
 	tx.PatientPrescription = NewPatientPrescriptionClient(tx.config)
 	tx.PatientReport = NewPatientReportClient(tx.config)
 	tx.PatientTest = NewPatientTestClient(tx.config)
+	tx.PaymentRequest = NewPaymentRequestClient(tx.config)
 	tx.PsychTest = NewPsychTestClient(tx.config)
+	tx.RecurringRule = NewRecurringRuleClient(tx.config)
 	tx.TherapistProfile = NewTherapistProfileClient(tx.config)
+	tx.TimeSlot = NewTimeSlotClient(tx.config)
+	tx.Transaction = NewTransactionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserSession = NewUserSessionClient(tx.config)
+	tx.Wallet = NewWalletClient(tx.config)
+	tx.WithdrawalRequest = NewWithdrawalRequestClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
@@ -191,7 +215,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Clinic.QueryXXX(), the query will be executed
+// applies a query, for example: Appointment.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

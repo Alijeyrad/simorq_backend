@@ -8,6 +8,56 @@ import (
 )
 
 var (
+	// AppointmentsColumns holds the columns for the "appointments" table.
+	AppointmentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "therapist_id", Type: field.TypeUUID},
+		{Name: "patient_id", Type: field.TypeUUID},
+		{Name: "time_slot_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "start_time", Type: field.TypeTime},
+		{Name: "end_time", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"scheduled", "completed", "cancelled", "no_show"}, Default: "scheduled"},
+		{Name: "session_price", Type: field.TypeInt64},
+		{Name: "reservation_fee", Type: field.TypeInt64, Default: 0},
+		{Name: "payment_status", Type: field.TypeEnum, Enums: []string{"unpaid", "reservation_paid", "fully_paid", "refunded"}, Default: "unpaid"},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "cancellation_reason", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "cancel_requested_by", Type: field.TypeEnum, Nullable: true, Enums: []string{"patient", "therapist", "clinic"}},
+		{Name: "cancelled_at", Type: field.TypeTime, Nullable: true},
+		{Name: "cancellation_fee", Type: field.TypeInt64, Default: 0},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+	}
+	// AppointmentsTable holds the schema information for the "appointments" table.
+	AppointmentsTable = &schema.Table{
+		Name:       "appointments",
+		Columns:    AppointmentsColumns,
+		PrimaryKey: []*schema.Column{AppointmentsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "appointment_clinic_id_therapist_id_start_time",
+				Unique:  false,
+				Columns: []*schema.Column{AppointmentsColumns[3], AppointmentsColumns[4], AppointmentsColumns[7]},
+			},
+			{
+				Name:    "appointment_clinic_id_patient_id",
+				Unique:  false,
+				Columns: []*schema.Column{AppointmentsColumns[3], AppointmentsColumns[5]},
+			},
+			{
+				Name:    "appointment_therapist_id_status_start_time",
+				Unique:  false,
+				Columns: []*schema.Column{AppointmentsColumns[4], AppointmentsColumns[9], AppointmentsColumns[7]},
+			},
+			{
+				Name:    "appointment_patient_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{AppointmentsColumns[5], AppointmentsColumns[9]},
+			},
+		},
+	}
 	// ClinicsColumns holds the columns for the "clinics" table.
 	ClinicsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -151,6 +201,24 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+	}
+	// CommissionRulesColumns holds the columns for the "commission_rules" table.
+	CommissionRulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID, Unique: true},
+		{Name: "platform_fee_percent", Type: field.TypeInt, Default: 0},
+		{Name: "clinic_fee_percent", Type: field.TypeInt, Default: 0},
+		{Name: "is_flat_fee", Type: field.TypeBool, Default: false},
+		{Name: "flat_fee_amount", Type: field.TypeInt64, Default: 0},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+	}
+	// CommissionRulesTable holds the schema information for the "commission_rules" table.
+	CommissionRulesTable = &schema.Table{
+		Name:       "commission_rules",
+		Columns:    CommissionRulesColumns,
+		PrimaryKey: []*schema.Column{CommissionRulesColumns[0]},
 	}
 	// PatientsColumns holds the columns for the "patients" table.
 	PatientsColumns = []*schema.Column{
@@ -418,6 +486,47 @@ var (
 			},
 		},
 	}
+	// PaymentRequestsColumns holds the columns for the "payment_requests" table.
+	PaymentRequestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "appointment_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "amount", Type: field.TypeInt64},
+		{Name: "description", Type: field.TypeString, Size: 500},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "success", "failed", "cancelled"}, Default: "pending"},
+		{Name: "source", Type: field.TypeEnum, Enums: []string{"zarinpal", "wallet"}, Default: "zarinpal"},
+		{Name: "zarinpal_authority", Type: field.TypeString, Nullable: true, Size: 200},
+		{Name: "zarinpal_ref_id", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "zarinpal_card_pan", Type: field.TypeString, Nullable: true, Size: 25},
+		{Name: "zarinpal_card_hash", Type: field.TypeString, Nullable: true, Size: 70},
+		{Name: "paid_at", Type: field.TypeTime, Nullable: true},
+	}
+	// PaymentRequestsTable holds the schema information for the "payment_requests" table.
+	PaymentRequestsTable = &schema.Table{
+		Name:       "payment_requests",
+		Columns:    PaymentRequestsColumns,
+		PrimaryKey: []*schema.Column{PaymentRequestsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "paymentrequest_user_id_status_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{PaymentRequestsColumns[4], PaymentRequestsColumns[8], PaymentRequestsColumns[1]},
+			},
+			{
+				Name:    "paymentrequest_clinic_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{PaymentRequestsColumns[3], PaymentRequestsColumns[8]},
+			},
+			{
+				Name:    "paymentrequest_zarinpal_authority",
+				Unique:  false,
+				Columns: []*schema.Column{PaymentRequestsColumns[10]},
+			},
+		},
+	}
 	// PsychTestsColumns holds the columns for the "psych_tests" table.
 	PsychTestsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -436,6 +545,42 @@ var (
 		Name:       "psych_tests",
 		Columns:    PsychTestsColumns,
 		PrimaryKey: []*schema.Column{PsychTestsColumns[0]},
+	}
+	// RecurringRulesColumns holds the columns for the "recurring_rules" table.
+	RecurringRulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "therapist_id", Type: field.TypeUUID},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "day_of_week", Type: field.TypeInt8},
+		{Name: "start_hour", Type: field.TypeInt8},
+		{Name: "start_minute", Type: field.TypeInt8},
+		{Name: "end_hour", Type: field.TypeInt8},
+		{Name: "end_minute", Type: field.TypeInt8},
+		{Name: "session_price", Type: field.TypeInt64, Nullable: true},
+		{Name: "reservation_fee", Type: field.TypeInt64, Nullable: true},
+		{Name: "valid_from", Type: field.TypeTime},
+		{Name: "valid_until", Type: field.TypeTime, Nullable: true},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+	}
+	// RecurringRulesTable holds the schema information for the "recurring_rules" table.
+	RecurringRulesTable = &schema.Table{
+		Name:       "recurring_rules",
+		Columns:    RecurringRulesColumns,
+		PrimaryKey: []*schema.Column{RecurringRulesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "recurringrule_therapist_id_day_of_week_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{RecurringRulesColumns[3], RecurringRulesColumns[5], RecurringRulesColumns[14]},
+			},
+			{
+				Name:    "recurringrule_clinic_id",
+				Unique:  false,
+				Columns: []*schema.Column{RecurringRulesColumns[4]},
+			},
+		},
 	}
 	// TherapistProfilesColumns holds the columns for the "therapist_profiles" table.
 	TherapistProfilesColumns = []*schema.Column{
@@ -464,6 +609,78 @@ var (
 				Columns:    []*schema.Column{TherapistProfilesColumns[12]},
 				RefColumns: []*schema.Column{ClinicMembersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// TimeSlotsColumns holds the columns for the "time_slots" table.
+	TimeSlotsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "therapist_id", Type: field.TypeUUID},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "start_time", Type: field.TypeTime},
+		{Name: "end_time", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"available", "booked", "blocked", "cancelled"}, Default: "available"},
+		{Name: "session_price", Type: field.TypeInt64, Nullable: true},
+		{Name: "reservation_fee", Type: field.TypeInt64, Nullable: true},
+		{Name: "is_recurring", Type: field.TypeBool, Default: false},
+		{Name: "recurring_rule_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// TimeSlotsTable holds the schema information for the "time_slots" table.
+	TimeSlotsTable = &schema.Table{
+		Name:       "time_slots",
+		Columns:    TimeSlotsColumns,
+		PrimaryKey: []*schema.Column{TimeSlotsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "timeslot_therapist_id_start_time",
+				Unique:  false,
+				Columns: []*schema.Column{TimeSlotsColumns[3], TimeSlotsColumns[5]},
+			},
+			{
+				Name:    "timeslot_clinic_id_status_start_time",
+				Unique:  false,
+				Columns: []*schema.Column{TimeSlotsColumns[4], TimeSlotsColumns[7], TimeSlotsColumns[5]},
+			},
+		},
+	}
+	// TransactionsColumns holds the columns for the "transactions" table.
+	TransactionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"credit", "debit"}},
+		{Name: "amount", Type: field.TypeInt64},
+		{Name: "balance_before", Type: field.TypeInt64},
+		{Name: "balance_after", Type: field.TypeInt64},
+		{Name: "entity_type", Type: field.TypeString, Nullable: true, Size: 30},
+		{Name: "entity_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "wallet_id", Type: field.TypeUUID},
+	}
+	// TransactionsTable holds the schema information for the "transactions" table.
+	TransactionsTable = &schema.Table{
+		Name:       "transactions",
+		Columns:    TransactionsColumns,
+		PrimaryKey: []*schema.Column{TransactionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "transactions_wallets_transactions",
+				Columns:    []*schema.Column{TransactionsColumns[9]},
+				RefColumns: []*schema.Column{WalletsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "transaction_wallet_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{TransactionsColumns[9], TransactionsColumns[1]},
+			},
+			{
+				Name:    "transaction_entity_type_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{TransactionsColumns[6], TransactionsColumns[7]},
 			},
 		},
 	}
@@ -555,21 +772,95 @@ var (
 			},
 		},
 	}
+	// WalletsColumns holds the columns for the "wallets" table.
+	WalletsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "owner_type", Type: field.TypeEnum, Enums: []string{"user", "clinic", "platform"}},
+		{Name: "owner_id", Type: field.TypeUUID},
+		{Name: "balance", Type: field.TypeInt64, Default: 0},
+		{Name: "iban_encrypted", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "iban_hash", Type: field.TypeString, Nullable: true, Size: 64},
+		{Name: "account_holder", Type: field.TypeString, Nullable: true, Size: 200},
+	}
+	// WalletsTable holds the schema information for the "wallets" table.
+	WalletsTable = &schema.Table{
+		Name:       "wallets",
+		Columns:    WalletsColumns,
+		PrimaryKey: []*schema.Column{WalletsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "wallet_owner_type_owner_id",
+				Unique:  true,
+				Columns: []*schema.Column{WalletsColumns[3], WalletsColumns[4]},
+			},
+		},
+	}
+	// WithdrawalRequestsColumns holds the columns for the "withdrawal_requests" table.
+	WithdrawalRequestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "amount", Type: field.TypeInt64},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "processing", "completed", "failed", "cancelled"}, Default: "pending"},
+		{Name: "iban_encrypted", Type: field.TypeString, Size: 1000},
+		{Name: "account_holder", Type: field.TypeString, Size: 200},
+		{Name: "bank_ref", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "requested_at", Type: field.TypeTime},
+		{Name: "processed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "failure_reason", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "wallet_id", Type: field.TypeUUID},
+	}
+	// WithdrawalRequestsTable holds the schema information for the "withdrawal_requests" table.
+	WithdrawalRequestsTable = &schema.Table{
+		Name:       "withdrawal_requests",
+		Columns:    WithdrawalRequestsColumns,
+		PrimaryKey: []*schema.Column{WithdrawalRequestsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "withdrawal_requests_wallets_withdrawals",
+				Columns:    []*schema.Column{WithdrawalRequestsColumns[11]},
+				RefColumns: []*schema.Column{WalletsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "withdrawalrequest_wallet_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{WithdrawalRequestsColumns[11], WithdrawalRequestsColumns[4]},
+			},
+			{
+				Name:    "withdrawalrequest_clinic_id_status_requested_at",
+				Unique:  false,
+				Columns: []*schema.Column{WithdrawalRequestsColumns[2], WithdrawalRequestsColumns[4], WithdrawalRequestsColumns[8]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AppointmentsTable,
 		ClinicsTable,
 		ClinicMembersTable,
 		ClinicPermissionsTable,
 		ClinicSettingsTable,
+		CommissionRulesTable,
 		PatientsTable,
 		PatientFilesTable,
 		PatientPrescriptionsTable,
 		PatientReportsTable,
 		PatientTestsTable,
+		PaymentRequestsTable,
 		PsychTestsTable,
+		RecurringRulesTable,
 		TherapistProfilesTable,
+		TimeSlotsTable,
+		TransactionsTable,
 		UsersTable,
 		UserSessionsTable,
+		WalletsTable,
+		WithdrawalRequestsTable,
 	}
 )
 
@@ -592,5 +883,7 @@ func init() {
 	PatientTestsTable.ForeignKeys[1].RefTable = PsychTestsTable
 	PatientTestsTable.ForeignKeys[2].RefTable = ClinicMembersTable
 	TherapistProfilesTable.ForeignKeys[0].RefTable = ClinicMembersTable
+	TransactionsTable.ForeignKeys[0].RefTable = WalletsTable
 	UserSessionsTable.ForeignKeys[0].RefTable = UsersTable
+	WithdrawalRequestsTable.ForeignKeys[0].RefTable = WalletsTable
 }

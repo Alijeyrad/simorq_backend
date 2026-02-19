@@ -12,19 +12,27 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/appointment"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/commissionrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientfile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientprescription"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientreport"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patienttest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/paymentrequest"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/psychtest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/recurringrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/timeslot"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/transaction"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/wallet"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/withdrawalrequest"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -85,19 +93,27 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			appointment.Table:         appointment.ValidColumn,
 			clinic.Table:              clinic.ValidColumn,
 			clinicmember.Table:        clinicmember.ValidColumn,
 			clinicpermission.Table:    clinicpermission.ValidColumn,
 			clinicsettings.Table:      clinicsettings.ValidColumn,
+			commissionrule.Table:      commissionrule.ValidColumn,
 			patient.Table:             patient.ValidColumn,
 			patientfile.Table:         patientfile.ValidColumn,
 			patientprescription.Table: patientprescription.ValidColumn,
 			patientreport.Table:       patientreport.ValidColumn,
 			patienttest.Table:         patienttest.ValidColumn,
+			paymentrequest.Table:      paymentrequest.ValidColumn,
 			psychtest.Table:           psychtest.ValidColumn,
+			recurringrule.Table:       recurringrule.ValidColumn,
 			therapistprofile.Table:    therapistprofile.ValidColumn,
+			timeslot.Table:            timeslot.ValidColumn,
+			transaction.Table:         transaction.ValidColumn,
 			user.Table:                user.ValidColumn,
 			usersession.Table:         usersession.ValidColumn,
+			wallet.Table:              wallet.ValidColumn,
+			withdrawalrequest.Table:   withdrawalrequest.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

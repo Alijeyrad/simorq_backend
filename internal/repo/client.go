@@ -16,19 +16,27 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/appointment"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/commissionrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientfile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientprescription"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientreport"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patienttest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/paymentrequest"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/psychtest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/recurringrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/timeslot"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/transaction"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/wallet"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/withdrawalrequest"
 )
 
 // Client is the client that holds all ent builders.
@@ -36,6 +44,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Appointment is the client for interacting with the Appointment builders.
+	Appointment *AppointmentClient
 	// Clinic is the client for interacting with the Clinic builders.
 	Clinic *ClinicClient
 	// ClinicMember is the client for interacting with the ClinicMember builders.
@@ -44,6 +54,8 @@ type Client struct {
 	ClinicPermission *ClinicPermissionClient
 	// ClinicSettings is the client for interacting with the ClinicSettings builders.
 	ClinicSettings *ClinicSettingsClient
+	// CommissionRule is the client for interacting with the CommissionRule builders.
+	CommissionRule *CommissionRuleClient
 	// Patient is the client for interacting with the Patient builders.
 	Patient *PatientClient
 	// PatientFile is the client for interacting with the PatientFile builders.
@@ -54,14 +66,26 @@ type Client struct {
 	PatientReport *PatientReportClient
 	// PatientTest is the client for interacting with the PatientTest builders.
 	PatientTest *PatientTestClient
+	// PaymentRequest is the client for interacting with the PaymentRequest builders.
+	PaymentRequest *PaymentRequestClient
 	// PsychTest is the client for interacting with the PsychTest builders.
 	PsychTest *PsychTestClient
+	// RecurringRule is the client for interacting with the RecurringRule builders.
+	RecurringRule *RecurringRuleClient
 	// TherapistProfile is the client for interacting with the TherapistProfile builders.
 	TherapistProfile *TherapistProfileClient
+	// TimeSlot is the client for interacting with the TimeSlot builders.
+	TimeSlot *TimeSlotClient
+	// Transaction is the client for interacting with the Transaction builders.
+	Transaction *TransactionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserSession is the client for interacting with the UserSession builders.
 	UserSession *UserSessionClient
+	// Wallet is the client for interacting with the Wallet builders.
+	Wallet *WalletClient
+	// WithdrawalRequest is the client for interacting with the WithdrawalRequest builders.
+	WithdrawalRequest *WithdrawalRequestClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -73,19 +97,27 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Appointment = NewAppointmentClient(c.config)
 	c.Clinic = NewClinicClient(c.config)
 	c.ClinicMember = NewClinicMemberClient(c.config)
 	c.ClinicPermission = NewClinicPermissionClient(c.config)
 	c.ClinicSettings = NewClinicSettingsClient(c.config)
+	c.CommissionRule = NewCommissionRuleClient(c.config)
 	c.Patient = NewPatientClient(c.config)
 	c.PatientFile = NewPatientFileClient(c.config)
 	c.PatientPrescription = NewPatientPrescriptionClient(c.config)
 	c.PatientReport = NewPatientReportClient(c.config)
 	c.PatientTest = NewPatientTestClient(c.config)
+	c.PaymentRequest = NewPaymentRequestClient(c.config)
 	c.PsychTest = NewPsychTestClient(c.config)
+	c.RecurringRule = NewRecurringRuleClient(c.config)
 	c.TherapistProfile = NewTherapistProfileClient(c.config)
+	c.TimeSlot = NewTimeSlotClient(c.config)
+	c.Transaction = NewTransactionClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserSession = NewUserSessionClient(c.config)
+	c.Wallet = NewWalletClient(c.config)
+	c.WithdrawalRequest = NewWithdrawalRequestClient(c.config)
 }
 
 type (
@@ -178,19 +210,27 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                 ctx,
 		config:              cfg,
+		Appointment:         NewAppointmentClient(cfg),
 		Clinic:              NewClinicClient(cfg),
 		ClinicMember:        NewClinicMemberClient(cfg),
 		ClinicPermission:    NewClinicPermissionClient(cfg),
 		ClinicSettings:      NewClinicSettingsClient(cfg),
+		CommissionRule:      NewCommissionRuleClient(cfg),
 		Patient:             NewPatientClient(cfg),
 		PatientFile:         NewPatientFileClient(cfg),
 		PatientPrescription: NewPatientPrescriptionClient(cfg),
 		PatientReport:       NewPatientReportClient(cfg),
 		PatientTest:         NewPatientTestClient(cfg),
+		PaymentRequest:      NewPaymentRequestClient(cfg),
 		PsychTest:           NewPsychTestClient(cfg),
+		RecurringRule:       NewRecurringRuleClient(cfg),
 		TherapistProfile:    NewTherapistProfileClient(cfg),
+		TimeSlot:            NewTimeSlotClient(cfg),
+		Transaction:         NewTransactionClient(cfg),
 		User:                NewUserClient(cfg),
 		UserSession:         NewUserSessionClient(cfg),
+		Wallet:              NewWalletClient(cfg),
+		WithdrawalRequest:   NewWithdrawalRequestClient(cfg),
 	}, nil
 }
 
@@ -210,26 +250,34 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:                 ctx,
 		config:              cfg,
+		Appointment:         NewAppointmentClient(cfg),
 		Clinic:              NewClinicClient(cfg),
 		ClinicMember:        NewClinicMemberClient(cfg),
 		ClinicPermission:    NewClinicPermissionClient(cfg),
 		ClinicSettings:      NewClinicSettingsClient(cfg),
+		CommissionRule:      NewCommissionRuleClient(cfg),
 		Patient:             NewPatientClient(cfg),
 		PatientFile:         NewPatientFileClient(cfg),
 		PatientPrescription: NewPatientPrescriptionClient(cfg),
 		PatientReport:       NewPatientReportClient(cfg),
 		PatientTest:         NewPatientTestClient(cfg),
+		PaymentRequest:      NewPaymentRequestClient(cfg),
 		PsychTest:           NewPsychTestClient(cfg),
+		RecurringRule:       NewRecurringRuleClient(cfg),
 		TherapistProfile:    NewTherapistProfileClient(cfg),
+		TimeSlot:            NewTimeSlotClient(cfg),
+		Transaction:         NewTransactionClient(cfg),
 		User:                NewUserClient(cfg),
 		UserSession:         NewUserSessionClient(cfg),
+		Wallet:              NewWalletClient(cfg),
+		WithdrawalRequest:   NewWithdrawalRequestClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Clinic.
+//		Appointment.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -252,9 +300,11 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Clinic, c.ClinicMember, c.ClinicPermission, c.ClinicSettings, c.Patient,
-		c.PatientFile, c.PatientPrescription, c.PatientReport, c.PatientTest,
-		c.PsychTest, c.TherapistProfile, c.User, c.UserSession,
+		c.Appointment, c.Clinic, c.ClinicMember, c.ClinicPermission, c.ClinicSettings,
+		c.CommissionRule, c.Patient, c.PatientFile, c.PatientPrescription,
+		c.PatientReport, c.PatientTest, c.PaymentRequest, c.PsychTest, c.RecurringRule,
+		c.TherapistProfile, c.TimeSlot, c.Transaction, c.User, c.UserSession, c.Wallet,
+		c.WithdrawalRequest,
 	} {
 		n.Use(hooks...)
 	}
@@ -264,9 +314,11 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Clinic, c.ClinicMember, c.ClinicPermission, c.ClinicSettings, c.Patient,
-		c.PatientFile, c.PatientPrescription, c.PatientReport, c.PatientTest,
-		c.PsychTest, c.TherapistProfile, c.User, c.UserSession,
+		c.Appointment, c.Clinic, c.ClinicMember, c.ClinicPermission, c.ClinicSettings,
+		c.CommissionRule, c.Patient, c.PatientFile, c.PatientPrescription,
+		c.PatientReport, c.PatientTest, c.PaymentRequest, c.PsychTest, c.RecurringRule,
+		c.TherapistProfile, c.TimeSlot, c.Transaction, c.User, c.UserSession, c.Wallet,
+		c.WithdrawalRequest,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -275,6 +327,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AppointmentMutation:
+		return c.Appointment.mutate(ctx, m)
 	case *ClinicMutation:
 		return c.Clinic.mutate(ctx, m)
 	case *ClinicMemberMutation:
@@ -283,6 +337,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ClinicPermission.mutate(ctx, m)
 	case *ClinicSettingsMutation:
 		return c.ClinicSettings.mutate(ctx, m)
+	case *CommissionRuleMutation:
+		return c.CommissionRule.mutate(ctx, m)
 	case *PatientMutation:
 		return c.Patient.mutate(ctx, m)
 	case *PatientFileMutation:
@@ -293,16 +349,161 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.PatientReport.mutate(ctx, m)
 	case *PatientTestMutation:
 		return c.PatientTest.mutate(ctx, m)
+	case *PaymentRequestMutation:
+		return c.PaymentRequest.mutate(ctx, m)
 	case *PsychTestMutation:
 		return c.PsychTest.mutate(ctx, m)
+	case *RecurringRuleMutation:
+		return c.RecurringRule.mutate(ctx, m)
 	case *TherapistProfileMutation:
 		return c.TherapistProfile.mutate(ctx, m)
+	case *TimeSlotMutation:
+		return c.TimeSlot.mutate(ctx, m)
+	case *TransactionMutation:
+		return c.Transaction.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	case *UserSessionMutation:
 		return c.UserSession.mutate(ctx, m)
+	case *WalletMutation:
+		return c.Wallet.mutate(ctx, m)
+	case *WithdrawalRequestMutation:
+		return c.WithdrawalRequest.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("repo: unknown mutation type %T", m)
+	}
+}
+
+// AppointmentClient is a client for the Appointment schema.
+type AppointmentClient struct {
+	config
+}
+
+// NewAppointmentClient returns a client for the Appointment from the given config.
+func NewAppointmentClient(c config) *AppointmentClient {
+	return &AppointmentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `appointment.Hooks(f(g(h())))`.
+func (c *AppointmentClient) Use(hooks ...Hook) {
+	c.hooks.Appointment = append(c.hooks.Appointment, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `appointment.Intercept(f(g(h())))`.
+func (c *AppointmentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Appointment = append(c.inters.Appointment, interceptors...)
+}
+
+// Create returns a builder for creating a Appointment entity.
+func (c *AppointmentClient) Create() *AppointmentCreate {
+	mutation := newAppointmentMutation(c.config, OpCreate)
+	return &AppointmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Appointment entities.
+func (c *AppointmentClient) CreateBulk(builders ...*AppointmentCreate) *AppointmentCreateBulk {
+	return &AppointmentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AppointmentClient) MapCreateBulk(slice any, setFunc func(*AppointmentCreate, int)) *AppointmentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AppointmentCreateBulk{err: fmt.Errorf("calling to AppointmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AppointmentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AppointmentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Appointment.
+func (c *AppointmentClient) Update() *AppointmentUpdate {
+	mutation := newAppointmentMutation(c.config, OpUpdate)
+	return &AppointmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AppointmentClient) UpdateOne(_m *Appointment) *AppointmentUpdateOne {
+	mutation := newAppointmentMutation(c.config, OpUpdateOne, withAppointment(_m))
+	return &AppointmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AppointmentClient) UpdateOneID(id uuid.UUID) *AppointmentUpdateOne {
+	mutation := newAppointmentMutation(c.config, OpUpdateOne, withAppointmentID(id))
+	return &AppointmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Appointment.
+func (c *AppointmentClient) Delete() *AppointmentDelete {
+	mutation := newAppointmentMutation(c.config, OpDelete)
+	return &AppointmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AppointmentClient) DeleteOne(_m *Appointment) *AppointmentDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AppointmentClient) DeleteOneID(id uuid.UUID) *AppointmentDeleteOne {
+	builder := c.Delete().Where(appointment.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AppointmentDeleteOne{builder}
+}
+
+// Query returns a query builder for Appointment.
+func (c *AppointmentClient) Query() *AppointmentQuery {
+	return &AppointmentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAppointment},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Appointment entity by its id.
+func (c *AppointmentClient) Get(ctx context.Context, id uuid.UUID) (*Appointment, error) {
+	return c.Query().Where(appointment.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AppointmentClient) GetX(ctx context.Context, id uuid.UUID) *Appointment {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AppointmentClient) Hooks() []Hook {
+	return c.hooks.Appointment
+}
+
+// Interceptors returns the client interceptors.
+func (c *AppointmentClient) Interceptors() []Interceptor {
+	return c.inters.Appointment
+}
+
+func (c *AppointmentClient) mutate(ctx context.Context, m *AppointmentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AppointmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AppointmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AppointmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AppointmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown Appointment mutation op: %q", m.Op())
 	}
 }
 
@@ -995,6 +1196,139 @@ func (c *ClinicSettingsClient) mutate(ctx context.Context, m *ClinicSettingsMuta
 		return (&ClinicSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("repo: unknown ClinicSettings mutation op: %q", m.Op())
+	}
+}
+
+// CommissionRuleClient is a client for the CommissionRule schema.
+type CommissionRuleClient struct {
+	config
+}
+
+// NewCommissionRuleClient returns a client for the CommissionRule from the given config.
+func NewCommissionRuleClient(c config) *CommissionRuleClient {
+	return &CommissionRuleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `commissionrule.Hooks(f(g(h())))`.
+func (c *CommissionRuleClient) Use(hooks ...Hook) {
+	c.hooks.CommissionRule = append(c.hooks.CommissionRule, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `commissionrule.Intercept(f(g(h())))`.
+func (c *CommissionRuleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CommissionRule = append(c.inters.CommissionRule, interceptors...)
+}
+
+// Create returns a builder for creating a CommissionRule entity.
+func (c *CommissionRuleClient) Create() *CommissionRuleCreate {
+	mutation := newCommissionRuleMutation(c.config, OpCreate)
+	return &CommissionRuleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CommissionRule entities.
+func (c *CommissionRuleClient) CreateBulk(builders ...*CommissionRuleCreate) *CommissionRuleCreateBulk {
+	return &CommissionRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CommissionRuleClient) MapCreateBulk(slice any, setFunc func(*CommissionRuleCreate, int)) *CommissionRuleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CommissionRuleCreateBulk{err: fmt.Errorf("calling to CommissionRuleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CommissionRuleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CommissionRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CommissionRule.
+func (c *CommissionRuleClient) Update() *CommissionRuleUpdate {
+	mutation := newCommissionRuleMutation(c.config, OpUpdate)
+	return &CommissionRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CommissionRuleClient) UpdateOne(_m *CommissionRule) *CommissionRuleUpdateOne {
+	mutation := newCommissionRuleMutation(c.config, OpUpdateOne, withCommissionRule(_m))
+	return &CommissionRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CommissionRuleClient) UpdateOneID(id uuid.UUID) *CommissionRuleUpdateOne {
+	mutation := newCommissionRuleMutation(c.config, OpUpdateOne, withCommissionRuleID(id))
+	return &CommissionRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CommissionRule.
+func (c *CommissionRuleClient) Delete() *CommissionRuleDelete {
+	mutation := newCommissionRuleMutation(c.config, OpDelete)
+	return &CommissionRuleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CommissionRuleClient) DeleteOne(_m *CommissionRule) *CommissionRuleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CommissionRuleClient) DeleteOneID(id uuid.UUID) *CommissionRuleDeleteOne {
+	builder := c.Delete().Where(commissionrule.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CommissionRuleDeleteOne{builder}
+}
+
+// Query returns a query builder for CommissionRule.
+func (c *CommissionRuleClient) Query() *CommissionRuleQuery {
+	return &CommissionRuleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCommissionRule},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CommissionRule entity by its id.
+func (c *CommissionRuleClient) Get(ctx context.Context, id uuid.UUID) (*CommissionRule, error) {
+	return c.Query().Where(commissionrule.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CommissionRuleClient) GetX(ctx context.Context, id uuid.UUID) *CommissionRule {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CommissionRuleClient) Hooks() []Hook {
+	return c.hooks.CommissionRule
+}
+
+// Interceptors returns the client interceptors.
+func (c *CommissionRuleClient) Interceptors() []Interceptor {
+	return c.inters.CommissionRule
+}
+
+func (c *CommissionRuleClient) mutate(ctx context.Context, m *CommissionRuleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CommissionRuleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CommissionRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CommissionRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CommissionRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown CommissionRule mutation op: %q", m.Op())
 	}
 }
 
@@ -1919,6 +2253,139 @@ func (c *PatientTestClient) mutate(ctx context.Context, m *PatientTestMutation) 
 	}
 }
 
+// PaymentRequestClient is a client for the PaymentRequest schema.
+type PaymentRequestClient struct {
+	config
+}
+
+// NewPaymentRequestClient returns a client for the PaymentRequest from the given config.
+func NewPaymentRequestClient(c config) *PaymentRequestClient {
+	return &PaymentRequestClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `paymentrequest.Hooks(f(g(h())))`.
+func (c *PaymentRequestClient) Use(hooks ...Hook) {
+	c.hooks.PaymentRequest = append(c.hooks.PaymentRequest, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `paymentrequest.Intercept(f(g(h())))`.
+func (c *PaymentRequestClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PaymentRequest = append(c.inters.PaymentRequest, interceptors...)
+}
+
+// Create returns a builder for creating a PaymentRequest entity.
+func (c *PaymentRequestClient) Create() *PaymentRequestCreate {
+	mutation := newPaymentRequestMutation(c.config, OpCreate)
+	return &PaymentRequestCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PaymentRequest entities.
+func (c *PaymentRequestClient) CreateBulk(builders ...*PaymentRequestCreate) *PaymentRequestCreateBulk {
+	return &PaymentRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PaymentRequestClient) MapCreateBulk(slice any, setFunc func(*PaymentRequestCreate, int)) *PaymentRequestCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PaymentRequestCreateBulk{err: fmt.Errorf("calling to PaymentRequestClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PaymentRequestCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PaymentRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PaymentRequest.
+func (c *PaymentRequestClient) Update() *PaymentRequestUpdate {
+	mutation := newPaymentRequestMutation(c.config, OpUpdate)
+	return &PaymentRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PaymentRequestClient) UpdateOne(_m *PaymentRequest) *PaymentRequestUpdateOne {
+	mutation := newPaymentRequestMutation(c.config, OpUpdateOne, withPaymentRequest(_m))
+	return &PaymentRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PaymentRequestClient) UpdateOneID(id uuid.UUID) *PaymentRequestUpdateOne {
+	mutation := newPaymentRequestMutation(c.config, OpUpdateOne, withPaymentRequestID(id))
+	return &PaymentRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PaymentRequest.
+func (c *PaymentRequestClient) Delete() *PaymentRequestDelete {
+	mutation := newPaymentRequestMutation(c.config, OpDelete)
+	return &PaymentRequestDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PaymentRequestClient) DeleteOne(_m *PaymentRequest) *PaymentRequestDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PaymentRequestClient) DeleteOneID(id uuid.UUID) *PaymentRequestDeleteOne {
+	builder := c.Delete().Where(paymentrequest.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PaymentRequestDeleteOne{builder}
+}
+
+// Query returns a query builder for PaymentRequest.
+func (c *PaymentRequestClient) Query() *PaymentRequestQuery {
+	return &PaymentRequestQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePaymentRequest},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PaymentRequest entity by its id.
+func (c *PaymentRequestClient) Get(ctx context.Context, id uuid.UUID) (*PaymentRequest, error) {
+	return c.Query().Where(paymentrequest.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PaymentRequestClient) GetX(ctx context.Context, id uuid.UUID) *PaymentRequest {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PaymentRequestClient) Hooks() []Hook {
+	return c.hooks.PaymentRequest
+}
+
+// Interceptors returns the client interceptors.
+func (c *PaymentRequestClient) Interceptors() []Interceptor {
+	return c.inters.PaymentRequest
+}
+
+func (c *PaymentRequestClient) mutate(ctx context.Context, m *PaymentRequestMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PaymentRequestCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PaymentRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PaymentRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PaymentRequestDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown PaymentRequest mutation op: %q", m.Op())
+	}
+}
+
 // PsychTestClient is a client for the PsychTest schema.
 type PsychTestClient struct {
 	config
@@ -2049,6 +2516,139 @@ func (c *PsychTestClient) mutate(ctx context.Context, m *PsychTestMutation) (Val
 		return (&PsychTestDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("repo: unknown PsychTest mutation op: %q", m.Op())
+	}
+}
+
+// RecurringRuleClient is a client for the RecurringRule schema.
+type RecurringRuleClient struct {
+	config
+}
+
+// NewRecurringRuleClient returns a client for the RecurringRule from the given config.
+func NewRecurringRuleClient(c config) *RecurringRuleClient {
+	return &RecurringRuleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `recurringrule.Hooks(f(g(h())))`.
+func (c *RecurringRuleClient) Use(hooks ...Hook) {
+	c.hooks.RecurringRule = append(c.hooks.RecurringRule, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `recurringrule.Intercept(f(g(h())))`.
+func (c *RecurringRuleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RecurringRule = append(c.inters.RecurringRule, interceptors...)
+}
+
+// Create returns a builder for creating a RecurringRule entity.
+func (c *RecurringRuleClient) Create() *RecurringRuleCreate {
+	mutation := newRecurringRuleMutation(c.config, OpCreate)
+	return &RecurringRuleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RecurringRule entities.
+func (c *RecurringRuleClient) CreateBulk(builders ...*RecurringRuleCreate) *RecurringRuleCreateBulk {
+	return &RecurringRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RecurringRuleClient) MapCreateBulk(slice any, setFunc func(*RecurringRuleCreate, int)) *RecurringRuleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RecurringRuleCreateBulk{err: fmt.Errorf("calling to RecurringRuleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RecurringRuleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RecurringRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RecurringRule.
+func (c *RecurringRuleClient) Update() *RecurringRuleUpdate {
+	mutation := newRecurringRuleMutation(c.config, OpUpdate)
+	return &RecurringRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RecurringRuleClient) UpdateOne(_m *RecurringRule) *RecurringRuleUpdateOne {
+	mutation := newRecurringRuleMutation(c.config, OpUpdateOne, withRecurringRule(_m))
+	return &RecurringRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RecurringRuleClient) UpdateOneID(id uuid.UUID) *RecurringRuleUpdateOne {
+	mutation := newRecurringRuleMutation(c.config, OpUpdateOne, withRecurringRuleID(id))
+	return &RecurringRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RecurringRule.
+func (c *RecurringRuleClient) Delete() *RecurringRuleDelete {
+	mutation := newRecurringRuleMutation(c.config, OpDelete)
+	return &RecurringRuleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RecurringRuleClient) DeleteOne(_m *RecurringRule) *RecurringRuleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RecurringRuleClient) DeleteOneID(id uuid.UUID) *RecurringRuleDeleteOne {
+	builder := c.Delete().Where(recurringrule.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RecurringRuleDeleteOne{builder}
+}
+
+// Query returns a query builder for RecurringRule.
+func (c *RecurringRuleClient) Query() *RecurringRuleQuery {
+	return &RecurringRuleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRecurringRule},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RecurringRule entity by its id.
+func (c *RecurringRuleClient) Get(ctx context.Context, id uuid.UUID) (*RecurringRule, error) {
+	return c.Query().Where(recurringrule.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RecurringRuleClient) GetX(ctx context.Context, id uuid.UUID) *RecurringRule {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *RecurringRuleClient) Hooks() []Hook {
+	return c.hooks.RecurringRule
+}
+
+// Interceptors returns the client interceptors.
+func (c *RecurringRuleClient) Interceptors() []Interceptor {
+	return c.inters.RecurringRule
+}
+
+func (c *RecurringRuleClient) mutate(ctx context.Context, m *RecurringRuleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RecurringRuleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RecurringRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RecurringRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RecurringRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown RecurringRule mutation op: %q", m.Op())
 	}
 }
 
@@ -2198,6 +2798,288 @@ func (c *TherapistProfileClient) mutate(ctx context.Context, m *TherapistProfile
 		return (&TherapistProfileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("repo: unknown TherapistProfile mutation op: %q", m.Op())
+	}
+}
+
+// TimeSlotClient is a client for the TimeSlot schema.
+type TimeSlotClient struct {
+	config
+}
+
+// NewTimeSlotClient returns a client for the TimeSlot from the given config.
+func NewTimeSlotClient(c config) *TimeSlotClient {
+	return &TimeSlotClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `timeslot.Hooks(f(g(h())))`.
+func (c *TimeSlotClient) Use(hooks ...Hook) {
+	c.hooks.TimeSlot = append(c.hooks.TimeSlot, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `timeslot.Intercept(f(g(h())))`.
+func (c *TimeSlotClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TimeSlot = append(c.inters.TimeSlot, interceptors...)
+}
+
+// Create returns a builder for creating a TimeSlot entity.
+func (c *TimeSlotClient) Create() *TimeSlotCreate {
+	mutation := newTimeSlotMutation(c.config, OpCreate)
+	return &TimeSlotCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TimeSlot entities.
+func (c *TimeSlotClient) CreateBulk(builders ...*TimeSlotCreate) *TimeSlotCreateBulk {
+	return &TimeSlotCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TimeSlotClient) MapCreateBulk(slice any, setFunc func(*TimeSlotCreate, int)) *TimeSlotCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TimeSlotCreateBulk{err: fmt.Errorf("calling to TimeSlotClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TimeSlotCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TimeSlotCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TimeSlot.
+func (c *TimeSlotClient) Update() *TimeSlotUpdate {
+	mutation := newTimeSlotMutation(c.config, OpUpdate)
+	return &TimeSlotUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TimeSlotClient) UpdateOne(_m *TimeSlot) *TimeSlotUpdateOne {
+	mutation := newTimeSlotMutation(c.config, OpUpdateOne, withTimeSlot(_m))
+	return &TimeSlotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TimeSlotClient) UpdateOneID(id uuid.UUID) *TimeSlotUpdateOne {
+	mutation := newTimeSlotMutation(c.config, OpUpdateOne, withTimeSlotID(id))
+	return &TimeSlotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TimeSlot.
+func (c *TimeSlotClient) Delete() *TimeSlotDelete {
+	mutation := newTimeSlotMutation(c.config, OpDelete)
+	return &TimeSlotDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TimeSlotClient) DeleteOne(_m *TimeSlot) *TimeSlotDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TimeSlotClient) DeleteOneID(id uuid.UUID) *TimeSlotDeleteOne {
+	builder := c.Delete().Where(timeslot.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TimeSlotDeleteOne{builder}
+}
+
+// Query returns a query builder for TimeSlot.
+func (c *TimeSlotClient) Query() *TimeSlotQuery {
+	return &TimeSlotQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTimeSlot},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TimeSlot entity by its id.
+func (c *TimeSlotClient) Get(ctx context.Context, id uuid.UUID) (*TimeSlot, error) {
+	return c.Query().Where(timeslot.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TimeSlotClient) GetX(ctx context.Context, id uuid.UUID) *TimeSlot {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TimeSlotClient) Hooks() []Hook {
+	return c.hooks.TimeSlot
+}
+
+// Interceptors returns the client interceptors.
+func (c *TimeSlotClient) Interceptors() []Interceptor {
+	return c.inters.TimeSlot
+}
+
+func (c *TimeSlotClient) mutate(ctx context.Context, m *TimeSlotMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TimeSlotCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TimeSlotUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TimeSlotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TimeSlotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown TimeSlot mutation op: %q", m.Op())
+	}
+}
+
+// TransactionClient is a client for the Transaction schema.
+type TransactionClient struct {
+	config
+}
+
+// NewTransactionClient returns a client for the Transaction from the given config.
+func NewTransactionClient(c config) *TransactionClient {
+	return &TransactionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `transaction.Hooks(f(g(h())))`.
+func (c *TransactionClient) Use(hooks ...Hook) {
+	c.hooks.Transaction = append(c.hooks.Transaction, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `transaction.Intercept(f(g(h())))`.
+func (c *TransactionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Transaction = append(c.inters.Transaction, interceptors...)
+}
+
+// Create returns a builder for creating a Transaction entity.
+func (c *TransactionClient) Create() *TransactionCreate {
+	mutation := newTransactionMutation(c.config, OpCreate)
+	return &TransactionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Transaction entities.
+func (c *TransactionClient) CreateBulk(builders ...*TransactionCreate) *TransactionCreateBulk {
+	return &TransactionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TransactionClient) MapCreateBulk(slice any, setFunc func(*TransactionCreate, int)) *TransactionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TransactionCreateBulk{err: fmt.Errorf("calling to TransactionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TransactionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TransactionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Transaction.
+func (c *TransactionClient) Update() *TransactionUpdate {
+	mutation := newTransactionMutation(c.config, OpUpdate)
+	return &TransactionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TransactionClient) UpdateOne(_m *Transaction) *TransactionUpdateOne {
+	mutation := newTransactionMutation(c.config, OpUpdateOne, withTransaction(_m))
+	return &TransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TransactionClient) UpdateOneID(id uuid.UUID) *TransactionUpdateOne {
+	mutation := newTransactionMutation(c.config, OpUpdateOne, withTransactionID(id))
+	return &TransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Transaction.
+func (c *TransactionClient) Delete() *TransactionDelete {
+	mutation := newTransactionMutation(c.config, OpDelete)
+	return &TransactionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TransactionClient) DeleteOne(_m *Transaction) *TransactionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TransactionClient) DeleteOneID(id uuid.UUID) *TransactionDeleteOne {
+	builder := c.Delete().Where(transaction.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TransactionDeleteOne{builder}
+}
+
+// Query returns a query builder for Transaction.
+func (c *TransactionClient) Query() *TransactionQuery {
+	return &TransactionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTransaction},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Transaction entity by its id.
+func (c *TransactionClient) Get(ctx context.Context, id uuid.UUID) (*Transaction, error) {
+	return c.Query().Where(transaction.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TransactionClient) GetX(ctx context.Context, id uuid.UUID) *Transaction {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWallet queries the wallet edge of a Transaction.
+func (c *TransactionClient) QueryWallet(_m *Transaction) *WalletQuery {
+	query := (&WalletClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(transaction.Table, transaction.FieldID, id),
+			sqlgraph.To(wallet.Table, wallet.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, transaction.WalletTable, transaction.WalletColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TransactionClient) Hooks() []Hook {
+	return c.hooks.Transaction
+}
+
+// Interceptors returns the client interceptors.
+func (c *TransactionClient) Interceptors() []Interceptor {
+	return c.inters.Transaction
+}
+
+func (c *TransactionClient) mutate(ctx context.Context, m *TransactionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TransactionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TransactionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TransactionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown Transaction mutation op: %q", m.Op())
 	}
 }
 
@@ -2483,16 +3365,333 @@ func (c *UserSessionClient) mutate(ctx context.Context, m *UserSessionMutation) 
 	}
 }
 
+// WalletClient is a client for the Wallet schema.
+type WalletClient struct {
+	config
+}
+
+// NewWalletClient returns a client for the Wallet from the given config.
+func NewWalletClient(c config) *WalletClient {
+	return &WalletClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `wallet.Hooks(f(g(h())))`.
+func (c *WalletClient) Use(hooks ...Hook) {
+	c.hooks.Wallet = append(c.hooks.Wallet, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `wallet.Intercept(f(g(h())))`.
+func (c *WalletClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Wallet = append(c.inters.Wallet, interceptors...)
+}
+
+// Create returns a builder for creating a Wallet entity.
+func (c *WalletClient) Create() *WalletCreate {
+	mutation := newWalletMutation(c.config, OpCreate)
+	return &WalletCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Wallet entities.
+func (c *WalletClient) CreateBulk(builders ...*WalletCreate) *WalletCreateBulk {
+	return &WalletCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WalletClient) MapCreateBulk(slice any, setFunc func(*WalletCreate, int)) *WalletCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WalletCreateBulk{err: fmt.Errorf("calling to WalletClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WalletCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WalletCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Wallet.
+func (c *WalletClient) Update() *WalletUpdate {
+	mutation := newWalletMutation(c.config, OpUpdate)
+	return &WalletUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WalletClient) UpdateOne(_m *Wallet) *WalletUpdateOne {
+	mutation := newWalletMutation(c.config, OpUpdateOne, withWallet(_m))
+	return &WalletUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WalletClient) UpdateOneID(id uuid.UUID) *WalletUpdateOne {
+	mutation := newWalletMutation(c.config, OpUpdateOne, withWalletID(id))
+	return &WalletUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Wallet.
+func (c *WalletClient) Delete() *WalletDelete {
+	mutation := newWalletMutation(c.config, OpDelete)
+	return &WalletDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WalletClient) DeleteOne(_m *Wallet) *WalletDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WalletClient) DeleteOneID(id uuid.UUID) *WalletDeleteOne {
+	builder := c.Delete().Where(wallet.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WalletDeleteOne{builder}
+}
+
+// Query returns a query builder for Wallet.
+func (c *WalletClient) Query() *WalletQuery {
+	return &WalletQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWallet},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Wallet entity by its id.
+func (c *WalletClient) Get(ctx context.Context, id uuid.UUID) (*Wallet, error) {
+	return c.Query().Where(wallet.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WalletClient) GetX(ctx context.Context, id uuid.UUID) *Wallet {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTransactions queries the transactions edge of a Wallet.
+func (c *WalletClient) QueryTransactions(_m *Wallet) *TransactionQuery {
+	query := (&TransactionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(wallet.Table, wallet.FieldID, id),
+			sqlgraph.To(transaction.Table, transaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, wallet.TransactionsTable, wallet.TransactionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWithdrawals queries the withdrawals edge of a Wallet.
+func (c *WalletClient) QueryWithdrawals(_m *Wallet) *WithdrawalRequestQuery {
+	query := (&WithdrawalRequestClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(wallet.Table, wallet.FieldID, id),
+			sqlgraph.To(withdrawalrequest.Table, withdrawalrequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, wallet.WithdrawalsTable, wallet.WithdrawalsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *WalletClient) Hooks() []Hook {
+	return c.hooks.Wallet
+}
+
+// Interceptors returns the client interceptors.
+func (c *WalletClient) Interceptors() []Interceptor {
+	return c.inters.Wallet
+}
+
+func (c *WalletClient) mutate(ctx context.Context, m *WalletMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WalletCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WalletUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WalletUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WalletDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown Wallet mutation op: %q", m.Op())
+	}
+}
+
+// WithdrawalRequestClient is a client for the WithdrawalRequest schema.
+type WithdrawalRequestClient struct {
+	config
+}
+
+// NewWithdrawalRequestClient returns a client for the WithdrawalRequest from the given config.
+func NewWithdrawalRequestClient(c config) *WithdrawalRequestClient {
+	return &WithdrawalRequestClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `withdrawalrequest.Hooks(f(g(h())))`.
+func (c *WithdrawalRequestClient) Use(hooks ...Hook) {
+	c.hooks.WithdrawalRequest = append(c.hooks.WithdrawalRequest, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `withdrawalrequest.Intercept(f(g(h())))`.
+func (c *WithdrawalRequestClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WithdrawalRequest = append(c.inters.WithdrawalRequest, interceptors...)
+}
+
+// Create returns a builder for creating a WithdrawalRequest entity.
+func (c *WithdrawalRequestClient) Create() *WithdrawalRequestCreate {
+	mutation := newWithdrawalRequestMutation(c.config, OpCreate)
+	return &WithdrawalRequestCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WithdrawalRequest entities.
+func (c *WithdrawalRequestClient) CreateBulk(builders ...*WithdrawalRequestCreate) *WithdrawalRequestCreateBulk {
+	return &WithdrawalRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WithdrawalRequestClient) MapCreateBulk(slice any, setFunc func(*WithdrawalRequestCreate, int)) *WithdrawalRequestCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WithdrawalRequestCreateBulk{err: fmt.Errorf("calling to WithdrawalRequestClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WithdrawalRequestCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WithdrawalRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WithdrawalRequest.
+func (c *WithdrawalRequestClient) Update() *WithdrawalRequestUpdate {
+	mutation := newWithdrawalRequestMutation(c.config, OpUpdate)
+	return &WithdrawalRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WithdrawalRequestClient) UpdateOne(_m *WithdrawalRequest) *WithdrawalRequestUpdateOne {
+	mutation := newWithdrawalRequestMutation(c.config, OpUpdateOne, withWithdrawalRequest(_m))
+	return &WithdrawalRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WithdrawalRequestClient) UpdateOneID(id uuid.UUID) *WithdrawalRequestUpdateOne {
+	mutation := newWithdrawalRequestMutation(c.config, OpUpdateOne, withWithdrawalRequestID(id))
+	return &WithdrawalRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WithdrawalRequest.
+func (c *WithdrawalRequestClient) Delete() *WithdrawalRequestDelete {
+	mutation := newWithdrawalRequestMutation(c.config, OpDelete)
+	return &WithdrawalRequestDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WithdrawalRequestClient) DeleteOne(_m *WithdrawalRequest) *WithdrawalRequestDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WithdrawalRequestClient) DeleteOneID(id uuid.UUID) *WithdrawalRequestDeleteOne {
+	builder := c.Delete().Where(withdrawalrequest.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WithdrawalRequestDeleteOne{builder}
+}
+
+// Query returns a query builder for WithdrawalRequest.
+func (c *WithdrawalRequestClient) Query() *WithdrawalRequestQuery {
+	return &WithdrawalRequestQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWithdrawalRequest},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WithdrawalRequest entity by its id.
+func (c *WithdrawalRequestClient) Get(ctx context.Context, id uuid.UUID) (*WithdrawalRequest, error) {
+	return c.Query().Where(withdrawalrequest.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WithdrawalRequestClient) GetX(ctx context.Context, id uuid.UUID) *WithdrawalRequest {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWallet queries the wallet edge of a WithdrawalRequest.
+func (c *WithdrawalRequestClient) QueryWallet(_m *WithdrawalRequest) *WalletQuery {
+	query := (&WalletClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(withdrawalrequest.Table, withdrawalrequest.FieldID, id),
+			sqlgraph.To(wallet.Table, wallet.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, withdrawalrequest.WalletTable, withdrawalrequest.WalletColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *WithdrawalRequestClient) Hooks() []Hook {
+	return c.hooks.WithdrawalRequest
+}
+
+// Interceptors returns the client interceptors.
+func (c *WithdrawalRequestClient) Interceptors() []Interceptor {
+	return c.inters.WithdrawalRequest
+}
+
+func (c *WithdrawalRequestClient) mutate(ctx context.Context, m *WithdrawalRequestMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WithdrawalRequestCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WithdrawalRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WithdrawalRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WithdrawalRequestDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("repo: unknown WithdrawalRequest mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Clinic, ClinicMember, ClinicPermission, ClinicSettings, Patient, PatientFile,
-		PatientPrescription, PatientReport, PatientTest, PsychTest, TherapistProfile,
-		User, UserSession []ent.Hook
+		Appointment, Clinic, ClinicMember, ClinicPermission, ClinicSettings,
+		CommissionRule, Patient, PatientFile, PatientPrescription, PatientReport,
+		PatientTest, PaymentRequest, PsychTest, RecurringRule, TherapistProfile,
+		TimeSlot, Transaction, User, UserSession, Wallet, WithdrawalRequest []ent.Hook
 	}
 	inters struct {
-		Clinic, ClinicMember, ClinicPermission, ClinicSettings, Patient, PatientFile,
-		PatientPrescription, PatientReport, PatientTest, PsychTest, TherapistProfile,
-		User, UserSession []ent.Interceptor
+		Appointment, Clinic, ClinicMember, ClinicPermission, ClinicSettings,
+		CommissionRule, Patient, PatientFile, PatientPrescription, PatientReport,
+		PatientTest, PaymentRequest, PsychTest, RecurringRule, TherapistProfile,
+		TimeSlot, Transaction, User, UserSession, Wallet,
+		WithdrawalRequest []ent.Interceptor
 	}
 )

@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Appointment is the predicate function for appointment builders.
+type Appointment func(*sql.Selector)
+
 // Clinic is the predicate function for clinic builders.
 type Clinic func(*sql.Selector)
 
@@ -17,6 +20,9 @@ type ClinicPermission func(*sql.Selector)
 
 // ClinicSettings is the predicate function for clinicsettings builders.
 type ClinicSettings func(*sql.Selector)
+
+// CommissionRule is the predicate function for commissionrule builders.
+type CommissionRule func(*sql.Selector)
 
 // Patient is the predicate function for patient builders.
 type Patient func(*sql.Selector)
@@ -33,14 +39,32 @@ type PatientReport func(*sql.Selector)
 // PatientTest is the predicate function for patienttest builders.
 type PatientTest func(*sql.Selector)
 
+// PaymentRequest is the predicate function for paymentrequest builders.
+type PaymentRequest func(*sql.Selector)
+
 // PsychTest is the predicate function for psychtest builders.
 type PsychTest func(*sql.Selector)
 
+// RecurringRule is the predicate function for recurringrule builders.
+type RecurringRule func(*sql.Selector)
+
 // TherapistProfile is the predicate function for therapistprofile builders.
 type TherapistProfile func(*sql.Selector)
+
+// TimeSlot is the predicate function for timeslot builders.
+type TimeSlot func(*sql.Selector)
+
+// Transaction is the predicate function for transaction builders.
+type Transaction func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 
 // UserSession is the predicate function for usersession builders.
 type UserSession func(*sql.Selector)
+
+// Wallet is the predicate function for wallet builders.
+type Wallet func(*sql.Selector)
+
+// WithdrawalRequest is the predicate function for withdrawalrequest builders.
+type WithdrawalRequest func(*sql.Selector)

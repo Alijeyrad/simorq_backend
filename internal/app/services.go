@@ -6,17 +6,21 @@ import (
 
 	"github.com/Alijeyrad/simorq_backend/config"
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
+	"github.com/Alijeyrad/simorq_backend/internal/service/appointment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/auth"
 	"github.com/Alijeyrad/simorq_backend/internal/service/clinic"
 	svcfile "github.com/Alijeyrad/simorq_backend/internal/service/file"
 	"github.com/Alijeyrad/simorq_backend/internal/service/patient"
+	"github.com/Alijeyrad/simorq_backend/internal/service/payment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/psychtest"
+	"github.com/Alijeyrad/simorq_backend/internal/service/scheduling"
 	"github.com/Alijeyrad/simorq_backend/internal/service/user"
 	"github.com/Alijeyrad/simorq_backend/pkg/authorize"
 	"github.com/Alijeyrad/simorq_backend/pkg/email"
 	pasetotoken "github.com/Alijeyrad/simorq_backend/pkg/paseto"
 	s3pkg "github.com/Alijeyrad/simorq_backend/pkg/s3"
 	"github.com/Alijeyrad/simorq_backend/pkg/sms"
+	zarinpalpkg "github.com/Alijeyrad/simorq_backend/pkg/zarinpal"
 )
 
 // ServiceModule provides all application service dependencies.
@@ -28,6 +32,9 @@ var ServiceModule = fx.Module("services",
 		ProvidePatientService,
 		ProvideFileService,
 		ProvidePsychTestService,
+		ProvideSchedulingService,
+		ProvideAppointmentService,
+		ProvidePaymentService,
 		ProvidePasetoManager,
 	),
 )
@@ -60,6 +67,18 @@ func ProvideFileService(db *repo.Client, s3 *s3pkg.Client) svcfile.Service {
 
 func ProvidePsychTestService(db *repo.Client) psychtest.Service {
 	return psychtest.New(db)
+}
+
+func ProvideSchedulingService(db *repo.Client) scheduling.Service {
+	return scheduling.New(db)
+}
+
+func ProvideAppointmentService(db *repo.Client) appointment.Service {
+	return appointment.New(db)
+}
+
+func ProvidePaymentService(db *repo.Client, zp *zarinpalpkg.Client, cfg *config.Config) payment.Service {
+	return payment.New(db, zp, cfg)
 }
 
 func ProvidePasetoManager(cfg *config.Config) (*pasetotoken.Manager, error) {

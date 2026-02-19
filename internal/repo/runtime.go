@@ -5,19 +5,27 @@ package repo
 import (
 	"time"
 
+	"github.com/Alijeyrad/simorq_backend/internal/repo/appointment"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinic"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicmember"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/commissionrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientfile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientprescription"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientreport"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patienttest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/paymentrequest"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/psychtest"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/recurringrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/timeslot"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/transaction"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/wallet"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/withdrawalrequest"
 	"github.com/Alijeyrad/simorq_backend/internal/schema"
 	"github.com/google/uuid"
 )
@@ -26,6 +34,35 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	appointmentMixin := schema.Appointment{}.Mixin()
+	appointmentMixinFields0 := appointmentMixin[0].Fields()
+	_ = appointmentMixinFields0
+	appointmentMixinFields1 := appointmentMixin[1].Fields()
+	_ = appointmentMixinFields1
+	appointmentFields := schema.Appointment{}.Fields()
+	_ = appointmentFields
+	// appointmentDescCreatedAt is the schema descriptor for created_at field.
+	appointmentDescCreatedAt := appointmentMixinFields1[0].Descriptor()
+	// appointment.DefaultCreatedAt holds the default value on creation for the created_at field.
+	appointment.DefaultCreatedAt = appointmentDescCreatedAt.Default.(func() time.Time)
+	// appointmentDescUpdatedAt is the schema descriptor for updated_at field.
+	appointmentDescUpdatedAt := appointmentMixinFields1[1].Descriptor()
+	// appointment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	appointment.DefaultUpdatedAt = appointmentDescUpdatedAt.Default.(func() time.Time)
+	// appointment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	appointment.UpdateDefaultUpdatedAt = appointmentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// appointmentDescReservationFee is the schema descriptor for reservation_fee field.
+	appointmentDescReservationFee := appointmentFields[8].Descriptor()
+	// appointment.DefaultReservationFee holds the default value on creation for the reservation_fee field.
+	appointment.DefaultReservationFee = appointmentDescReservationFee.Default.(int64)
+	// appointmentDescCancellationFee is the schema descriptor for cancellation_fee field.
+	appointmentDescCancellationFee := appointmentFields[14].Descriptor()
+	// appointment.DefaultCancellationFee holds the default value on creation for the cancellation_fee field.
+	appointment.DefaultCancellationFee = appointmentDescCancellationFee.Default.(int64)
+	// appointmentDescID is the schema descriptor for id field.
+	appointmentDescID := appointmentMixinFields0[0].Descriptor()
+	// appointment.DefaultID holds the default value on creation for the id field.
+	appointment.DefaultID = appointmentDescID.Default.(func() uuid.UUID)
 	clinicMixin := schema.Clinic{}.Mixin()
 	clinicMixinFields0 := clinicMixin[0].Fields()
 	_ = clinicMixinFields0
@@ -232,6 +269,47 @@ func init() {
 	clinicsettingsDescID := clinicsettingsMixinFields0[0].Descriptor()
 	// clinicsettings.DefaultID holds the default value on creation for the id field.
 	clinicsettings.DefaultID = clinicsettingsDescID.Default.(func() uuid.UUID)
+	commissionruleMixin := schema.CommissionRule{}.Mixin()
+	commissionruleMixinFields0 := commissionruleMixin[0].Fields()
+	_ = commissionruleMixinFields0
+	commissionruleMixinFields1 := commissionruleMixin[1].Fields()
+	_ = commissionruleMixinFields1
+	commissionruleFields := schema.CommissionRule{}.Fields()
+	_ = commissionruleFields
+	// commissionruleDescCreatedAt is the schema descriptor for created_at field.
+	commissionruleDescCreatedAt := commissionruleMixinFields1[0].Descriptor()
+	// commissionrule.DefaultCreatedAt holds the default value on creation for the created_at field.
+	commissionrule.DefaultCreatedAt = commissionruleDescCreatedAt.Default.(func() time.Time)
+	// commissionruleDescUpdatedAt is the schema descriptor for updated_at field.
+	commissionruleDescUpdatedAt := commissionruleMixinFields1[1].Descriptor()
+	// commissionrule.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	commissionrule.DefaultUpdatedAt = commissionruleDescUpdatedAt.Default.(func() time.Time)
+	// commissionrule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	commissionrule.UpdateDefaultUpdatedAt = commissionruleDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// commissionruleDescPlatformFeePercent is the schema descriptor for platform_fee_percent field.
+	commissionruleDescPlatformFeePercent := commissionruleFields[1].Descriptor()
+	// commissionrule.DefaultPlatformFeePercent holds the default value on creation for the platform_fee_percent field.
+	commissionrule.DefaultPlatformFeePercent = commissionruleDescPlatformFeePercent.Default.(int)
+	// commissionruleDescClinicFeePercent is the schema descriptor for clinic_fee_percent field.
+	commissionruleDescClinicFeePercent := commissionruleFields[2].Descriptor()
+	// commissionrule.DefaultClinicFeePercent holds the default value on creation for the clinic_fee_percent field.
+	commissionrule.DefaultClinicFeePercent = commissionruleDescClinicFeePercent.Default.(int)
+	// commissionruleDescIsFlatFee is the schema descriptor for is_flat_fee field.
+	commissionruleDescIsFlatFee := commissionruleFields[3].Descriptor()
+	// commissionrule.DefaultIsFlatFee holds the default value on creation for the is_flat_fee field.
+	commissionrule.DefaultIsFlatFee = commissionruleDescIsFlatFee.Default.(bool)
+	// commissionruleDescFlatFeeAmount is the schema descriptor for flat_fee_amount field.
+	commissionruleDescFlatFeeAmount := commissionruleFields[4].Descriptor()
+	// commissionrule.DefaultFlatFeeAmount holds the default value on creation for the flat_fee_amount field.
+	commissionrule.DefaultFlatFeeAmount = commissionruleDescFlatFeeAmount.Default.(int64)
+	// commissionruleDescIsActive is the schema descriptor for is_active field.
+	commissionruleDescIsActive := commissionruleFields[5].Descriptor()
+	// commissionrule.DefaultIsActive holds the default value on creation for the is_active field.
+	commissionrule.DefaultIsActive = commissionruleDescIsActive.Default.(bool)
+	// commissionruleDescID is the schema descriptor for id field.
+	commissionruleDescID := commissionruleMixinFields0[0].Descriptor()
+	// commissionrule.DefaultID holds the default value on creation for the id field.
+	commissionrule.DefaultID = commissionruleDescID.Default.(func() uuid.UUID)
 	patientMixin := schema.Patient{}.Mixin()
 	patientMixinFields0 := patientMixin[0].Fields()
 	_ = patientMixinFields0
@@ -459,6 +537,47 @@ func init() {
 	patienttestDescID := patienttestMixinFields0[0].Descriptor()
 	// patienttest.DefaultID holds the default value on creation for the id field.
 	patienttest.DefaultID = patienttestDescID.Default.(func() uuid.UUID)
+	paymentrequestMixin := schema.PaymentRequest{}.Mixin()
+	paymentrequestMixinFields0 := paymentrequestMixin[0].Fields()
+	_ = paymentrequestMixinFields0
+	paymentrequestMixinFields1 := paymentrequestMixin[1].Fields()
+	_ = paymentrequestMixinFields1
+	paymentrequestFields := schema.PaymentRequest{}.Fields()
+	_ = paymentrequestFields
+	// paymentrequestDescCreatedAt is the schema descriptor for created_at field.
+	paymentrequestDescCreatedAt := paymentrequestMixinFields1[0].Descriptor()
+	// paymentrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	paymentrequest.DefaultCreatedAt = paymentrequestDescCreatedAt.Default.(func() time.Time)
+	// paymentrequestDescUpdatedAt is the schema descriptor for updated_at field.
+	paymentrequestDescUpdatedAt := paymentrequestMixinFields1[1].Descriptor()
+	// paymentrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	paymentrequest.DefaultUpdatedAt = paymentrequestDescUpdatedAt.Default.(func() time.Time)
+	// paymentrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	paymentrequest.UpdateDefaultUpdatedAt = paymentrequestDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// paymentrequestDescDescription is the schema descriptor for description field.
+	paymentrequestDescDescription := paymentrequestFields[4].Descriptor()
+	// paymentrequest.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	paymentrequest.DescriptionValidator = paymentrequestDescDescription.Validators[0].(func(string) error)
+	// paymentrequestDescZarinpalAuthority is the schema descriptor for zarinpal_authority field.
+	paymentrequestDescZarinpalAuthority := paymentrequestFields[7].Descriptor()
+	// paymentrequest.ZarinpalAuthorityValidator is a validator for the "zarinpal_authority" field. It is called by the builders before save.
+	paymentrequest.ZarinpalAuthorityValidator = paymentrequestDescZarinpalAuthority.Validators[0].(func(string) error)
+	// paymentrequestDescZarinpalRefID is the schema descriptor for zarinpal_ref_id field.
+	paymentrequestDescZarinpalRefID := paymentrequestFields[8].Descriptor()
+	// paymentrequest.ZarinpalRefIDValidator is a validator for the "zarinpal_ref_id" field. It is called by the builders before save.
+	paymentrequest.ZarinpalRefIDValidator = paymentrequestDescZarinpalRefID.Validators[0].(func(string) error)
+	// paymentrequestDescZarinpalCardPan is the schema descriptor for zarinpal_card_pan field.
+	paymentrequestDescZarinpalCardPan := paymentrequestFields[9].Descriptor()
+	// paymentrequest.ZarinpalCardPanValidator is a validator for the "zarinpal_card_pan" field. It is called by the builders before save.
+	paymentrequest.ZarinpalCardPanValidator = paymentrequestDescZarinpalCardPan.Validators[0].(func(string) error)
+	// paymentrequestDescZarinpalCardHash is the schema descriptor for zarinpal_card_hash field.
+	paymentrequestDescZarinpalCardHash := paymentrequestFields[10].Descriptor()
+	// paymentrequest.ZarinpalCardHashValidator is a validator for the "zarinpal_card_hash" field. It is called by the builders before save.
+	paymentrequest.ZarinpalCardHashValidator = paymentrequestDescZarinpalCardHash.Validators[0].(func(string) error)
+	// paymentrequestDescID is the schema descriptor for id field.
+	paymentrequestDescID := paymentrequestMixinFields0[0].Descriptor()
+	// paymentrequest.DefaultID holds the default value on creation for the id field.
+	paymentrequest.DefaultID = paymentrequestDescID.Default.(func() uuid.UUID)
 	psychtestMixin := schema.PsychTest{}.Mixin()
 	psychtestMixinFields0 := psychtestMixin[0].Fields()
 	_ = psychtestMixinFields0
@@ -512,6 +631,31 @@ func init() {
 	psychtestDescID := psychtestMixinFields0[0].Descriptor()
 	// psychtest.DefaultID holds the default value on creation for the id field.
 	psychtest.DefaultID = psychtestDescID.Default.(func() uuid.UUID)
+	recurringruleMixin := schema.RecurringRule{}.Mixin()
+	recurringruleMixinFields0 := recurringruleMixin[0].Fields()
+	_ = recurringruleMixinFields0
+	recurringruleMixinFields1 := recurringruleMixin[1].Fields()
+	_ = recurringruleMixinFields1
+	recurringruleFields := schema.RecurringRule{}.Fields()
+	_ = recurringruleFields
+	// recurringruleDescCreatedAt is the schema descriptor for created_at field.
+	recurringruleDescCreatedAt := recurringruleMixinFields1[0].Descriptor()
+	// recurringrule.DefaultCreatedAt holds the default value on creation for the created_at field.
+	recurringrule.DefaultCreatedAt = recurringruleDescCreatedAt.Default.(func() time.Time)
+	// recurringruleDescUpdatedAt is the schema descriptor for updated_at field.
+	recurringruleDescUpdatedAt := recurringruleMixinFields1[1].Descriptor()
+	// recurringrule.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	recurringrule.DefaultUpdatedAt = recurringruleDescUpdatedAt.Default.(func() time.Time)
+	// recurringrule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	recurringrule.UpdateDefaultUpdatedAt = recurringruleDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// recurringruleDescIsActive is the schema descriptor for is_active field.
+	recurringruleDescIsActive := recurringruleFields[11].Descriptor()
+	// recurringrule.DefaultIsActive holds the default value on creation for the is_active field.
+	recurringrule.DefaultIsActive = recurringruleDescIsActive.Default.(bool)
+	// recurringruleDescID is the schema descriptor for id field.
+	recurringruleDescID := recurringruleMixinFields0[0].Descriptor()
+	// recurringrule.DefaultID holds the default value on creation for the id field.
+	recurringrule.DefaultID = recurringruleDescID.Default.(func() uuid.UUID)
 	therapistprofileMixin := schema.TherapistProfile{}.Mixin()
 	therapistprofileMixinFields0 := therapistprofileMixin[0].Fields()
 	_ = therapistprofileMixinFields0
@@ -553,6 +697,54 @@ func init() {
 	therapistprofileDescID := therapistprofileMixinFields0[0].Descriptor()
 	// therapistprofile.DefaultID holds the default value on creation for the id field.
 	therapistprofile.DefaultID = therapistprofileDescID.Default.(func() uuid.UUID)
+	timeslotMixin := schema.TimeSlot{}.Mixin()
+	timeslotMixinFields0 := timeslotMixin[0].Fields()
+	_ = timeslotMixinFields0
+	timeslotMixinFields1 := timeslotMixin[1].Fields()
+	_ = timeslotMixinFields1
+	timeslotFields := schema.TimeSlot{}.Fields()
+	_ = timeslotFields
+	// timeslotDescCreatedAt is the schema descriptor for created_at field.
+	timeslotDescCreatedAt := timeslotMixinFields1[0].Descriptor()
+	// timeslot.DefaultCreatedAt holds the default value on creation for the created_at field.
+	timeslot.DefaultCreatedAt = timeslotDescCreatedAt.Default.(func() time.Time)
+	// timeslotDescUpdatedAt is the schema descriptor for updated_at field.
+	timeslotDescUpdatedAt := timeslotMixinFields1[1].Descriptor()
+	// timeslot.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	timeslot.DefaultUpdatedAt = timeslotDescUpdatedAt.Default.(func() time.Time)
+	// timeslot.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	timeslot.UpdateDefaultUpdatedAt = timeslotDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// timeslotDescIsRecurring is the schema descriptor for is_recurring field.
+	timeslotDescIsRecurring := timeslotFields[7].Descriptor()
+	// timeslot.DefaultIsRecurring holds the default value on creation for the is_recurring field.
+	timeslot.DefaultIsRecurring = timeslotDescIsRecurring.Default.(bool)
+	// timeslotDescID is the schema descriptor for id field.
+	timeslotDescID := timeslotMixinFields0[0].Descriptor()
+	// timeslot.DefaultID holds the default value on creation for the id field.
+	timeslot.DefaultID = timeslotDescID.Default.(func() uuid.UUID)
+	transactionMixin := schema.Transaction{}.Mixin()
+	transactionMixinFields0 := transactionMixin[0].Fields()
+	_ = transactionMixinFields0
+	transactionMixinFields1 := transactionMixin[1].Fields()
+	_ = transactionMixinFields1
+	transactionFields := schema.Transaction{}.Fields()
+	_ = transactionFields
+	// transactionDescCreatedAt is the schema descriptor for created_at field.
+	transactionDescCreatedAt := transactionMixinFields1[0].Descriptor()
+	// transaction.DefaultCreatedAt holds the default value on creation for the created_at field.
+	transaction.DefaultCreatedAt = transactionDescCreatedAt.Default.(func() time.Time)
+	// transactionDescEntityType is the schema descriptor for entity_type field.
+	transactionDescEntityType := transactionFields[5].Descriptor()
+	// transaction.EntityTypeValidator is a validator for the "entity_type" field. It is called by the builders before save.
+	transaction.EntityTypeValidator = transactionDescEntityType.Validators[0].(func(string) error)
+	// transactionDescDescription is the schema descriptor for description field.
+	transactionDescDescription := transactionFields[7].Descriptor()
+	// transaction.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	transaction.DescriptionValidator = transactionDescDescription.Validators[0].(func(string) error)
+	// transactionDescID is the schema descriptor for id field.
+	transactionDescID := transactionMixinFields0[0].Descriptor()
+	// transaction.DefaultID holds the default value on creation for the id field.
+	transaction.DefaultID = transactionDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
@@ -687,4 +879,72 @@ func init() {
 	usersessionDescID := usersessionMixinFields0[0].Descriptor()
 	// usersession.DefaultID holds the default value on creation for the id field.
 	usersession.DefaultID = usersessionDescID.Default.(func() uuid.UUID)
+	walletMixin := schema.Wallet{}.Mixin()
+	walletMixinFields0 := walletMixin[0].Fields()
+	_ = walletMixinFields0
+	walletMixinFields1 := walletMixin[1].Fields()
+	_ = walletMixinFields1
+	walletFields := schema.Wallet{}.Fields()
+	_ = walletFields
+	// walletDescCreatedAt is the schema descriptor for created_at field.
+	walletDescCreatedAt := walletMixinFields1[0].Descriptor()
+	// wallet.DefaultCreatedAt holds the default value on creation for the created_at field.
+	wallet.DefaultCreatedAt = walletDescCreatedAt.Default.(func() time.Time)
+	// walletDescUpdatedAt is the schema descriptor for updated_at field.
+	walletDescUpdatedAt := walletMixinFields1[1].Descriptor()
+	// wallet.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	wallet.DefaultUpdatedAt = walletDescUpdatedAt.Default.(func() time.Time)
+	// wallet.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	wallet.UpdateDefaultUpdatedAt = walletDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// walletDescBalance is the schema descriptor for balance field.
+	walletDescBalance := walletFields[2].Descriptor()
+	// wallet.DefaultBalance holds the default value on creation for the balance field.
+	wallet.DefaultBalance = walletDescBalance.Default.(int64)
+	// walletDescIbanEncrypted is the schema descriptor for iban_encrypted field.
+	walletDescIbanEncrypted := walletFields[3].Descriptor()
+	// wallet.IbanEncryptedValidator is a validator for the "iban_encrypted" field. It is called by the builders before save.
+	wallet.IbanEncryptedValidator = walletDescIbanEncrypted.Validators[0].(func(string) error)
+	// walletDescIbanHash is the schema descriptor for iban_hash field.
+	walletDescIbanHash := walletFields[4].Descriptor()
+	// wallet.IbanHashValidator is a validator for the "iban_hash" field. It is called by the builders before save.
+	wallet.IbanHashValidator = walletDescIbanHash.Validators[0].(func(string) error)
+	// walletDescAccountHolder is the schema descriptor for account_holder field.
+	walletDescAccountHolder := walletFields[5].Descriptor()
+	// wallet.AccountHolderValidator is a validator for the "account_holder" field. It is called by the builders before save.
+	wallet.AccountHolderValidator = walletDescAccountHolder.Validators[0].(func(string) error)
+	// walletDescID is the schema descriptor for id field.
+	walletDescID := walletMixinFields0[0].Descriptor()
+	// wallet.DefaultID holds the default value on creation for the id field.
+	wallet.DefaultID = walletDescID.Default.(func() uuid.UUID)
+	withdrawalrequestMixin := schema.WithdrawalRequest{}.Mixin()
+	withdrawalrequestMixinFields0 := withdrawalrequestMixin[0].Fields()
+	_ = withdrawalrequestMixinFields0
+	withdrawalrequestMixinFields1 := withdrawalrequestMixin[1].Fields()
+	_ = withdrawalrequestMixinFields1
+	withdrawalrequestFields := schema.WithdrawalRequest{}.Fields()
+	_ = withdrawalrequestFields
+	// withdrawalrequestDescCreatedAt is the schema descriptor for created_at field.
+	withdrawalrequestDescCreatedAt := withdrawalrequestMixinFields1[0].Descriptor()
+	// withdrawalrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	withdrawalrequest.DefaultCreatedAt = withdrawalrequestDescCreatedAt.Default.(func() time.Time)
+	// withdrawalrequestDescIbanEncrypted is the schema descriptor for iban_encrypted field.
+	withdrawalrequestDescIbanEncrypted := withdrawalrequestFields[4].Descriptor()
+	// withdrawalrequest.IbanEncryptedValidator is a validator for the "iban_encrypted" field. It is called by the builders before save.
+	withdrawalrequest.IbanEncryptedValidator = withdrawalrequestDescIbanEncrypted.Validators[0].(func(string) error)
+	// withdrawalrequestDescAccountHolder is the schema descriptor for account_holder field.
+	withdrawalrequestDescAccountHolder := withdrawalrequestFields[5].Descriptor()
+	// withdrawalrequest.AccountHolderValidator is a validator for the "account_holder" field. It is called by the builders before save.
+	withdrawalrequest.AccountHolderValidator = withdrawalrequestDescAccountHolder.Validators[0].(func(string) error)
+	// withdrawalrequestDescBankRef is the schema descriptor for bank_ref field.
+	withdrawalrequestDescBankRef := withdrawalrequestFields[6].Descriptor()
+	// withdrawalrequest.BankRefValidator is a validator for the "bank_ref" field. It is called by the builders before save.
+	withdrawalrequest.BankRefValidator = withdrawalrequestDescBankRef.Validators[0].(func(string) error)
+	// withdrawalrequestDescRequestedAt is the schema descriptor for requested_at field.
+	withdrawalrequestDescRequestedAt := withdrawalrequestFields[7].Descriptor()
+	// withdrawalrequest.DefaultRequestedAt holds the default value on creation for the requested_at field.
+	withdrawalrequest.DefaultRequestedAt = withdrawalrequestDescRequestedAt.Default.(func() time.Time)
+	// withdrawalrequestDescID is the schema descriptor for id field.
+	withdrawalrequestDescID := withdrawalrequestMixinFields0[0].Descriptor()
+	// withdrawalrequest.DefaultID holds the default value on creation for the id field.
+	withdrawalrequest.DefaultID = withdrawalrequestDescID.Default.(func() uuid.UUID)
 }

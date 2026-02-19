@@ -9,6 +9,18 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
 )
 
+// The AppointmentFunc type is an adapter to allow the use of ordinary
+// function as Appointment mutator.
+type AppointmentFunc func(context.Context, *repo.AppointmentMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AppointmentFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.AppointmentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.AppointmentMutation", m)
+}
+
 // The ClinicFunc type is an adapter to allow the use of ordinary
 // function as Clinic mutator.
 type ClinicFunc func(context.Context, *repo.ClinicMutation) (repo.Value, error)
@@ -55,6 +67,18 @@ func (f ClinicSettingsFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.V
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ClinicSettingsMutation", m)
+}
+
+// The CommissionRuleFunc type is an adapter to allow the use of ordinary
+// function as CommissionRule mutator.
+type CommissionRuleFunc func(context.Context, *repo.CommissionRuleMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CommissionRuleFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.CommissionRuleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.CommissionRuleMutation", m)
 }
 
 // The PatientFunc type is an adapter to allow the use of ordinary
@@ -117,6 +141,18 @@ func (f PatientTestFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PatientTestMutation", m)
 }
 
+// The PaymentRequestFunc type is an adapter to allow the use of ordinary
+// function as PaymentRequest mutator.
+type PaymentRequestFunc func(context.Context, *repo.PaymentRequestMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PaymentRequestFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.PaymentRequestMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PaymentRequestMutation", m)
+}
+
 // The PsychTestFunc type is an adapter to allow the use of ordinary
 // function as PsychTest mutator.
 type PsychTestFunc func(context.Context, *repo.PsychTestMutation) (repo.Value, error)
@@ -129,6 +165,18 @@ func (f PsychTestFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.PsychTestMutation", m)
 }
 
+// The RecurringRuleFunc type is an adapter to allow the use of ordinary
+// function as RecurringRule mutator.
+type RecurringRuleFunc func(context.Context, *repo.RecurringRuleMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RecurringRuleFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.RecurringRuleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.RecurringRuleMutation", m)
+}
+
 // The TherapistProfileFunc type is an adapter to allow the use of ordinary
 // function as TherapistProfile mutator.
 type TherapistProfileFunc func(context.Context, *repo.TherapistProfileMutation) (repo.Value, error)
@@ -139,6 +187,30 @@ func (f TherapistProfileFunc) Mutate(ctx context.Context, m repo.Mutation) (repo
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.TherapistProfileMutation", m)
+}
+
+// The TimeSlotFunc type is an adapter to allow the use of ordinary
+// function as TimeSlot mutator.
+type TimeSlotFunc func(context.Context, *repo.TimeSlotMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TimeSlotFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.TimeSlotMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.TimeSlotMutation", m)
+}
+
+// The TransactionFunc type is an adapter to allow the use of ordinary
+// function as Transaction mutator.
+type TransactionFunc func(context.Context, *repo.TransactionMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TransactionFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.TransactionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.TransactionMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary
@@ -163,6 +235,30 @@ func (f UserSessionFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Valu
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.UserSessionMutation", m)
+}
+
+// The WalletFunc type is an adapter to allow the use of ordinary
+// function as Wallet mutator.
+type WalletFunc func(context.Context, *repo.WalletMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WalletFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.WalletMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.WalletMutation", m)
+}
+
+// The WithdrawalRequestFunc type is an adapter to allow the use of ordinary
+// function as WithdrawalRequest mutator.
+type WithdrawalRequestFunc func(context.Context, *repo.WithdrawalRequestMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WithdrawalRequestFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.WithdrawalRequestMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.WithdrawalRequestMutation", m)
 }
 
 // Condition is a hook condition function.
