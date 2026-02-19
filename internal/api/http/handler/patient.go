@@ -74,14 +74,14 @@ func (h *PatientHandler) List(c fiber.Ctx) error {
 	}
 
 	var q struct {
-		Page          int     `query:"page"`
-		PerPage       int     `query:"per_page"`
-		TherapistID   string  `query:"therapist_id"`
-		Status        string  `query:"status"`
-		PaymentStatus string  `query:"payment_status"`
-		HasDiscount   *bool   `query:"has_discount"`
-		Sort          string  `query:"sort"`
-		Order         string  `query:"order"`
+		Page          int    `query:"page"`
+		PerPage       int    `query:"per_page"`
+		TherapistID   string `query:"therapist_id"`
+		Status        string `query:"status"`
+		PaymentStatus string `query:"payment_status"`
+		HasDiscount   *bool  `query:"has_discount"`
+		Sort          string `query:"sort"`
+		Order         string `query:"order"`
 	}
 	_ = c.Bind().Query(&q)
 

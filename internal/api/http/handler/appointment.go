@@ -119,14 +119,14 @@ func (h *AppointmentHandler) Book(c fiber.Ctx) error {
 	}
 
 	var body struct {
-		TherapistID    string     `json:"therapist_id"`
-		PatientID      string     `json:"patient_id"`
-		TimeSlotID     *string    `json:"time_slot_id"`
-		StartTime      time.Time  `json:"start_time"`
-		EndTime        time.Time  `json:"end_time"`
-		SessionPrice   int64      `json:"session_price"`
-		ReservationFee int64      `json:"reservation_fee"`
-		Notes          *string    `json:"notes"`
+		TherapistID    string    `json:"therapist_id"`
+		PatientID      string    `json:"patient_id"`
+		TimeSlotID     *string   `json:"time_slot_id"`
+		StartTime      time.Time `json:"start_time"`
+		EndTime        time.Time `json:"end_time"`
+		SessionPrice   int64     `json:"session_price"`
+		ReservationFee int64     `json:"reservation_fee"`
+		Notes          *string   `json:"notes"`
 	}
 	if err := c.Bind().JSON(&body); err != nil {
 		return badRequest(c, "invalid request body")

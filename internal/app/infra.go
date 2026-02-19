@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 
@@ -29,6 +30,7 @@ var InfraModule = fx.Module("infra",
 	fx.Provide(ProvideOTel),
 	fx.Provide(ProvideS3Client),
 	fx.Provide(ProvideZarinPalClient),
+	fx.Provide(ProvideNatsClient),
 )
 
 func ProvideEntClient(lc fx.Lifecycle, cfg *config.Config) (*repo.Client, error) {
@@ -95,6 +97,20 @@ func ProvideS3Client(cfg *config.Config) (*s3pkg.Client, error) {
 
 func ProvideZarinPalClient(cfg *config.Config) *zarinpalpkg.Client {
 	return zarinpalpkg.New(cfg.ZarinPal)
+}
+
+func ProvideNatsClient(lc fx.Lifecycle, cfg *config.Config) (*nats.Conn, error) {
+	nc, err := nats.Connect(cfg.Nats.URL)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			slog.Debug("draining NATS connection")
+			return nc.Drain()
+		},
+	})
+	return nc, nil
 }
 
 func ProvideOTel(lc fx.Lifecycle, cfg *config.Config) (*observability.Provider, error) {

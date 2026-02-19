@@ -33,6 +33,20 @@ services:
       timeout: 5s
       retries: 10
 
+  nats:
+    image: nats:2-alpine
+    restart: unless-stopped
+    command: ["-js", "--store_dir=/data"]
+    ports:
+      - "4222:4222"
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "nats-server --version || exit 0"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
@@ -43,6 +57,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      nats:
+        condition: service_started
     ports:
       - "8080:8080"
     volumes:
@@ -60,9 +76,11 @@ services:
       - SIMORQ_CASBIN_DATABASE_HOST=postgres
       - SIMORQ_CASBIN_DATABASE_PORT=5432
       - SIMORQ_REDIS_ADDR=redis:6379
+      - SIMORQ_NATS_URL=nats://nats:4222
     working_dir: /app
 
 volumes:
   postgres-data:
   redis-data:
+  nats-data:
   go-pkg:

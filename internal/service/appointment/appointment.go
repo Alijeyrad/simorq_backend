@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
 	entappt "github.com/Alijeyrad/simorq_backend/internal/repo/appointment"
@@ -39,9 +40,9 @@ type BookRequest struct {
 }
 
 type CancelRequest struct {
-	Reason           *string
-	RequestedBy      string // "patient" | "therapist" | "clinic"
-	CancellationFee  int64
+	Reason          *string
+	RequestedBy     string // "patient" | "therapist" | "clinic"
+	CancellationFee int64
 }
 
 // ---------------------------------------------------------------------------
@@ -62,10 +63,11 @@ type Service interface {
 
 type appointmentService struct {
 	db *repo.Client
+	nc *nats.Conn
 }
 
-func New(db *repo.Client) Service {
-	return &appointmentService{db: db}
+func New(db *repo.Client, nc *nats.Conn) Service {
+	return &appointmentService{db: db, nc: nc}
 }
 
 func (s *appointmentService) List(ctx context.Context, clinicID uuid.UUID, req ListRequest) ([]*repo.Appointment, error) {
@@ -157,6 +159,12 @@ func (s *appointmentService) Book(ctx context.Context, clinicID uuid.UUID, req B
 	if err != nil {
 		return nil, fmt.Errorf("create appointment: %w", err)
 	}
+
+	if s.nc != nil {
+		subject := fmt.Sprintf("simorgh.appointment.created.%s", clinicID.String())
+		_ = s.nc.Publish(subject, []byte(appt.ID.String()))
+	}
+
 	return appt, nil
 }
 
@@ -188,6 +196,11 @@ func (s *appointmentService) Cancel(ctx context.Context, clinicID, apptID uuid.U
 		return fmt.Errorf("cancel appointment: %w", err)
 	}
 
+	if s.nc != nil {
+		subject := fmt.Sprintf("simorgh.appointment.cancelled.%s", clinicID.String())
+		_ = s.nc.Publish(subject, []byte(apptID.String()))
+	}
+
 	// Restore slot to available if this appointment had a slot reference
 	if appt.TimeSlotID != nil {
 		_ = s.db.TimeSlot.Update().
@@ -216,8 +229,17 @@ func (s *appointmentService) Complete(ctx context.Context, clinicID, therapistMe
 	}
 
 	now := time.Now()
-	return s.db.Appointment.UpdateOne(appt).
+	if err := s.db.Appointment.UpdateOne(appt).
 		SetStatus(entappt.StatusCompleted).
 		SetCompletedAt(now).
-		Exec(ctx)
+		Exec(ctx); err != nil {
+		return fmt.Errorf("complete appointment: %w", err)
+	}
+
+	if s.nc != nil {
+		subject := fmt.Sprintf("simorgh.appointment.completed.%s", clinicID.String())
+		_ = s.nc.Publish(subject, []byte(apptID.String()))
+	}
+
+	return nil
 }

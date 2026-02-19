@@ -59,8 +59,8 @@ type Service interface {
 // ---------------------------------------------------------------------------
 
 type fileService struct {
-	db  *repo.Client
-	s3  *s3pkg.Client
+	db *repo.Client
+	s3 *s3pkg.Client
 }
 
 func New(db *repo.Client, s3Client *s3pkg.Client) Service {

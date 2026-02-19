@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	ErrInvalidKey        = errors.New("encryption key must be 32 bytes")
+	ErrInvalidKey         = errors.New("encryption key must be 32 bytes")
 	ErrCiphertextTooShort = errors.New("ciphertext too short")
 )
 

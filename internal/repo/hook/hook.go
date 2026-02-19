@@ -81,6 +81,114 @@ func (f CommissionRuleFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.CommissionRuleMutation", m)
 }
 
+// The ContactMessageFunc type is an adapter to allow the use of ordinary
+// function as ContactMessage mutator.
+type ContactMessageFunc func(context.Context, *repo.ContactMessageMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ContactMessageFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.ContactMessageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ContactMessageMutation", m)
+}
+
+// The ConversationFunc type is an adapter to allow the use of ordinary
+// function as Conversation mutator.
+type ConversationFunc func(context.Context, *repo.ConversationMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ConversationFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.ConversationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.ConversationMutation", m)
+}
+
+// The InternPatientAccessFunc type is an adapter to allow the use of ordinary
+// function as InternPatientAccess mutator.
+type InternPatientAccessFunc func(context.Context, *repo.InternPatientAccessMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InternPatientAccessFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.InternPatientAccessMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.InternPatientAccessMutation", m)
+}
+
+// The InternProfileFunc type is an adapter to allow the use of ordinary
+// function as InternProfile mutator.
+type InternProfileFunc func(context.Context, *repo.InternProfileMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InternProfileFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.InternProfileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.InternProfileMutation", m)
+}
+
+// The InternTaskFunc type is an adapter to allow the use of ordinary
+// function as InternTask mutator.
+type InternTaskFunc func(context.Context, *repo.InternTaskMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InternTaskFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.InternTaskMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.InternTaskMutation", m)
+}
+
+// The InternTaskFileFunc type is an adapter to allow the use of ordinary
+// function as InternTaskFile mutator.
+type InternTaskFileFunc func(context.Context, *repo.InternTaskFileMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InternTaskFileFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.InternTaskFileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.InternTaskFileMutation", m)
+}
+
+// The MessageFunc type is an adapter to allow the use of ordinary
+// function as Message mutator.
+type MessageFunc func(context.Context, *repo.MessageMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MessageFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.MessageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.MessageMutation", m)
+}
+
+// The NotificationFunc type is an adapter to allow the use of ordinary
+// function as Notification mutator.
+type NotificationFunc func(context.Context, *repo.NotificationMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NotificationFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.NotificationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.NotificationMutation", m)
+}
+
+// The NotificationPrefFunc type is an adapter to allow the use of ordinary
+// function as NotificationPref mutator.
+type NotificationPrefFunc func(context.Context, *repo.NotificationPrefMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NotificationPrefFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.NotificationPrefMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.NotificationPrefMutation", m)
+}
+
 // The PatientFunc type is an adapter to allow the use of ordinary
 // function as Patient mutator.
 type PatientFunc func(context.Context, *repo.PatientMutation) (repo.Value, error)
@@ -189,6 +297,30 @@ func (f TherapistProfileFunc) Mutate(ctx context.Context, m repo.Mutation) (repo
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.TherapistProfileMutation", m)
 }
 
+// The TicketFunc type is an adapter to allow the use of ordinary
+// function as Ticket mutator.
+type TicketFunc func(context.Context, *repo.TicketMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TicketFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.TicketMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.TicketMutation", m)
+}
+
+// The TicketMessageFunc type is an adapter to allow the use of ordinary
+// function as TicketMessage mutator.
+type TicketMessageFunc func(context.Context, *repo.TicketMessageMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TicketMessageFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.TicketMessageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.TicketMessageMutation", m)
+}
+
 // The TimeSlotFunc type is an adapter to allow the use of ordinary
 // function as TimeSlot mutator.
 type TimeSlotFunc func(context.Context, *repo.TimeSlotMutation) (repo.Value, error)
@@ -223,6 +355,18 @@ func (f UserFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, erro
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.UserMutation", m)
+}
+
+// The UserDeviceFunc type is an adapter to allow the use of ordinary
+// function as UserDevice mutator.
+type UserDeviceFunc func(context.Context, *repo.UserDeviceMutation) (repo.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserDeviceFunc) Mutate(ctx context.Context, m repo.Mutation) (repo.Value, error) {
+	if mv, ok := m.(*repo.UserDeviceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *repo.UserDeviceMutation", m)
 }
 
 // The UserSessionFunc type is an adapter to allow the use of ordinary

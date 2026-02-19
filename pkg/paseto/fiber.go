@@ -69,4 +69,3 @@ func NewPasetoManager(cfg *config.Config) (*Manager, error) {
 
 	return mgr, nil
 }
-

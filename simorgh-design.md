@@ -1,9 +1,10 @@
 # Simorgh — Complete Platform Design Document
 
-> **Version:** 2.0
+> **Version:** 3.0
 > **Date:** February 2026
 > **Domain:** simorqcare.com
-> **Stack:** Nuxt 4 + Nuxt UI · Go + Fiber v3 · PostgreSQL · Redis · NATS · Casbin · PASETO · ZarinPal · ArvanCloud S3 + VPS
+> **Stack:** Nuxt 4 + Nuxt UI · Go + Fiber v3 · Ent ORM · PostgreSQL · Redis · NATS · Casbin · PASETO · ZarinPal · ArvanCloud S3 + VPS
+> **Backend Phases Complete:** 1 (Foundation) · 2 (Clinical Core) · 3 (Scheduling & Payments)
 
 ---
 
@@ -494,194 +495,225 @@ CREATE TABLE patient_tests (
 #### **time_slots** (therapist availability)
 
 ```sql
+-- Actual schema (Ent ORM). Timestamps stored as TIMESTAMPTZ.
 CREATE TABLE time_slots (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id           UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
+    id                  UUID PRIMARY KEY,  -- UUIDv7
+    clinic_id           UUID NOT NULL REFERENCES clinics(id),
     therapist_id        UUID NOT NULL REFERENCES clinic_members(id),
 
-    slot_date           DATE NOT NULL,
-    start_time          TIME NOT NULL,
-    end_time            TIME NOT NULL,
-    duration_minutes    INTEGER NOT NULL DEFAULT 60,
-    price               BIGINT NOT NULL,   -- رزرو نوبت fee (Rials)
+    start_time          TIMESTAMPTZ NOT NULL,
+    end_time            TIMESTAMPTZ NOT NULL,
 
-    is_available        BOOLEAN DEFAULT TRUE,
-    is_booked           BOOLEAN DEFAULT FALSE,
+    status              VARCHAR(20) NOT NULL DEFAULT 'available'
+                        CHECK (status IN ('available', 'booked', 'blocked', 'cancelled')),
 
-    recurring_rule_id   UUID REFERENCES recurring_rules(id),
+    session_price       BIGINT,            -- nullable; per-slot override
+    reservation_fee     BIGINT,            -- nullable; per-slot override
+    is_recurring        BOOLEAN DEFAULT FALSE,
+    recurring_rule_id   UUID,              -- nullable non-FK snapshot ref
 
-    created_at          TIMESTAMPTZ DEFAULT NOW()
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_time_slots_therapist_date ON time_slots(therapist_id, slot_date);
-CREATE INDEX idx_time_slots_clinic_date ON time_slots(clinic_id, slot_date);
-CREATE INDEX idx_time_slots_available ON time_slots(clinic_id, is_available, is_booked, slot_date);
+CREATE INDEX idx_time_slots_therapist_start ON time_slots(therapist_id, start_time);
+CREATE INDEX idx_time_slots_clinic_status_start ON time_slots(clinic_id, status, start_time);
 ```
 
 #### **recurring_rules**
 
 ```sql
 CREATE TABLE recurring_rules (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id       UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
+    id              UUID PRIMARY KEY,  -- UUIDv7
+    clinic_id       UUID NOT NULL REFERENCES clinics(id),
     therapist_id    UUID NOT NULL REFERENCES clinic_members(id),
 
-    day_of_week     INTEGER NOT NULL CHECK (day_of_week BETWEEN 0 AND 6), -- 0=Saturday
-    start_time      TIME NOT NULL,
-    end_time        TIME NOT NULL,
-    duration_minutes INTEGER NOT NULL DEFAULT 60,
-    price           BIGINT NOT NULL,
+    day_of_week     SMALLINT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),  -- 0=Sunday
+    start_hour      SMALLINT NOT NULL,
+    start_minute    SMALLINT NOT NULL,
+    end_hour        SMALLINT NOT NULL,
+    end_minute      SMALLINT NOT NULL,
 
-    effective_from  DATE NOT NULL,
-    effective_until DATE,
+    session_price   BIGINT,   -- nullable
+    reservation_fee BIGINT,   -- nullable
+
+    valid_from      TIMESTAMPTZ NOT NULL,
+    valid_until     TIMESTAMPTZ,          -- nullable
     is_active       BOOLEAN DEFAULT TRUE,
 
-    created_at      TIMESTAMPTZ DEFAULT NOW()
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX idx_recurring_rules_therapist ON recurring_rules(therapist_id, day_of_week, is_active);
+CREATE INDEX idx_recurring_rules_clinic ON recurring_rules(clinic_id);
 ```
 
 #### **appointments**
 
 ```sql
 CREATE TABLE appointments (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id           UUID NOT NULL REFERENCES clinics(id),
-    patient_id          UUID NOT NULL REFERENCES patients(id),
-    therapist_id        UUID NOT NULL REFERENCES clinic_members(id),
-    time_slot_id        UUID REFERENCES time_slots(id),
+    id                      UUID PRIMARY KEY,  -- UUIDv7
+    clinic_id               UUID NOT NULL REFERENCES clinics(id),
+    therapist_id            UUID NOT NULL REFERENCES clinic_members(id),
+    patient_id              UUID NOT NULL REFERENCES patients(id),
+    time_slot_id            UUID,              -- nullable non-FK snapshot ref (allows slot deletion)
 
-    appointment_date    DATE NOT NULL,
-    start_time          TIME NOT NULL,
-    duration_minutes    INTEGER NOT NULL,
-    price               BIGINT NOT NULL,   -- reservation fee paid
+    start_time              TIMESTAMPTZ NOT NULL,
+    end_time                TIMESTAMPTZ NOT NULL,
 
-    status              VARCHAR(30) NOT NULL DEFAULT 'pending_payment'
-                        CHECK (status IN (
-                            'pending_payment',
-                            'reserved',
-                            'completed',
-                            'cancelled_by_client',
-                            'cancelled_by_therapist',
-                            'no_show'
-                        )),
+    status                  VARCHAR(20) NOT NULL DEFAULT 'scheduled'
+                            CHECK (status IN ('scheduled', 'completed', 'cancelled', 'no_show')),
 
-    reservation_fee     BIGINT DEFAULT 0,
-    reservation_paid    BOOLEAN DEFAULT FALSE,
-    session_paid        BOOLEAN DEFAULT FALSE,  -- settled directly with therapist
+    session_price           BIGINT NOT NULL,   -- snapshot from slot at booking time
+    reservation_fee         BIGINT NOT NULL DEFAULT 0,
 
-    session_number      INTEGER,
+    payment_status          VARCHAR(20) NOT NULL DEFAULT 'unpaid'
+                            CHECK (payment_status IN (
+                                'unpaid', 'reservation_paid', 'fully_paid', 'refunded'
+                            )),
 
-    cancelled_at        TIMESTAMPTZ,
-    cancel_reason       TEXT,
-    cancellation_fee    BIGINT DEFAULT 0,
+    notes                   TEXT,
+    cancellation_reason     TEXT,
+    cancel_requested_by     VARCHAR(20) CHECK (cancel_requested_by IN ('patient', 'therapist', 'clinic')),
+    cancelled_at            TIMESTAMPTZ,
+    cancellation_fee        BIGINT DEFAULT 0,
+    completed_at            TIMESTAMPTZ,
 
-    created_at          TIMESTAMPTZ DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ DEFAULT NOW()
+    created_at              TIMESTAMPTZ DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_appointments_clinic ON appointments(clinic_id);
-CREATE INDEX idx_appointments_patient ON appointments(patient_id);
-CREATE INDEX idx_appointments_therapist ON appointments(therapist_id, appointment_date);
-CREATE INDEX idx_appointments_status ON appointments(clinic_id, status);
-CREATE INDEX idx_appointments_date ON appointments(appointment_date);
+CREATE INDEX idx_appointments_clinic_therapist_start ON appointments(clinic_id, therapist_id, start_time);
+CREATE INDEX idx_appointments_clinic_patient ON appointments(clinic_id, patient_id);
+CREATE INDEX idx_appointments_therapist_status ON appointments(therapist_id, status, start_time);
+CREATE INDEX idx_appointments_patient_status ON appointments(patient_id, status);
 ```
 
 #### **wallets**
 
 ```sql
 CREATE TABLE wallets (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    owner_type      VARCHAR(20) NOT NULL CHECK (owner_type IN ('user', 'clinic', 'platform')),
-    owner_id        UUID NOT NULL,
-    balance         BIGINT NOT NULL DEFAULT 0,
-    iban            VARCHAR(26),   -- شماره شبا (AES-256-GCM encrypted)
+    id               UUID PRIMARY KEY,  -- UUIDv7
+    owner_type       VARCHAR(20) NOT NULL CHECK (owner_type IN ('user', 'clinic', 'platform')),
+    owner_id         UUID NOT NULL,
+    balance          BIGINT NOT NULL DEFAULT 0,
 
-    created_at      TIMESTAMPTZ DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ DEFAULT NOW(),
+    -- IBAN stored encrypted (AES-256-GCM); iban_hash is SHA-256 for uniqueness lookups
+    iban_encrypted   VARCHAR(1000),
+    iban_hash        VARCHAR(64),
+    account_holder   VARCHAR(200),
+
+    created_at       TIMESTAMPTZ DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ DEFAULT NOW(),
 
     UNIQUE(owner_type, owner_id)
 );
 ```
 
-#### **transactions**
+#### **transactions** (append-only ledger)
 
 ```sql
 CREATE TABLE transactions (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wallet_id           UUID NOT NULL REFERENCES wallets(id),
+    id              UUID PRIMARY KEY,  -- UUIDv7
+    wallet_id       UUID NOT NULL REFERENCES wallets(id),
 
-    type                VARCHAR(20) NOT NULL CHECK (type IN (
-                            'deposit', 'withdrawal', 'commission',
-                            'reservation_fee', 'cancellation_fee', 'refund'
-                        )),
-    amount              BIGINT NOT NULL,
-    direction           VARCHAR(6) NOT NULL CHECK (direction IN ('credit', 'debit')),
-    balance_after       BIGINT NOT NULL,
+    type            VARCHAR(10) NOT NULL CHECK (type IN ('credit', 'debit')),
+    amount          BIGINT NOT NULL,
+    balance_before  BIGINT NOT NULL,
+    balance_after   BIGINT NOT NULL,
 
-    appointment_id      UUID REFERENCES appointments(id),
-    payment_request_id  UUID,
+    -- Polymorphic reference to the entity that caused this transaction
+    entity_type     VARCHAR(30),   -- e.g. 'appointment', 'payment_request', 'withdrawal'
+    entity_id       UUID,
 
-    description         TEXT,
-    status              VARCHAR(20) DEFAULT 'completed'
-                        CHECK (status IN ('pending', 'completed', 'failed')),
+    description     VARCHAR(500),
 
-    created_at          TIMESTAMPTZ DEFAULT NOW()
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+    -- No updated_at: transactions are immutable
 );
 
-CREATE INDEX idx_transactions_wallet ON transactions(wallet_id);
-CREATE INDEX idx_transactions_created ON transactions(created_at);
+CREATE INDEX idx_transactions_wallet_created ON transactions(wallet_id, created_at DESC);
+CREATE INDEX idx_transactions_entity ON transactions(entity_type, entity_id);
 ```
 
-#### **payment_requests** (ZarinPal)
+#### **payment_requests**
 
 ```sql
 CREATE TABLE payment_requests (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id),
-    appointment_id  UUID REFERENCES appointments(id),
+    id                      UUID PRIMARY KEY,  -- UUIDv7
+    clinic_id               UUID NOT NULL REFERENCES clinics(id),
+    user_id                 UUID NOT NULL REFERENCES users(id),
+    appointment_id          UUID,              -- nullable
 
-    amount          BIGINT NOT NULL,
-    authority       VARCHAR(100),
-    ref_id          VARCHAR(100),
-    status          VARCHAR(20) DEFAULT 'pending'
-                    CHECK (status IN ('pending', 'paid', 'failed', 'refunded')),
-    gateway_data    JSONB,
+    amount                  BIGINT NOT NULL,
+    description             VARCHAR(500) NOT NULL,
 
-    created_at      TIMESTAMPTZ DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ DEFAULT NOW()
+    status                  VARCHAR(20) NOT NULL DEFAULT 'pending'
+                            CHECK (status IN ('pending', 'success', 'failed', 'cancelled')),
+    source                  VARCHAR(20) NOT NULL DEFAULT 'zarinpal'
+                            CHECK (source IN ('zarinpal', 'wallet')),
+
+    -- ZarinPal-specific fields
+    zarinpal_authority      VARCHAR(200),
+    zarinpal_ref_id         VARCHAR(50),       -- int64 ref_id stored as string
+    zarinpal_card_pan       VARCHAR(25),       -- masked e.g. "502229******5995"
+    zarinpal_card_hash      VARCHAR(70),
+
+    paid_at                 TIMESTAMPTZ,
+
+    created_at              TIMESTAMPTZ DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX idx_payment_requests_user ON payment_requests(user_id, status, created_at DESC);
+CREATE INDEX idx_payment_requests_clinic ON payment_requests(clinic_id, status);
+CREATE INDEX idx_payment_requests_authority ON payment_requests(zarinpal_authority);
 ```
 
 #### **withdrawal_requests**
 
 ```sql
 CREATE TABLE withdrawal_requests (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wallet_id       UUID NOT NULL REFERENCES wallets(id),
-    amount          BIGINT NOT NULL,
-    iban            VARCHAR(26) NOT NULL,
-    status          VARCHAR(20) DEFAULT 'pending'
-                    CHECK (status IN ('pending', 'processing', 'completed', 'rejected')),
-    processed_at    TIMESTAMPTZ,
-    admin_note      TEXT,
+    id               UUID PRIMARY KEY,  -- UUIDv7
+    wallet_id        UUID NOT NULL REFERENCES wallets(id),
+    clinic_id        UUID NOT NULL REFERENCES clinics(id),
+    amount           BIGINT NOT NULL,
 
-    created_at      TIMESTAMPTZ DEFAULT NOW()
+    status           VARCHAR(20) NOT NULL DEFAULT 'pending'
+                     CHECK (status IN ('pending', 'processing', 'completed', 'failed', 'cancelled')),
+
+    -- IBAN snapshot at time of request (encrypted, same key as wallet.iban_encrypted)
+    iban_encrypted   VARCHAR(1000) NOT NULL,
+    account_holder   VARCHAR(200) NOT NULL,
+    bank_ref         VARCHAR(100),             -- bank transfer reference
+
+    requested_at     TIMESTAMPTZ DEFAULT NOW(),
+    processed_at     TIMESTAMPTZ,
+    failure_reason   TEXT,
+
+    created_at       TIMESTAMPTZ DEFAULT NOW()
+    -- No updated_at: CreatedAtMixin only
 );
+
+CREATE INDEX idx_withdrawal_requests_wallet ON withdrawal_requests(wallet_id, status);
+CREATE INDEX idx_withdrawal_requests_clinic ON withdrawal_requests(clinic_id, status, requested_at DESC);
 ```
 
 #### **commission_rules**
 
 ```sql
 CREATE TABLE commission_rules (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id       UUID REFERENCES clinics(id),   -- NULL = platform-wide default
-    percentage      NUMERIC(5,2) NOT NULL,
-    flat_fee        BIGINT DEFAULT 0,
-    effective_from  DATE NOT NULL,
-    effective_until DATE,
-    is_active       BOOLEAN DEFAULT TRUE,
+    id                      UUID PRIMARY KEY,  -- UUIDv7
+    clinic_id               UUID NOT NULL UNIQUE REFERENCES clinics(id),
+    platform_fee_percent    INTEGER NOT NULL DEFAULT 0,
+    clinic_fee_percent      INTEGER NOT NULL DEFAULT 0,
+    is_flat_fee             BOOLEAN NOT NULL DEFAULT FALSE,
+    flat_fee_amount         BIGINT NOT NULL DEFAULT 0,
+    is_active               BOOLEAN NOT NULL DEFAULT TRUE,
 
-    created_at      TIMESTAMPTZ DEFAULT NOW()
+    created_at              TIMESTAMPTZ DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -991,7 +1023,7 @@ interface AuthUser {
 │   └── PATCH  /:id/complete              ← mark completed
 │
 ├── therapists/
-│   └── GET    /:slug/slots                ← public; available slots for booking
+│   └── GET    /:mid/slots                 ← public; available slots by clinic_member UUID
 │
 ├── schedule/
 │   ├── PATCH  /toggle                     ← {enabled: bool} — toggle scheduling on/off
@@ -1120,73 +1152,86 @@ analytics-worker      → (future) aggregate stats
 ## 6. Go Backend Structure
 
 ```
-simorgh-api/
-├── cmd/api/main.go
+simorq_backend/              ← module: github.com/Alijeyrad/simorq_backend
+├── main.go                  ← Cobra root entrypoint
+├── cmd/
+│   ├── root.go
+│   ├── http/start.go        ← boots Fiber app via Uber Fx
+│   └── system/
+│       ├── migrate.go       ← Ent auto-migrate
+│       ├── init.go          ← DB initialization
+│       └── gendocs.go       ← Cobra CLI docs
+│
+├── config/
+│   ├── config.go            ← Viper loader
+│   └── types.go             ← Config struct + sub-structs (Database, Redis, ZarinPal, S3, …)
+│
 ├── internal/
-│   ├── config/config.go
-│   ├── server/
-│   │   ├── server.go
-│   │   ├── routes.go
-│   │   └── middleware/
-│   │       ├── auth.go          ← PASETO validation
-│   │       ├── rbac.go          ← Casbin enforcement
-│   │       ├── tenant.go        ← clinic context from JWT
-│   │       ├── ratelimit.go
-│   │       └── cors.go
-│   ├── domain/
+│   ├── app/
+│   │   ├── infra.go         ← InfraModule (Fx): DB, Redis, Casbin, S3, ZarinPal, SMS, email, OTel
+│   │   └── services.go      ← ServiceModule (Fx): all domain services
+│   │
+│   ├── schema/              ← Ent schemas — SOURCE OF TRUTH for DB structure
+│   │   ├── mixin.go         ← UUIDV7Mixin, TimeStampedMixin, CreatedAtMixin, SoftDeleteMixin
 │   │   ├── user.go
 │   │   ├── clinic.go
+│   │   ├── clinic_member.go
+│   │   ├── therapist_profile.go
 │   │   ├── patient.go
+│   │   ├── patient_assessment.go   ← struct PatientTest (NOT _test.go, avoids Go tooling conflict)
+│   │   ├── patient_report.go
+│   │   ├── patient_file.go
+│   │   ├── patient_prescription.go
+│   │   ├── psych_catalog.go        ← struct PsychTest (platform test catalog)
+│   │   ├── time_slot.go
+│   │   ├── recurring_rule.go
 │   │   ├── appointment.go
 │   │   ├── wallet.go
-│   │   └── ...
-│   ├── handler/
-│   │   ├── auth_handler.go
-│   │   ├── user_handler.go
-│   │   ├── clinic_handler.go
-│   │   ├── patient_handler.go
-│   │   ├── appointment_handler.go
-│   │   ├── schedule_handler.go
-│   │   ├── payment_handler.go
-│   │   ├── chat_handler.go
-│   │   ├── ticket_handler.go
-│   │   ├── file_handler.go
-│   │   ├── contact_handler.go
-│   │   ├── intern_handler.go
-│   │   ├── notification_handler.go
-│   │   └── admin_handler.go
+│   │   ├── transaction.go
+│   │   ├── payment_request.go
+│   │   ├── withdrawal_request.go
+│   │   └── commission_rule.go
+│   │
+│   ├── repo/                ← Ent GENERATED code — DO NOT READ (infer from schemas above)
+│   │
 │   ├── service/
-│   │   ├── auth_service.go
-│   │   ├── patient_service.go
-│   │   ├── booking_service.go
-│   │   ├── payment_service.go
-│   │   ├── file_service.go
-│   │   ├── notification_service.go
-│   │   └── ...
-│   ├── repository/
-│   │   ├── user_repo.go
-│   │   ├── clinic_repo.go
-│   │   ├── patient_repo.go
-│   │   └── ...
-│   ├── worker/
-│   │   ├── notification_worker.go
-│   │   ├── sms_worker.go
-│   │   └── wallet_worker.go
-│   └── pkg/
-│       ├── paseto/
-│       ├── crypto/             ← AES-256-GCM for national_id, IBAN
-│       ├── jalali/
-│       ├── zarinpal/
-│       ├── s3/                 ← ArvanCloud S3 client + presigned URLs
-│       ├── sms/
-│       ├── validator/
-│       └── pagination/
-├── migrations/
-├── casbin/model.conf + policy.csv
-├── docker-compose.yml
-├── docker-compose.prod.yml
+│   │   ├── auth/            ← OTP, PASETO token issue/refresh, change-password
+│   │   ├── user/            ← user profile, avatar
+│   │   ├── clinic/          ← clinic CRUD, members, permissions
+│   │   ├── patient/         ← patient CRUD, reports, files, prescriptions, tests
+│   │   ├── file/            ← S3 upload + presigned URL generation
+│   │   ├── psychtest/       ← psych test catalog
+│   │   ├── scheduling/      ← slots, recurring rules, schedule toggle
+│   │   ├── appointment/     ← book, cancel, complete
+│   │   └── payment/         ← ZarinPal initiate/verify, wallet, IBAN, withdrawal
+│   │
+│   └── api/http/
+│       ├── handler/         ← one file per domain (auth, user, clinic, patient, file,
+│       │                       test, schedule, appointment, payment)
+│       ├── middleware/      ← AuthRequired, ClinicContext, ClinicHeader, RequirePermission
+│       └── router/          ← route registration split by domain; router.go holds Params struct
+│
+├── pkg/
+│   ├── authorize/           ← Casbin RBAC: IAuthorization, resource/action constants, seed policies
+│   ├── paseto/              ← PASETO v4 token manager
+│   ├── crypto/              ← AES-256-GCM encryption (national_id, IBAN)
+│   ├── database/            ← Ent client factory + DSN builder
+│   ├── redis/               ← Redis client factory
+│   ├── s3/                  ← ArvanCloud S3 client + presigned URL helpers
+│   ├── zarinpal/            ← ZarinPal v4 HTTP client (no SDK; custom net/http)
+│   ├── sms/                 ← SMS provider client
+│   ├── email/               ← email client
+│   └── observability/       ← OpenTelemetry provider (traces + metrics)
+│
+├── docs/
+│   └── zarinpal.md          ← ZarinPal API reference + implementation notes
+│
+├── Makefile                 ← build, run, test, entgen, migrate, dev, db-*, redis-*, help
 ├── Dockerfile
-├── Caddyfile
+├── Dockerfile.dev           ← with Air hot reload
+├── docker-compose.yml
+├── config.yaml
+├── CLAUDE.md
 ├── go.mod
 └── go.sum
 ```
@@ -1195,16 +1240,13 @@ simorgh-api/
 
 ```
 github.com/gofiber/fiber/v3
-github.com/jackc/pgx/v5
-github.com/redis/go-redis/v9
-github.com/nats-io/nats.go
+entgo.io/ent                          ← ORM; generates repo/ from internal/schema/
+go.uber.org/fx                        ← dependency injection
 github.com/casbin/casbin/v2
-github.com/casbin/pgx-adapter
-github.com/vk-rv/pvx                  ← PASETO v4
+github.com/redis/go-redis/v9
 github.com/aws/aws-sdk-go-v2          ← S3-compatible (ArvanCloud)
-github.com/golang-migrate/migrate/v4
-github.com/go-playground/validator/v10
-golang.org/x/crypto                   ← argon2id
+github.com/google/uuid                ← UUIDv7 generation
+log/slog                              ← structured logging (stdlib)
 ```
 
 ---
@@ -1529,7 +1571,7 @@ simorqcare.com {
 
 ## 11. Phased Delivery Roadmap
 
-### Completed (Frontend UI done, API needed)
+### Completed (Frontend UI + API both done)
 
 - [X] All layouts: default, auth, dashboard, panel
 - [X] Public pages: home, therapists, therapist profile, clinics, clinic detail, faq, privacy, terms, about, contact
@@ -1538,34 +1580,37 @@ simorqcare.com {
 - [X] Panel: appointments, patient list, patient detail (reports, files, tests, prescriptions), messages, finances, profile, schedule, members, permissions, settings, tickets
 - [X] Shared components: AppointmentCard, TherapistCard, ConfirmModal, JalaliDatePicker, FileUploader, WalletCard, TransactionCard
 
-### Phase 1 — Go API Foundation
+### ✅ Phase 1 — Go API Foundation (COMPLETE)
 
-- [ ] Project scaffold (Go + Fiber v3)
-- [ ] Docker Compose dev environment
-- [ ] Database migrations (all tables above)
-- [ ] User auth: register, OTP verify, login, refresh, change-password (PASETO)
-- [ ] Casbin setup with role model + clinic tenant isolation
-- [ ] Basic clinic CRUD + settings
-- [ ] Clinic member management (list, add, remove)
-- [ ] Clinic permissions endpoint
+- [x] Project scaffold (Go + Fiber v3 + Uber Fx + Ent ORM)
+- [x] Docker Compose dev environment
+- [x] Ent auto-migrate (no SQL migration files)
+- [x] User auth: register, OTP verify, login, refresh, change-password (PASETO v4)
+- [x] Casbin v2 setup with role model + clinic tenant isolation
+- [x] Basic clinic CRUD + settings
+- [x] Clinic member management (list, add, remove, update role)
+- [x] Clinic permissions endpoint
+- [x] Therapist profile management
 
-### Phase 2 — Clinical Core
+### ✅ Phase 2 — Clinical Core (COMPLETE)
 
-- [ ] Patient CRUD (all fields including child psych)
-- [ ] Patient reports, files (S3 upload + presigned download), prescriptions, tests
-- [ ] File upload unified endpoint (`POST /files/upload`)
-- [ ] File serve endpoint (`GET /files/:key`)
+- [x] Patient CRUD (all fields including child psych)
+- [x] Patient reports, files (S3 upload + presigned download), prescriptions, tests
+- [x] File upload unified endpoint (`POST /files/upload`)
+- [x] File serve endpoint (`GET /files/:key`)
+- [x] Psych test catalog (`GET /tests`, `GET /tests/:id`)
 
-### Phase 3 — Scheduling & Payments
+### ✅ Phase 3 — Scheduling & Payments (COMPLETE)
 
-- [ ] Time slot CRUD + recurring rules + slot generation
-- [ ] Schedule toggle (`PATCH /schedule/toggle`)
-- [ ] Public slot listing (`GET /therapists/:slug/slots`)
-- [ ] Appointment booking + cancellation + completion
-- [ ] ZarinPal integration (`POST /payments/pay` + verify callback)
-- [ ] Wallet + transaction history
-- [ ] IBAN management + withdrawal requests
-- [ ] Commission calculation (NATS wallet-worker)
+- [x] Time slot CRUD + recurring rules
+- [x] Schedule toggle (`PATCH /schedule/toggle`) — updates `therapist_profiles.is_accepting`
+- [x] Public slot listing (`GET /therapists/:mid/slots`) — uses clinic_member UUID
+- [x] Appointment booking + cancellation + completion
+- [x] Optimistic slot locking on booking (atomic UPDATE WHERE status='available')
+- [x] ZarinPal v4 integration (`POST /payments/pay` + `GET /payments/verify` callback)
+- [x] Wallet (get/create) + transaction history
+- [x] IBAN management (AES-256-GCM encrypted) + withdrawal requests
+- [ ] Commission calculation worker (deferred to Phase 4 NATS)
 
 ### Phase 4 — Communication
 
@@ -1608,7 +1653,7 @@ simorqcare.com {
 | Decision       | Choice                        | Rationale                                             |
 | -------------- | ----------------------------- | ----------------------------------------------------- |
 | Auth tokens    | Pinia (client-only)           | No SSR for protected routes — tokens never on server |
-| ORM vs raw SQL | Raw SQL + pgx                 | Full control; sqlc optional                           |
+| ORM            | Ent ORM (entgo.io/ent)        | Type-safe Go from schemas; auto-migrate; no SQL files |
 | File storage   | ArvanCloud S3                 | Private ACL + presigned URLs                          |
 | Date handling  | Gregorian in DB, Jalali in UI | Standard DB ops, convert at display layer             |
 | Multi-tenancy  | Shared DB + clinic_id column  | Casbin enforces isolation                             |

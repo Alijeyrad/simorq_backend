@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 
 	"github.com/Alijeyrad/simorq_backend/config"
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
@@ -43,10 +44,11 @@ type paymentService struct {
 	db  *repo.Client
 	zp  *zarinpalpkg.Client
 	cfg *config.Config
+	nc  *nats.Conn
 }
 
-func New(db *repo.Client, zp *zarinpalpkg.Client, cfg *config.Config) Service {
-	return &paymentService{db: db, zp: zp, cfg: cfg}
+func New(db *repo.Client, zp *zarinpalpkg.Client, cfg *config.Config, nc *nats.Conn) Service {
+	return &paymentService{db: db, zp: zp, cfg: cfg, nc: nc}
 }
 
 // ---------------------------------------------------------------------------
@@ -140,6 +142,12 @@ func (s *paymentService) VerifyPayment(ctx context.Context, authority string, st
 			Where(entappt.ID(*pr.AppointmentID)).
 			SetPaymentStatus(entappt.PaymentStatusReservationPaid).
 			Exec(ctx)
+	}
+
+	// Publish payment received event for wallet_worker
+	if s.nc != nil {
+		subject := fmt.Sprintf("simorgh.payment.received.%s", verified.ClinicID.String())
+		_ = s.nc.Publish(subject, []byte(verified.ID.String()))
 	}
 
 	return verified, nil

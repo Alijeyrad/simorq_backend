@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 
@@ -9,11 +10,16 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/service/appointment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/auth"
 	"github.com/Alijeyrad/simorq_backend/internal/service/clinic"
+	"github.com/Alijeyrad/simorq_backend/internal/service/contact"
+	"github.com/Alijeyrad/simorq_backend/internal/service/conversation"
 	svcfile "github.com/Alijeyrad/simorq_backend/internal/service/file"
+	"github.com/Alijeyrad/simorq_backend/internal/service/intern"
+	"github.com/Alijeyrad/simorq_backend/internal/service/notification"
 	"github.com/Alijeyrad/simorq_backend/internal/service/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/service/payment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/psychtest"
 	"github.com/Alijeyrad/simorq_backend/internal/service/scheduling"
+	"github.com/Alijeyrad/simorq_backend/internal/service/ticket"
 	"github.com/Alijeyrad/simorq_backend/internal/service/user"
 	"github.com/Alijeyrad/simorq_backend/pkg/authorize"
 	"github.com/Alijeyrad/simorq_backend/pkg/email"
@@ -35,6 +41,11 @@ var ServiceModule = fx.Module("services",
 		ProvideSchedulingService,
 		ProvideAppointmentService,
 		ProvidePaymentService,
+		ProvideConversationService,
+		ProvideTicketService,
+		ProvideNotificationService,
+		ProvideContactService,
+		ProvideInternService,
 		ProvidePasetoManager,
 	),
 )
@@ -73,12 +84,32 @@ func ProvideSchedulingService(db *repo.Client) scheduling.Service {
 	return scheduling.New(db)
 }
 
-func ProvideAppointmentService(db *repo.Client) appointment.Service {
-	return appointment.New(db)
+func ProvideAppointmentService(db *repo.Client, nc *nats.Conn) appointment.Service {
+	return appointment.New(db, nc)
 }
 
-func ProvidePaymentService(db *repo.Client, zp *zarinpalpkg.Client, cfg *config.Config) payment.Service {
-	return payment.New(db, zp, cfg)
+func ProvidePaymentService(db *repo.Client, zp *zarinpalpkg.Client, cfg *config.Config, nc *nats.Conn) payment.Service {
+	return payment.New(db, zp, cfg, nc)
+}
+
+func ProvideConversationService(db *repo.Client, nc *nats.Conn) conversation.Service {
+	return conversation.New(db, nc)
+}
+
+func ProvideTicketService(db *repo.Client, nc *nats.Conn) ticket.Service {
+	return ticket.New(db, nc)
+}
+
+func ProvideNotificationService(db *repo.Client) notification.Service {
+	return notification.New(db)
+}
+
+func ProvideContactService(db *repo.Client) contact.Service {
+	return contact.New(db)
+}
+
+func ProvideInternService(db *repo.Client) intern.Service {
+	return intern.New(db)
 }
 
 func ProvidePasetoManager(cfg *config.Config) (*pasetotoken.Manager, error) {

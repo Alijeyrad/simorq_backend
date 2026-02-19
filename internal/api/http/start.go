@@ -15,6 +15,7 @@ func Start(cfg *config.Config, timeout time.Duration) {
 		fx.Supply(cfg),
 		app.InfraModule,
 		app.ServiceModule,
+		app.WorkerModule,
 		router.Module,
 		Module, // This is the http.Module from server.go
 

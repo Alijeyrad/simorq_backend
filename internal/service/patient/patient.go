@@ -39,19 +39,19 @@ type ListPatientsRequest struct {
 }
 
 type CreatePatientRequest struct {
-	UserID            uuid.UUID
+	UserID             uuid.UUID
 	PrimaryTherapistID *uuid.UUID
-	FileNumber        *string
-	Notes             *string
-	ReferralSource    *string
-	ChiefComplaint    *string
-	IsChild           bool
-	ChildBirthDate    *time.Time
-	ChildSchool       *string
-	ChildGrade        *string
-	ParentName        *string
-	ParentPhone       *string
-	ParentRelation    *string
+	FileNumber         *string
+	Notes              *string
+	ReferralSource     *string
+	ChiefComplaint     *string
+	IsChild            bool
+	ChildBirthDate     *time.Time
+	ChildSchool        *string
+	ChildGrade         *string
+	ParentName         *string
+	ParentPhone        *string
+	ParentRelation     *string
 }
 
 type UpdatePatientRequest struct {
@@ -103,13 +103,13 @@ type UpdatePrescriptionRequest struct {
 }
 
 type CreateTestRequest struct {
-	TestID          *uuid.UUID
-	AdministeredBy  *uuid.UUID
-	TestName        *string
-	RawScores       map[string]any
-	ComputedScores  map[string]any
-	Interpretation  *string
-	TestDate        *time.Time
+	TestID         *uuid.UUID
+	AdministeredBy *uuid.UUID
+	TestName       *string
+	RawScores      map[string]any
+	ComputedScores map[string]any
+	Interpretation *string
+	TestDate       *time.Time
 }
 
 type UpdateTestRequest struct {

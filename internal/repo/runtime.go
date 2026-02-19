@@ -11,6 +11,15 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/commissionrule"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/contactmessage"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/conversation"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/internpatientaccess"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/internprofile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/interntask"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/interntaskfile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/message"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/notification"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/notificationpref"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientfile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientprescription"
@@ -20,9 +29,12 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo/psychtest"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/recurringrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/ticket"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/ticketmessage"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/timeslot"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/transaction"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/userdevice"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/wallet"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/withdrawalrequest"
@@ -310,6 +322,237 @@ func init() {
 	commissionruleDescID := commissionruleMixinFields0[0].Descriptor()
 	// commissionrule.DefaultID holds the default value on creation for the id field.
 	commissionrule.DefaultID = commissionruleDescID.Default.(func() uuid.UUID)
+	contactmessageMixin := schema.ContactMessage{}.Mixin()
+	contactmessageMixinFields0 := contactmessageMixin[0].Fields()
+	_ = contactmessageMixinFields0
+	contactmessageMixinFields1 := contactmessageMixin[1].Fields()
+	_ = contactmessageMixinFields1
+	contactmessageFields := schema.ContactMessage{}.Fields()
+	_ = contactmessageFields
+	// contactmessageDescCreatedAt is the schema descriptor for created_at field.
+	contactmessageDescCreatedAt := contactmessageMixinFields1[0].Descriptor()
+	// contactmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
+	contactmessage.DefaultCreatedAt = contactmessageDescCreatedAt.Default.(func() time.Time)
+	// contactmessageDescName is the schema descriptor for name field.
+	contactmessageDescName := contactmessageFields[0].Descriptor()
+	// contactmessage.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	contactmessage.NameValidator = contactmessageDescName.Validators[0].(func(string) error)
+	// contactmessageDescEmail is the schema descriptor for email field.
+	contactmessageDescEmail := contactmessageFields[1].Descriptor()
+	// contactmessage.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	contactmessage.EmailValidator = contactmessageDescEmail.Validators[0].(func(string) error)
+	// contactmessageDescSubject is the schema descriptor for subject field.
+	contactmessageDescSubject := contactmessageFields[2].Descriptor()
+	// contactmessage.SubjectValidator is a validator for the "subject" field. It is called by the builders before save.
+	contactmessage.SubjectValidator = contactmessageDescSubject.Validators[0].(func(string) error)
+	// contactmessageDescID is the schema descriptor for id field.
+	contactmessageDescID := contactmessageMixinFields0[0].Descriptor()
+	// contactmessage.DefaultID holds the default value on creation for the id field.
+	contactmessage.DefaultID = contactmessageDescID.Default.(func() uuid.UUID)
+	conversationMixin := schema.Conversation{}.Mixin()
+	conversationMixinFields0 := conversationMixin[0].Fields()
+	_ = conversationMixinFields0
+	conversationMixinFields1 := conversationMixin[1].Fields()
+	_ = conversationMixinFields1
+	conversationFields := schema.Conversation{}.Fields()
+	_ = conversationFields
+	// conversationDescCreatedAt is the schema descriptor for created_at field.
+	conversationDescCreatedAt := conversationMixinFields1[0].Descriptor()
+	// conversation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	conversation.DefaultCreatedAt = conversationDescCreatedAt.Default.(func() time.Time)
+	// conversationDescIsActive is the schema descriptor for is_active field.
+	conversationDescIsActive := conversationFields[5].Descriptor()
+	// conversation.DefaultIsActive holds the default value on creation for the is_active field.
+	conversation.DefaultIsActive = conversationDescIsActive.Default.(bool)
+	// conversationDescID is the schema descriptor for id field.
+	conversationDescID := conversationMixinFields0[0].Descriptor()
+	// conversation.DefaultID holds the default value on creation for the id field.
+	conversation.DefaultID = conversationDescID.Default.(func() uuid.UUID)
+	internpatientaccessMixin := schema.InternPatientAccess{}.Mixin()
+	internpatientaccessMixinFields0 := internpatientaccessMixin[0].Fields()
+	_ = internpatientaccessMixinFields0
+	internpatientaccessMixinFields1 := internpatientaccessMixin[1].Fields()
+	_ = internpatientaccessMixinFields1
+	internpatientaccessFields := schema.InternPatientAccess{}.Fields()
+	_ = internpatientaccessFields
+	// internpatientaccessDescCreatedAt is the schema descriptor for created_at field.
+	internpatientaccessDescCreatedAt := internpatientaccessMixinFields1[0].Descriptor()
+	// internpatientaccess.DefaultCreatedAt holds the default value on creation for the created_at field.
+	internpatientaccess.DefaultCreatedAt = internpatientaccessDescCreatedAt.Default.(func() time.Time)
+	// internpatientaccessDescCanViewFiles is the schema descriptor for can_view_files field.
+	internpatientaccessDescCanViewFiles := internpatientaccessFields[3].Descriptor()
+	// internpatientaccess.DefaultCanViewFiles holds the default value on creation for the can_view_files field.
+	internpatientaccess.DefaultCanViewFiles = internpatientaccessDescCanViewFiles.Default.(bool)
+	// internpatientaccessDescCanWriteReports is the schema descriptor for can_write_reports field.
+	internpatientaccessDescCanWriteReports := internpatientaccessFields[4].Descriptor()
+	// internpatientaccess.DefaultCanWriteReports holds the default value on creation for the can_write_reports field.
+	internpatientaccess.DefaultCanWriteReports = internpatientaccessDescCanWriteReports.Default.(bool)
+	// internpatientaccessDescID is the schema descriptor for id field.
+	internpatientaccessDescID := internpatientaccessMixinFields0[0].Descriptor()
+	// internpatientaccess.DefaultID holds the default value on creation for the id field.
+	internpatientaccess.DefaultID = internpatientaccessDescID.Default.(func() uuid.UUID)
+	internprofileMixin := schema.InternProfile{}.Mixin()
+	internprofileMixinFields0 := internprofileMixin[0].Fields()
+	_ = internprofileMixinFields0
+	internprofileMixinFields1 := internprofileMixin[1].Fields()
+	_ = internprofileMixinFields1
+	internprofileFields := schema.InternProfile{}.Fields()
+	_ = internprofileFields
+	// internprofileDescCreatedAt is the schema descriptor for created_at field.
+	internprofileDescCreatedAt := internprofileMixinFields1[0].Descriptor()
+	// internprofile.DefaultCreatedAt holds the default value on creation for the created_at field.
+	internprofile.DefaultCreatedAt = internprofileDescCreatedAt.Default.(func() time.Time)
+	// internprofileDescUpdatedAt is the schema descriptor for updated_at field.
+	internprofileDescUpdatedAt := internprofileMixinFields1[1].Descriptor()
+	// internprofile.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	internprofile.DefaultUpdatedAt = internprofileDescUpdatedAt.Default.(func() time.Time)
+	// internprofile.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	internprofile.UpdateDefaultUpdatedAt = internprofileDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// internprofileDescID is the schema descriptor for id field.
+	internprofileDescID := internprofileMixinFields0[0].Descriptor()
+	// internprofile.DefaultID holds the default value on creation for the id field.
+	internprofile.DefaultID = internprofileDescID.Default.(func() uuid.UUID)
+	interntaskMixin := schema.InternTask{}.Mixin()
+	interntaskMixinFields0 := interntaskMixin[0].Fields()
+	_ = interntaskMixinFields0
+	interntaskMixinFields1 := interntaskMixin[1].Fields()
+	_ = interntaskMixinFields1
+	interntaskFields := schema.InternTask{}.Fields()
+	_ = interntaskFields
+	// interntaskDescCreatedAt is the schema descriptor for created_at field.
+	interntaskDescCreatedAt := interntaskMixinFields1[0].Descriptor()
+	// interntask.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interntask.DefaultCreatedAt = interntaskDescCreatedAt.Default.(func() time.Time)
+	// interntaskDescTitle is the schema descriptor for title field.
+	interntaskDescTitle := interntaskFields[2].Descriptor()
+	// interntask.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	interntask.TitleValidator = interntaskDescTitle.Validators[0].(func(string) error)
+	// interntaskDescSubmittedAt is the schema descriptor for submitted_at field.
+	interntaskDescSubmittedAt := interntaskFields[4].Descriptor()
+	// interntask.DefaultSubmittedAt holds the default value on creation for the submitted_at field.
+	interntask.DefaultSubmittedAt = interntaskDescSubmittedAt.Default.(func() time.Time)
+	// interntaskDescGrade is the schema descriptor for grade field.
+	interntaskDescGrade := interntaskFields[8].Descriptor()
+	// interntask.GradeValidator is a validator for the "grade" field. It is called by the builders before save.
+	interntask.GradeValidator = interntaskDescGrade.Validators[0].(func(string) error)
+	// interntaskDescID is the schema descriptor for id field.
+	interntaskDescID := interntaskMixinFields0[0].Descriptor()
+	// interntask.DefaultID holds the default value on creation for the id field.
+	interntask.DefaultID = interntaskDescID.Default.(func() uuid.UUID)
+	interntaskfileMixin := schema.InternTaskFile{}.Mixin()
+	interntaskfileMixinFields0 := interntaskfileMixin[0].Fields()
+	_ = interntaskfileMixinFields0
+	interntaskfileMixinFields1 := interntaskfileMixin[1].Fields()
+	_ = interntaskfileMixinFields1
+	interntaskfileFields := schema.InternTaskFile{}.Fields()
+	_ = interntaskfileFields
+	// interntaskfileDescCreatedAt is the schema descriptor for created_at field.
+	interntaskfileDescCreatedAt := interntaskfileMixinFields1[0].Descriptor()
+	// interntaskfile.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interntaskfile.DefaultCreatedAt = interntaskfileDescCreatedAt.Default.(func() time.Time)
+	// interntaskfileDescFileKey is the schema descriptor for file_key field.
+	interntaskfileDescFileKey := interntaskfileFields[1].Descriptor()
+	// interntaskfile.FileKeyValidator is a validator for the "file_key" field. It is called by the builders before save.
+	interntaskfile.FileKeyValidator = interntaskfileDescFileKey.Validators[0].(func(string) error)
+	// interntaskfileDescFileName is the schema descriptor for file_name field.
+	interntaskfileDescFileName := interntaskfileFields[2].Descriptor()
+	// interntaskfile.FileNameValidator is a validator for the "file_name" field. It is called by the builders before save.
+	interntaskfile.FileNameValidator = interntaskfileDescFileName.Validators[0].(func(string) error)
+	// interntaskfileDescMimeType is the schema descriptor for mime_type field.
+	interntaskfileDescMimeType := interntaskfileFields[4].Descriptor()
+	// interntaskfile.MimeTypeValidator is a validator for the "mime_type" field. It is called by the builders before save.
+	interntaskfile.MimeTypeValidator = interntaskfileDescMimeType.Validators[0].(func(string) error)
+	// interntaskfileDescID is the schema descriptor for id field.
+	interntaskfileDescID := interntaskfileMixinFields0[0].Descriptor()
+	// interntaskfile.DefaultID holds the default value on creation for the id field.
+	interntaskfile.DefaultID = interntaskfileDescID.Default.(func() uuid.UUID)
+	messageMixin := schema.Message{}.Mixin()
+	messageMixinFields0 := messageMixin[0].Fields()
+	_ = messageMixinFields0
+	messageMixinFields1 := messageMixin[1].Fields()
+	_ = messageMixinFields1
+	messageFields := schema.Message{}.Fields()
+	_ = messageFields
+	// messageDescCreatedAt is the schema descriptor for created_at field.
+	messageDescCreatedAt := messageMixinFields1[0].Descriptor()
+	// message.DefaultCreatedAt holds the default value on creation for the created_at field.
+	message.DefaultCreatedAt = messageDescCreatedAt.Default.(func() time.Time)
+	// messageDescIsRead is the schema descriptor for is_read field.
+	messageDescIsRead := messageFields[6].Descriptor()
+	// message.DefaultIsRead holds the default value on creation for the is_read field.
+	message.DefaultIsRead = messageDescIsRead.Default.(bool)
+	// messageDescID is the schema descriptor for id field.
+	messageDescID := messageMixinFields0[0].Descriptor()
+	// message.DefaultID holds the default value on creation for the id field.
+	message.DefaultID = messageDescID.Default.(func() uuid.UUID)
+	notificationMixin := schema.Notification{}.Mixin()
+	notificationMixinFields0 := notificationMixin[0].Fields()
+	_ = notificationMixinFields0
+	notificationMixinFields1 := notificationMixin[1].Fields()
+	_ = notificationMixinFields1
+	notificationFields := schema.Notification{}.Fields()
+	_ = notificationFields
+	// notificationDescCreatedAt is the schema descriptor for created_at field.
+	notificationDescCreatedAt := notificationMixinFields1[0].Descriptor()
+	// notification.DefaultCreatedAt holds the default value on creation for the created_at field.
+	notification.DefaultCreatedAt = notificationDescCreatedAt.Default.(func() time.Time)
+	// notificationDescType is the schema descriptor for type field.
+	notificationDescType := notificationFields[1].Descriptor()
+	// notification.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	notification.TypeValidator = notificationDescType.Validators[0].(func(string) error)
+	// notificationDescTitle is the schema descriptor for title field.
+	notificationDescTitle := notificationFields[2].Descriptor()
+	// notification.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	notification.TitleValidator = notificationDescTitle.Validators[0].(func(string) error)
+	// notificationDescIsRead is the schema descriptor for is_read field.
+	notificationDescIsRead := notificationFields[5].Descriptor()
+	// notification.DefaultIsRead holds the default value on creation for the is_read field.
+	notification.DefaultIsRead = notificationDescIsRead.Default.(bool)
+	// notificationDescIsPushed is the schema descriptor for is_pushed field.
+	notificationDescIsPushed := notificationFields[6].Descriptor()
+	// notification.DefaultIsPushed holds the default value on creation for the is_pushed field.
+	notification.DefaultIsPushed = notificationDescIsPushed.Default.(bool)
+	// notificationDescID is the schema descriptor for id field.
+	notificationDescID := notificationMixinFields0[0].Descriptor()
+	// notification.DefaultID holds the default value on creation for the id field.
+	notification.DefaultID = notificationDescID.Default.(func() uuid.UUID)
+	notificationprefMixin := schema.NotificationPref{}.Mixin()
+	notificationprefMixinFields0 := notificationprefMixin[0].Fields()
+	_ = notificationprefMixinFields0
+	notificationprefMixinFields1 := notificationprefMixin[1].Fields()
+	_ = notificationprefMixinFields1
+	notificationprefFields := schema.NotificationPref{}.Fields()
+	_ = notificationprefFields
+	// notificationprefDescCreatedAt is the schema descriptor for created_at field.
+	notificationprefDescCreatedAt := notificationprefMixinFields1[0].Descriptor()
+	// notificationpref.DefaultCreatedAt holds the default value on creation for the created_at field.
+	notificationpref.DefaultCreatedAt = notificationprefDescCreatedAt.Default.(func() time.Time)
+	// notificationprefDescUpdatedAt is the schema descriptor for updated_at field.
+	notificationprefDescUpdatedAt := notificationprefMixinFields1[1].Descriptor()
+	// notificationpref.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	notificationpref.DefaultUpdatedAt = notificationprefDescUpdatedAt.Default.(func() time.Time)
+	// notificationpref.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	notificationpref.UpdateDefaultUpdatedAt = notificationprefDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// notificationprefDescAppointmentSms is the schema descriptor for appointment_sms field.
+	notificationprefDescAppointmentSms := notificationprefFields[1].Descriptor()
+	// notificationpref.DefaultAppointmentSms holds the default value on creation for the appointment_sms field.
+	notificationpref.DefaultAppointmentSms = notificationprefDescAppointmentSms.Default.(bool)
+	// notificationprefDescAppointmentPush is the schema descriptor for appointment_push field.
+	notificationprefDescAppointmentPush := notificationprefFields[2].Descriptor()
+	// notificationpref.DefaultAppointmentPush holds the default value on creation for the appointment_push field.
+	notificationpref.DefaultAppointmentPush = notificationprefDescAppointmentPush.Default.(bool)
+	// notificationprefDescMessagePush is the schema descriptor for message_push field.
+	notificationprefDescMessagePush := notificationprefFields[3].Descriptor()
+	// notificationpref.DefaultMessagePush holds the default value on creation for the message_push field.
+	notificationpref.DefaultMessagePush = notificationprefDescMessagePush.Default.(bool)
+	// notificationprefDescTicketReplyPush is the schema descriptor for ticket_reply_push field.
+	notificationprefDescTicketReplyPush := notificationprefFields[4].Descriptor()
+	// notificationpref.DefaultTicketReplyPush holds the default value on creation for the ticket_reply_push field.
+	notificationpref.DefaultTicketReplyPush = notificationprefDescTicketReplyPush.Default.(bool)
+	// notificationprefDescID is the schema descriptor for id field.
+	notificationprefDescID := notificationprefMixinFields0[0].Descriptor()
+	// notificationpref.DefaultID holds the default value on creation for the id field.
+	notificationpref.DefaultID = notificationprefDescID.Default.(func() uuid.UUID)
 	patientMixin := schema.Patient{}.Mixin()
 	patientMixinFields0 := patientMixin[0].Fields()
 	_ = patientMixinFields0
@@ -697,6 +940,46 @@ func init() {
 	therapistprofileDescID := therapistprofileMixinFields0[0].Descriptor()
 	// therapistprofile.DefaultID holds the default value on creation for the id field.
 	therapistprofile.DefaultID = therapistprofileDescID.Default.(func() uuid.UUID)
+	ticketMixin := schema.Ticket{}.Mixin()
+	ticketMixinFields0 := ticketMixin[0].Fields()
+	_ = ticketMixinFields0
+	ticketMixinFields1 := ticketMixin[1].Fields()
+	_ = ticketMixinFields1
+	ticketFields := schema.Ticket{}.Fields()
+	_ = ticketFields
+	// ticketDescCreatedAt is the schema descriptor for created_at field.
+	ticketDescCreatedAt := ticketMixinFields1[0].Descriptor()
+	// ticket.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ticket.DefaultCreatedAt = ticketDescCreatedAt.Default.(func() time.Time)
+	// ticketDescUpdatedAt is the schema descriptor for updated_at field.
+	ticketDescUpdatedAt := ticketMixinFields1[1].Descriptor()
+	// ticket.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	ticket.DefaultUpdatedAt = ticketDescUpdatedAt.Default.(func() time.Time)
+	// ticket.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	ticket.UpdateDefaultUpdatedAt = ticketDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// ticketDescSubject is the schema descriptor for subject field.
+	ticketDescSubject := ticketFields[2].Descriptor()
+	// ticket.SubjectValidator is a validator for the "subject" field. It is called by the builders before save.
+	ticket.SubjectValidator = ticketDescSubject.Validators[0].(func(string) error)
+	// ticketDescID is the schema descriptor for id field.
+	ticketDescID := ticketMixinFields0[0].Descriptor()
+	// ticket.DefaultID holds the default value on creation for the id field.
+	ticket.DefaultID = ticketDescID.Default.(func() uuid.UUID)
+	ticketmessageMixin := schema.TicketMessage{}.Mixin()
+	ticketmessageMixinFields0 := ticketmessageMixin[0].Fields()
+	_ = ticketmessageMixinFields0
+	ticketmessageMixinFields1 := ticketmessageMixin[1].Fields()
+	_ = ticketmessageMixinFields1
+	ticketmessageFields := schema.TicketMessage{}.Fields()
+	_ = ticketmessageFields
+	// ticketmessageDescCreatedAt is the schema descriptor for created_at field.
+	ticketmessageDescCreatedAt := ticketmessageMixinFields1[0].Descriptor()
+	// ticketmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ticketmessage.DefaultCreatedAt = ticketmessageDescCreatedAt.Default.(func() time.Time)
+	// ticketmessageDescID is the schema descriptor for id field.
+	ticketmessageDescID := ticketmessageMixinFields0[0].Descriptor()
+	// ticketmessage.DefaultID holds the default value on creation for the id field.
+	ticketmessage.DefaultID = ticketmessageDescID.Default.(func() uuid.UUID)
 	timeslotMixin := schema.TimeSlot{}.Mixin()
 	timeslotMixinFields0 := timeslotMixin[0].Fields()
 	_ = timeslotMixinFields0
@@ -832,6 +1115,29 @@ func init() {
 	userDescID := userMixinFields0[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	userdeviceMixin := schema.UserDevice{}.Mixin()
+	userdeviceMixinFields0 := userdeviceMixin[0].Fields()
+	_ = userdeviceMixinFields0
+	userdeviceMixinFields1 := userdeviceMixin[1].Fields()
+	_ = userdeviceMixinFields1
+	userdeviceFields := schema.UserDevice{}.Fields()
+	_ = userdeviceFields
+	// userdeviceDescCreatedAt is the schema descriptor for created_at field.
+	userdeviceDescCreatedAt := userdeviceMixinFields1[0].Descriptor()
+	// userdevice.DefaultCreatedAt holds the default value on creation for the created_at field.
+	userdevice.DefaultCreatedAt = userdeviceDescCreatedAt.Default.(func() time.Time)
+	// userdeviceDescDeviceToken is the schema descriptor for device_token field.
+	userdeviceDescDeviceToken := userdeviceFields[1].Descriptor()
+	// userdevice.DeviceTokenValidator is a validator for the "device_token" field. It is called by the builders before save.
+	userdevice.DeviceTokenValidator = userdeviceDescDeviceToken.Validators[0].(func(string) error)
+	// userdeviceDescIsActive is the schema descriptor for is_active field.
+	userdeviceDescIsActive := userdeviceFields[3].Descriptor()
+	// userdevice.DefaultIsActive holds the default value on creation for the is_active field.
+	userdevice.DefaultIsActive = userdeviceDescIsActive.Default.(bool)
+	// userdeviceDescID is the schema descriptor for id field.
+	userdeviceDescID := userdeviceMixinFields0[0].Descriptor()
+	// userdevice.DefaultID holds the default value on creation for the id field.
+	userdevice.DefaultID = userdeviceDescID.Default.(func() uuid.UUID)
 	usersessionMixin := schema.UserSession{}.Mixin()
 	usersessionMixinFields0 := usersessionMixin[0].Fields()
 	_ = usersessionMixinFields0

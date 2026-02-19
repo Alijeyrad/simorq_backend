@@ -17,6 +17,11 @@ type Config struct {
 	Logging         LoggingConfig        `mapstructure:"logging"`
 	S3              S3Config             `mapstructure:"s3"`
 	ZarinPal        ZarinPalConfig       `mapstructure:"zarinpal"`
+	Nats            NatsConfig           `mapstructure:"nats"`
+}
+
+type NatsConfig struct {
+	URL string `mapstructure:"url" yaml:"url"`
 }
 
 type DatabaseConfig struct {

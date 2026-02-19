@@ -220,6 +220,247 @@ var (
 		Columns:    CommissionRulesColumns,
 		PrimaryKey: []*schema.Column{CommissionRulesColumns[0]},
 	}
+	// ContactMessagesColumns holds the columns for the "contact_messages" table.
+	ContactMessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Size: 255},
+		{Name: "email", Type: field.TypeString, Size: 255},
+		{Name: "subject", Type: field.TypeString, Size: 255},
+		{Name: "message", Type: field.TypeString, Size: 2147483647},
+	}
+	// ContactMessagesTable holds the schema information for the "contact_messages" table.
+	ContactMessagesTable = &schema.Table{
+		Name:       "contact_messages",
+		Columns:    ContactMessagesColumns,
+		PrimaryKey: []*schema.Column{ContactMessagesColumns[0]},
+	}
+	// ConversationsColumns holds the columns for the "conversations" table.
+	ConversationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "participant_a", Type: field.TypeUUID},
+		{Name: "participant_b", Type: field.TypeUUID},
+		{Name: "patient_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "last_message_at", Type: field.TypeTime, Nullable: true},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+	}
+	// ConversationsTable holds the schema information for the "conversations" table.
+	ConversationsTable = &schema.Table{
+		Name:       "conversations",
+		Columns:    ConversationsColumns,
+		PrimaryKey: []*schema.Column{ConversationsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "conversation_clinic_id_participant_a_participant_b",
+				Unique:  true,
+				Columns: []*schema.Column{ConversationsColumns[2], ConversationsColumns[3], ConversationsColumns[4]},
+			},
+			{
+				Name:    "conversation_clinic_id_participant_a",
+				Unique:  false,
+				Columns: []*schema.Column{ConversationsColumns[2], ConversationsColumns[3]},
+			},
+			{
+				Name:    "conversation_clinic_id_participant_b",
+				Unique:  false,
+				Columns: []*schema.Column{ConversationsColumns[2], ConversationsColumns[4]},
+			},
+		},
+	}
+	// InternPatientAccessesColumns holds the columns for the "intern_patient_accesses" table.
+	InternPatientAccessesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "intern_id", Type: field.TypeUUID},
+		{Name: "patient_id", Type: field.TypeUUID},
+		{Name: "granted_by", Type: field.TypeUUID},
+		{Name: "can_view_files", Type: field.TypeBool, Default: true},
+		{Name: "can_write_reports", Type: field.TypeBool, Default: false},
+	}
+	// InternPatientAccessesTable holds the schema information for the "intern_patient_accesses" table.
+	InternPatientAccessesTable = &schema.Table{
+		Name:       "intern_patient_accesses",
+		Columns:    InternPatientAccessesColumns,
+		PrimaryKey: []*schema.Column{InternPatientAccessesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "internpatientaccess_intern_id_patient_id",
+				Unique:  true,
+				Columns: []*schema.Column{InternPatientAccessesColumns[2], InternPatientAccessesColumns[3]},
+			},
+			{
+				Name:    "internpatientaccess_intern_id",
+				Unique:  false,
+				Columns: []*schema.Column{InternPatientAccessesColumns[2]},
+			},
+			{
+				Name:    "internpatientaccess_patient_id",
+				Unique:  false,
+				Columns: []*schema.Column{InternPatientAccessesColumns[3]},
+			},
+		},
+	}
+	// InternProfilesColumns holds the columns for the "intern_profiles" table.
+	InternProfilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_member_id", Type: field.TypeUUID, Unique: true},
+		{Name: "internship_year", Type: field.TypeInt, Nullable: true},
+		{Name: "supervisor_ids", Type: field.TypeJSON, Nullable: true},
+	}
+	// InternProfilesTable holds the schema information for the "intern_profiles" table.
+	InternProfilesTable = &schema.Table{
+		Name:       "intern_profiles",
+		Columns:    InternProfilesColumns,
+		PrimaryKey: []*schema.Column{InternProfilesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "internprofile_clinic_member_id",
+				Unique:  true,
+				Columns: []*schema.Column{InternProfilesColumns[3]},
+			},
+		},
+	}
+	// InternTasksColumns holds the columns for the "intern_tasks" table.
+	InternTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID},
+		{Name: "intern_id", Type: field.TypeUUID},
+		{Name: "title", Type: field.TypeString, Size: 255},
+		{Name: "caption", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "submitted_at", Type: field.TypeTime},
+		{Name: "review_status", Type: field.TypeEnum, Enums: []string{"pending", "reviewed", "needs_revision"}, Default: "pending"},
+		{Name: "reviewed_by", Type: field.TypeUUID, Nullable: true},
+		{Name: "review_comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "grade", Type: field.TypeString, Nullable: true, Size: 20},
+		{Name: "reviewed_at", Type: field.TypeTime, Nullable: true},
+	}
+	// InternTasksTable holds the schema information for the "intern_tasks" table.
+	InternTasksTable = &schema.Table{
+		Name:       "intern_tasks",
+		Columns:    InternTasksColumns,
+		PrimaryKey: []*schema.Column{InternTasksColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "interntask_clinic_id_intern_id_submitted_at",
+				Unique:  false,
+				Columns: []*schema.Column{InternTasksColumns[2], InternTasksColumns[3], InternTasksColumns[6]},
+			},
+			{
+				Name:    "interntask_intern_id_review_status",
+				Unique:  false,
+				Columns: []*schema.Column{InternTasksColumns[3], InternTasksColumns[7]},
+			},
+		},
+	}
+	// InternTaskFilesColumns holds the columns for the "intern_task_files" table.
+	InternTaskFilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "task_id", Type: field.TypeUUID},
+		{Name: "file_key", Type: field.TypeString, Size: 500},
+		{Name: "file_name", Type: field.TypeString, Size: 255},
+		{Name: "file_size", Type: field.TypeInt64, Nullable: true},
+		{Name: "mime_type", Type: field.TypeString, Nullable: true, Size: 100},
+	}
+	// InternTaskFilesTable holds the schema information for the "intern_task_files" table.
+	InternTaskFilesTable = &schema.Table{
+		Name:       "intern_task_files",
+		Columns:    InternTaskFilesColumns,
+		PrimaryKey: []*schema.Column{InternTaskFilesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "interntaskfile_task_id",
+				Unique:  false,
+				Columns: []*schema.Column{InternTaskFilesColumns[2]},
+			},
+		},
+	}
+	// MessagesColumns holds the columns for the "messages" table.
+	MessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "conversation_id", Type: field.TypeUUID},
+		{Name: "sender_id", Type: field.TypeUUID},
+		{Name: "content", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "file_key", Type: field.TypeString, Nullable: true},
+		{Name: "file_name", Type: field.TypeString, Nullable: true},
+		{Name: "file_mime", Type: field.TypeString, Nullable: true},
+		{Name: "is_read", Type: field.TypeBool, Default: false},
+		{Name: "read_at", Type: field.TypeTime, Nullable: true},
+	}
+	// MessagesTable holds the schema information for the "messages" table.
+	MessagesTable = &schema.Table{
+		Name:       "messages",
+		Columns:    MessagesColumns,
+		PrimaryKey: []*schema.Column{MessagesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "message_conversation_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessagesColumns[3], MessagesColumns[1]},
+			},
+			{
+				Name:    "message_sender_id",
+				Unique:  false,
+				Columns: []*schema.Column{MessagesColumns[4]},
+			},
+		},
+	}
+	// NotificationsColumns holds the columns for the "notifications" table.
+	NotificationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeString, Size: 64},
+		{Name: "title", Type: field.TypeString, Size: 255},
+		{Name: "body", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "data", Type: field.TypeJSON, Nullable: true},
+		{Name: "is_read", Type: field.TypeBool, Default: false},
+		{Name: "is_pushed", Type: field.TypeBool, Default: false},
+	}
+	// NotificationsTable holds the schema information for the "notifications" table.
+	NotificationsTable = &schema.Table{
+		Name:       "notifications",
+		Columns:    NotificationsColumns,
+		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "notification_user_id_is_read_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{NotificationsColumns[2], NotificationsColumns[7], NotificationsColumns[1]},
+			},
+		},
+	}
+	// NotificationPrefsColumns holds the columns for the "notification_prefs" table.
+	NotificationPrefsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID, Unique: true},
+		{Name: "appointment_sms", Type: field.TypeBool, Default: true},
+		{Name: "appointment_push", Type: field.TypeBool, Default: true},
+		{Name: "message_push", Type: field.TypeBool, Default: true},
+		{Name: "ticket_reply_push", Type: field.TypeBool, Default: true},
+	}
+	// NotificationPrefsTable holds the schema information for the "notification_prefs" table.
+	NotificationPrefsTable = &schema.Table{
+		Name:       "notification_prefs",
+		Columns:    NotificationPrefsColumns,
+		PrimaryKey: []*schema.Column{NotificationPrefsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "notificationpref_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{NotificationPrefsColumns[3]},
+			},
+		},
+	}
 	// PatientsColumns holds the columns for the "patients" table.
 	PatientsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -612,6 +853,58 @@ var (
 			},
 		},
 	}
+	// TicketsColumns holds the columns for the "tickets" table.
+	TicketsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "clinic_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "subject", Type: field.TypeString, Size: 255},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "answered", "closed"}, Default: "open"},
+		{Name: "priority", Type: field.TypeEnum, Enums: []string{"low", "normal", "high", "urgent"}, Default: "normal"},
+	}
+	// TicketsTable holds the schema information for the "tickets" table.
+	TicketsTable = &schema.Table{
+		Name:       "tickets",
+		Columns:    TicketsColumns,
+		PrimaryKey: []*schema.Column{TicketsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "ticket_user_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{TicketsColumns[4], TicketsColumns[6]},
+			},
+			{
+				Name:    "ticket_clinic_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{TicketsColumns[3], TicketsColumns[6]},
+			},
+		},
+	}
+	// TicketMessagesColumns holds the columns for the "ticket_messages" table.
+	TicketMessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "ticket_id", Type: field.TypeUUID},
+		{Name: "sender_id", Type: field.TypeUUID},
+		{Name: "content", Type: field.TypeString, Size: 2147483647},
+		{Name: "file_key", Type: field.TypeString, Nullable: true},
+		{Name: "file_name", Type: field.TypeString, Nullable: true},
+	}
+	// TicketMessagesTable holds the schema information for the "ticket_messages" table.
+	TicketMessagesTable = &schema.Table{
+		Name:       "ticket_messages",
+		Columns:    TicketMessagesColumns,
+		PrimaryKey: []*schema.Column{TicketMessagesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "ticketmessage_ticket_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{TicketMessagesColumns[2], TicketMessagesColumns[1]},
+			},
+		},
+	}
 	// TimeSlotsColumns holds the columns for the "time_slots" table.
 	TimeSlotsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -732,6 +1025,33 @@ var (
 			},
 		},
 	}
+	// UserDevicesColumns holds the columns for the "user_devices" table.
+	UserDevicesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "device_token", Type: field.TypeString, Size: 512},
+		{Name: "platform", Type: field.TypeEnum, Enums: []string{"web", "android", "ios"}},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+	}
+	// UserDevicesTable holds the schema information for the "user_devices" table.
+	UserDevicesTable = &schema.Table{
+		Name:       "user_devices",
+		Columns:    UserDevicesColumns,
+		PrimaryKey: []*schema.Column{UserDevicesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userdevice_user_id_device_token",
+				Unique:  true,
+				Columns: []*schema.Column{UserDevicesColumns[2], UserDevicesColumns[3]},
+			},
+			{
+				Name:    "userdevice_user_id_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{UserDevicesColumns[2], UserDevicesColumns[5]},
+			},
+		},
+	}
 	// UserSessionsColumns holds the columns for the "user_sessions" table.
 	UserSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -846,6 +1166,15 @@ var (
 		ClinicPermissionsTable,
 		ClinicSettingsTable,
 		CommissionRulesTable,
+		ContactMessagesTable,
+		ConversationsTable,
+		InternPatientAccessesTable,
+		InternProfilesTable,
+		InternTasksTable,
+		InternTaskFilesTable,
+		MessagesTable,
+		NotificationsTable,
+		NotificationPrefsTable,
 		PatientsTable,
 		PatientFilesTable,
 		PatientPrescriptionsTable,
@@ -855,9 +1184,12 @@ var (
 		PsychTestsTable,
 		RecurringRulesTable,
 		TherapistProfilesTable,
+		TicketsTable,
+		TicketMessagesTable,
 		TimeSlotsTable,
 		TransactionsTable,
 		UsersTable,
+		UserDevicesTable,
 		UserSessionsTable,
 		WalletsTable,
 		WithdrawalRequestsTable,

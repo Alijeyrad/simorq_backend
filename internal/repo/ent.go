@@ -18,6 +18,15 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicpermission"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/clinicsettings"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/commissionrule"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/contactmessage"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/conversation"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/internpatientaccess"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/internprofile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/interntask"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/interntaskfile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/message"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/notification"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/notificationpref"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientfile"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/patientprescription"
@@ -27,9 +36,12 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/repo/psychtest"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/recurringrule"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/ticket"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/ticketmessage"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/timeslot"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/transaction"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/user"
+	"github.com/Alijeyrad/simorq_backend/internal/repo/userdevice"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/usersession"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/wallet"
 	"github.com/Alijeyrad/simorq_backend/internal/repo/withdrawalrequest"
@@ -99,6 +111,15 @@ func checkColumn(t, c string) error {
 			clinicpermission.Table:    clinicpermission.ValidColumn,
 			clinicsettings.Table:      clinicsettings.ValidColumn,
 			commissionrule.Table:      commissionrule.ValidColumn,
+			contactmessage.Table:      contactmessage.ValidColumn,
+			conversation.Table:        conversation.ValidColumn,
+			internpatientaccess.Table: internpatientaccess.ValidColumn,
+			internprofile.Table:       internprofile.ValidColumn,
+			interntask.Table:          interntask.ValidColumn,
+			interntaskfile.Table:      interntaskfile.ValidColumn,
+			message.Table:             message.ValidColumn,
+			notification.Table:        notification.ValidColumn,
+			notificationpref.Table:    notificationpref.ValidColumn,
 			patient.Table:             patient.ValidColumn,
 			patientfile.Table:         patientfile.ValidColumn,
 			patientprescription.Table: patientprescription.ValidColumn,
@@ -108,9 +129,12 @@ func checkColumn(t, c string) error {
 			psychtest.Table:           psychtest.ValidColumn,
 			recurringrule.Table:       recurringrule.ValidColumn,
 			therapistprofile.Table:    therapistprofile.ValidColumn,
+			ticket.Table:              ticket.ValidColumn,
+			ticketmessage.Table:       ticketmessage.ValidColumn,
 			timeslot.Table:            timeslot.ValidColumn,
 			transaction.Table:         transaction.ValidColumn,
 			user.Table:                user.ValidColumn,
+			userdevice.Table:          userdevice.ValidColumn,
 			usersession.Table:         usersession.ValidColumn,
 			wallet.Table:              wallet.ValidColumn,
 			withdrawalrequest.Table:   withdrawalrequest.ValidColumn,

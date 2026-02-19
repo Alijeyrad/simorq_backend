@@ -154,4 +154,3 @@ func (Patient) Indexes() []ent.Index {
 		index.Fields("clinic_id", "file_number"),
 	}
 }
-

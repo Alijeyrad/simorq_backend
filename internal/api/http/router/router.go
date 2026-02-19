@@ -8,11 +8,16 @@ import (
 	"github.com/Alijeyrad/simorq_backend/internal/service/appointment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/auth"
 	"github.com/Alijeyrad/simorq_backend/internal/service/clinic"
+	"github.com/Alijeyrad/simorq_backend/internal/service/contact"
+	"github.com/Alijeyrad/simorq_backend/internal/service/conversation"
 	"github.com/Alijeyrad/simorq_backend/internal/service/file"
+	"github.com/Alijeyrad/simorq_backend/internal/service/intern"
+	"github.com/Alijeyrad/simorq_backend/internal/service/notification"
 	"github.com/Alijeyrad/simorq_backend/internal/service/patient"
 	"github.com/Alijeyrad/simorq_backend/internal/service/payment"
 	"github.com/Alijeyrad/simorq_backend/internal/service/psychtest"
 	"github.com/Alijeyrad/simorq_backend/internal/service/scheduling"
+	"github.com/Alijeyrad/simorq_backend/internal/service/ticket"
 	"github.com/Alijeyrad/simorq_backend/internal/service/user"
 	"github.com/Alijeyrad/simorq_backend/pkg/authorize"
 	pasetotoken "github.com/Alijeyrad/simorq_backend/pkg/paseto"
@@ -30,20 +35,25 @@ var Module = fx.Module("router", fx.Provide(NewRouter))
 type Params struct {
 	fx.In
 
-	Cfg          *config.Config
-	Redis        *redis.Client
-	Auth         authorize.IAuthorization
-	DB           *repo.Client
-	UserSvc      user.Service
-	AuthSvc      auth.Service
-	ClinicSvc    clinic.Service
-	PatientSvc   patient.Service
-	FileSvc        file.Service
-	PsychTestSvc   psychtest.Service
-	SchedulingSvc  scheduling.Service
-	AppointmentSvc appointment.Service
-	PaymentSvc     payment.Service
-	PasetoMgr      *pasetotoken.Manager
+	Cfg             *config.Config
+	Redis           *redis.Client
+	Auth            authorize.IAuthorization
+	DB              *repo.Client
+	UserSvc         user.Service
+	AuthSvc         auth.Service
+	ClinicSvc       clinic.Service
+	PatientSvc      patient.Service
+	FileSvc         file.Service
+	PsychTestSvc    psychtest.Service
+	SchedulingSvc   scheduling.Service
+	AppointmentSvc  appointment.Service
+	PaymentSvc      payment.Service
+	ConversationSvc conversation.Service
+	TicketSvc       ticket.Service
+	NotificationSvc notification.Service
+	ContactSvc      contact.Service
+	InternSvc       intern.Service
+	PasetoMgr       *pasetotoken.Manager
 }
 
 type Router struct {
@@ -78,6 +88,11 @@ func (r *Router) Register(app *fiber.App) {
 	scheduleH := handler.NewScheduleHandler(r.p.SchedulingSvc)
 	appointmentH := handler.NewAppointmentHandler(r.p.AppointmentSvc)
 	paymentH := handler.NewPaymentHandler(r.p.PaymentSvc)
+	conversationH := handler.NewConversationHandler(r.p.ConversationSvc)
+	ticketH := handler.NewTicketHandler(r.p.TicketSvc)
+	notificationH := handler.NewNotificationHandler(r.p.NotificationSvc)
+	contactH := handler.NewContactHandler(r.p.ContactSvc)
+	internH := handler.NewInternHandler(r.p.InternSvc)
 
 	api := app.Group("/api/v1")
 
@@ -91,6 +106,11 @@ func (r *Router) Register(app *fiber.App) {
 	r.registerScheduleRoutes(api, scheduleH, authRequired, clinicHeader, requirePerm)
 	r.registerAppointmentRoutes(api, appointmentH, authRequired, clinicHeader, requirePerm)
 	r.registerPaymentRoutes(api, paymentH, authRequired, clinicHeader)
+	r.registerConversationRoutes(api, conversationH, authRequired, clinicHeader, requirePerm)
+	r.registerTicketRoutes(api, ticketH, authRequired)
+	r.registerNotificationRoutes(api, notificationH, authRequired)
+	r.registerContactRoutes(api, contactH)
+	r.registerInternRoutes(api, internH, authRequired, clinicHeader, requirePerm)
 }
 
 func (r *Router) registerSystemRoutes(app *fiber.App) {

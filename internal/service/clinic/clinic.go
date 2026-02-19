@@ -55,15 +55,15 @@ type UpdateClinicRequest struct {
 }
 
 type UpdateSettingsRequest struct {
-	ReservationFeeAmount    *int64
-	ReservationFeePercent   *int
-	CancellationWindowHours *int
-	CancellationFeeAmount   *int64
-	CancellationFeePercent  *int
-	AllowClientSelfBook     *bool
+	ReservationFeeAmount      *int64
+	ReservationFeePercent     *int
+	CancellationWindowHours   *int
+	CancellationFeeAmount     *int64
+	CancellationFeePercent    *int
+	AllowClientSelfBook       *bool
 	DefaultSessionDurationMin *int
-	DefaultSessionPrice     *int64
-	WorkingHours            map[string]any
+	DefaultSessionPrice       *int64
+	WorkingHours              map[string]any
 }
 
 type AddMemberRequest struct {

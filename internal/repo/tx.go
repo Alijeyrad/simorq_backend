@@ -24,6 +24,24 @@ type Tx struct {
 	ClinicSettings *ClinicSettingsClient
 	// CommissionRule is the client for interacting with the CommissionRule builders.
 	CommissionRule *CommissionRuleClient
+	// ContactMessage is the client for interacting with the ContactMessage builders.
+	ContactMessage *ContactMessageClient
+	// Conversation is the client for interacting with the Conversation builders.
+	Conversation *ConversationClient
+	// InternPatientAccess is the client for interacting with the InternPatientAccess builders.
+	InternPatientAccess *InternPatientAccessClient
+	// InternProfile is the client for interacting with the InternProfile builders.
+	InternProfile *InternProfileClient
+	// InternTask is the client for interacting with the InternTask builders.
+	InternTask *InternTaskClient
+	// InternTaskFile is the client for interacting with the InternTaskFile builders.
+	InternTaskFile *InternTaskFileClient
+	// Message is the client for interacting with the Message builders.
+	Message *MessageClient
+	// Notification is the client for interacting with the Notification builders.
+	Notification *NotificationClient
+	// NotificationPref is the client for interacting with the NotificationPref builders.
+	NotificationPref *NotificationPrefClient
 	// Patient is the client for interacting with the Patient builders.
 	Patient *PatientClient
 	// PatientFile is the client for interacting with the PatientFile builders.
@@ -42,12 +60,18 @@ type Tx struct {
 	RecurringRule *RecurringRuleClient
 	// TherapistProfile is the client for interacting with the TherapistProfile builders.
 	TherapistProfile *TherapistProfileClient
+	// Ticket is the client for interacting with the Ticket builders.
+	Ticket *TicketClient
+	// TicketMessage is the client for interacting with the TicketMessage builders.
+	TicketMessage *TicketMessageClient
 	// TimeSlot is the client for interacting with the TimeSlot builders.
 	TimeSlot *TimeSlotClient
 	// Transaction is the client for interacting with the Transaction builders.
 	Transaction *TransactionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserDevice is the client for interacting with the UserDevice builders.
+	UserDevice *UserDeviceClient
 	// UserSession is the client for interacting with the UserSession builders.
 	UserSession *UserSessionClient
 	// Wallet is the client for interacting with the Wallet builders.
@@ -191,6 +215,15 @@ func (tx *Tx) init() {
 	tx.ClinicPermission = NewClinicPermissionClient(tx.config)
 	tx.ClinicSettings = NewClinicSettingsClient(tx.config)
 	tx.CommissionRule = NewCommissionRuleClient(tx.config)
+	tx.ContactMessage = NewContactMessageClient(tx.config)
+	tx.Conversation = NewConversationClient(tx.config)
+	tx.InternPatientAccess = NewInternPatientAccessClient(tx.config)
+	tx.InternProfile = NewInternProfileClient(tx.config)
+	tx.InternTask = NewInternTaskClient(tx.config)
+	tx.InternTaskFile = NewInternTaskFileClient(tx.config)
+	tx.Message = NewMessageClient(tx.config)
+	tx.Notification = NewNotificationClient(tx.config)
+	tx.NotificationPref = NewNotificationPrefClient(tx.config)
 	tx.Patient = NewPatientClient(tx.config)
 	tx.PatientFile = NewPatientFileClient(tx.config)
 	tx.PatientPrescription = NewPatientPrescriptionClient(tx.config)
@@ -200,9 +233,12 @@ func (tx *Tx) init() {
 	tx.PsychTest = NewPsychTestClient(tx.config)
 	tx.RecurringRule = NewRecurringRuleClient(tx.config)
 	tx.TherapistProfile = NewTherapistProfileClient(tx.config)
+	tx.Ticket = NewTicketClient(tx.config)
+	tx.TicketMessage = NewTicketMessageClient(tx.config)
 	tx.TimeSlot = NewTimeSlotClient(tx.config)
 	tx.Transaction = NewTransactionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserDevice = NewUserDeviceClient(tx.config)
 	tx.UserSession = NewUserSessionClient(tx.config)
 	tx.Wallet = NewWalletClient(tx.config)
 	tx.WithdrawalRequest = NewWithdrawalRequestClient(tx.config)

@@ -24,6 +24,33 @@ type ClinicSettings func(*sql.Selector)
 // CommissionRule is the predicate function for commissionrule builders.
 type CommissionRule func(*sql.Selector)
 
+// ContactMessage is the predicate function for contactmessage builders.
+type ContactMessage func(*sql.Selector)
+
+// Conversation is the predicate function for conversation builders.
+type Conversation func(*sql.Selector)
+
+// InternPatientAccess is the predicate function for internpatientaccess builders.
+type InternPatientAccess func(*sql.Selector)
+
+// InternProfile is the predicate function for internprofile builders.
+type InternProfile func(*sql.Selector)
+
+// InternTask is the predicate function for interntask builders.
+type InternTask func(*sql.Selector)
+
+// InternTaskFile is the predicate function for interntaskfile builders.
+type InternTaskFile func(*sql.Selector)
+
+// Message is the predicate function for message builders.
+type Message func(*sql.Selector)
+
+// Notification is the predicate function for notification builders.
+type Notification func(*sql.Selector)
+
+// NotificationPref is the predicate function for notificationpref builders.
+type NotificationPref func(*sql.Selector)
+
 // Patient is the predicate function for patient builders.
 type Patient func(*sql.Selector)
 
@@ -51,6 +78,12 @@ type RecurringRule func(*sql.Selector)
 // TherapistProfile is the predicate function for therapistprofile builders.
 type TherapistProfile func(*sql.Selector)
 
+// Ticket is the predicate function for ticket builders.
+type Ticket func(*sql.Selector)
+
+// TicketMessage is the predicate function for ticketmessage builders.
+type TicketMessage func(*sql.Selector)
+
 // TimeSlot is the predicate function for timeslot builders.
 type TimeSlot func(*sql.Selector)
 
@@ -59,6 +92,9 @@ type Transaction func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// UserDevice is the predicate function for userdevice builders.
+type UserDevice func(*sql.Selector)
 
 // UserSession is the predicate function for usersession builders.
 type UserSession func(*sql.Selector)

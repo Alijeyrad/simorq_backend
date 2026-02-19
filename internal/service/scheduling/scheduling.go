@@ -9,8 +9,8 @@ import (
 
 	"github.com/Alijeyrad/simorq_backend/internal/repo"
 	entrecrule "github.com/Alijeyrad/simorq_backend/internal/repo/recurringrule"
-	entslot "github.com/Alijeyrad/simorq_backend/internal/repo/timeslot"
 	entprofile "github.com/Alijeyrad/simorq_backend/internal/repo/therapistprofile"
+	entslot "github.com/Alijeyrad/simorq_backend/internal/repo/timeslot"
 )
 
 // ---------------------------------------------------------------------------
@@ -18,11 +18,11 @@ import (
 // ---------------------------------------------------------------------------
 
 type CreateSlotRequest struct {
-	StartTime      time.Time
-	EndTime        time.Time
-	SessionPrice   *int64
-	ReservationFee *int64
-	IsRecurring    bool
+	StartTime       time.Time
+	EndTime         time.Time
+	SessionPrice    *int64
+	ReservationFee  *int64
+	IsRecurring     bool
 	RecurringRuleID *uuid.UUID
 }
 
